@@ -694,20 +694,35 @@ def calc_COCA(
 
 def calc_revenue(capture_t_yr, ccs_share, ccs_yield, ccu_share, ccu_yield,
                  ccu_price_krw_t, market_price_usd_t, market_type, fx_krw_per_usd) -> dict:
+    """
+    매출/보조금 계산.
+      - stored_t  = 격리량 (CCS 모드) — 배출권 거래/45Q-CCS 보조금 대상
+      - sold_lco2_t = 출하량 (CCU 모드) — 액화탄산 매출 + 45Q-EOR 보조금 대상
+      - 보조금은 격리량 또는 활용량 양쪽에 적용 가능 (한쪽은 0)
+    """
     stored_t = capture_t_yr * ccs_share * ccs_yield
     sold_lco2_t = capture_t_yr * ccu_share * ccu_yield
     ccu_revenue_usd = sold_lco2_t * ccu_price_krw_t / fx_krw_per_usd
+
+    # 보조금 적용 대상 (CCS면 격리량, CCU면 활용량 — 한쪽은 0)
+    qualifying_t = stored_t + sold_lco2_t
+
     if market_type == "credit":
+        # 배출권 거래제: CCS 격리량만 (CCU는 격리 안되므로 거래 불가)
         market_revenue_usd = stored_t * market_price_usd_t
         subsidy_usd = 0.0
     else:
+        # 정부 보조금: CCS 격리량 또는 CCU 활용량 양쪽 적용 가능
+        # (45Q-CCS는 stored, 45Q-EOR/CCU는 sold, NL SDE++는 stored 등)
         market_revenue_usd = 0.0
-        subsidy_usd = stored_t * market_price_usd_t
+        subsidy_usd = qualifying_t * market_price_usd_t
+
     total_revenue_usd = ccu_revenue_usd + market_revenue_usd + subsidy_usd
     revenue_per_capture = total_revenue_usd / capture_t_yr if capture_t_yr > 0 else 0
     return {
         "stored_t":         stored_t,
         "sold_lco2_t":      sold_lco2_t,
+        "qualifying_t":     qualifying_t,
         "ccu_revenue":      ccu_revenue_usd,
         "market_revenue":   market_revenue_usd,
         "subsidy":          subsidy_usd,
@@ -941,6 +956,13 @@ for k in selected:
         market_price_usd, market_type, fx_krw_per_usd,
     )
     net_coca = cost["COCA"] - rev["rev_per_capture"]
+
+    # 연간 손익 (annual profit)
+    annual_cost_usd = cost["annual_total_usd"]                 # = COCA × capture_t_yr
+    annual_revenue_usd = rev["total_revenue"]
+    annual_profit_usd = annual_revenue_usd - annual_cost_usd   # 양수 = 흑자
+    annual_profit_krw = annual_profit_usd * fx_krw_per_usd
+
     results.append({
         "key": k,
         "name": t["name"],
@@ -952,6 +974,10 @@ for k in selected:
         **cost,
         **rev,
         "Net_COCA": net_coca,
+        "annual_cost_usd":     annual_cost_usd,
+        "annual_revenue_usd":  annual_revenue_usd,
+        "annual_profit_usd":   annual_profit_usd,
+        "annual_profit_krw":   annual_profit_krw,
         "loss_kg_per_tCO2": t["loss_kg_per_tCO2"],
         "loss_mech": t["loss_mech"],
         "T_regen": t["T_regen"],
@@ -1254,40 +1280,61 @@ with tab3:
             f"환율 **{fx_krw_per_usd:,.0f} KRW/USD**"
         )
 
+    short_x = [SHORT_NAMES.get(r["key"], r["name"]) for r in results]
+
     f_net = go.Figure()
     f_net.add_trace(go.Bar(
         name="COCA (비용)",
-        x=[SHORT_NAMES.get(r["key"], r["name"]) for r in results],
-        y=[r["COCA"] for r in results],
+        x=short_x, y=[r["COCA"] for r in results],
         marker_color="#E57373",
         text=[f"{r['COCA']:,.1f}" for r in results], textposition="inside",
+        textfont=dict(size=13, color="white"),
     ))
     f_net.add_trace(go.Bar(
         name="− 매출/보조금",
-        x=[SHORT_NAMES.get(r["key"], r["name"]) for r in results],
-        y=[-r["rev_per_capture"] for r in results],
+        x=short_x, y=[-r["rev_per_capture"] for r in results],
         marker_color="#81C784",
         text=[f"−{r['rev_per_capture']:,.1f}" for r in results], textposition="inside",
+        textfont=dict(size=13, color="white"),
     ))
+    # Net COCA — 큰 노란 다이아몬드 + 흰 테두리 + 검은 외곽
     f_net.add_trace(go.Scatter(
-        name="Net COCA",
-        x=[SHORT_NAMES.get(r["key"], r["name"]) for r in results],
-        y=[r["Net_COCA"] for r in results],
+        name="◆ Net COCA",
+        x=short_x, y=[r["Net_COCA"] for r in results],
         mode="markers+text",
-        marker=dict(size=18, color="#FFC107", symbol="diamond",
-                    line=dict(color="white", width=2)),
-        text=[f"{r['Net_COCA']:+,.1f}" for r in results],
+        marker=dict(
+            size=26, color="#FFEB3B", symbol="diamond",
+            line=dict(color="#212121", width=3),
+        ),
+        text=[f"<b>{r['Net_COCA']:+,.1f}</b>" for r in results],
         textposition="top center",
-        textfont=dict(size=14, color="#FFC107"),
+        textfont=dict(size=17, color="#FFEB3B"),
+        hovertemplate="<b>%{x}</b><br>Net COCA: %{y:,.1f} USD/t<extra></extra>",
     ))
-    f_net.add_hline(y=0, line_color="white", line_width=1, line_dash="dot")
+    # Net COCA 라벨 위에 검은 박스 그림자 효과 (가독성)
+    for r in results:
+        x = SHORT_NAMES.get(r["key"], r["name"])
+        f_net.add_annotation(
+            x=x, y=r["Net_COCA"],
+            text=f"<b>Net: {r['Net_COCA']:+,.1f}</b>",
+            showarrow=False,
+            yshift=28,
+            font=dict(size=14, color="#FFEB3B"),
+            bgcolor="rgba(0,0,0,0.75)",
+            bordercolor="#FFEB3B",
+            borderwidth=1,
+            borderpad=4,
+        )
+
+    f_net.add_hline(y=0, line_color="white", line_width=1.5, line_dash="dot")
     f_net.update_layout(
         title="COCA vs Net COCA [USD/tCO₂포집] — Net 음수 = 흑자",
-        template="plotly_dark", height=440, barmode="relative",
+        template="plotly_dark", height=520, barmode="relative",
         margin=dict(l=10, r=10, t=60, b=80),
-        legend=dict(orientation="h", y=-0.15),
+        legend=dict(orientation="h", y=-0.12),
         xaxis_tickangle=0,
     )
+    # Net COCA 막대 아래에 텍스트가 안잘리도록 우측 여유
     st.plotly_chart(f_net, use_container_width=True)
 
     st.markdown("##### 매출/보조금 상세 (USD 기준)")
@@ -1317,7 +1364,98 @@ with tab3:
             f"adder ${results[0]['capex_adder']:,.0f}/(t/yr))"
         )
 
-    st.markdown(f"##### 💴 KRW 환산 요약 (환율 {fx_krw_per_usd:,.0f} KRW/USD)")
+    # ─────────────────────────────────────────────
+    # 연간 손익 (Annual Profit / Loss) — 사업 관점
+    # ─────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("### 🪙 연간 손익 분석 — 시설 단위 수익성")
+    st.caption(
+        f"연간 매출 − 연간 비용 = 연간 손익. "
+        f"포집 {capture_mt_yr:.1f} Mt/yr · 환율 {fx_krw_per_usd:,.0f} KRW/USD"
+    )
+
+    # 손익 막대 차트 (USD)
+    profits_usd = [r["annual_profit_usd"] / 1e6 for r in results]  # M$/yr
+    profit_colors = ["#81C784" if p > 0 else "#E57373" for p in profits_usd]
+
+    f_profit = go.Figure()
+    f_profit.add_trace(go.Bar(
+        x=short_x,
+        y=profits_usd,
+        marker_color=profit_colors,
+        text=[
+            f"<b>{p:+,.0f}</b> M$<br>"
+            f"<span style='font-size:11px;'>({p*fx_krw_per_usd/1000:+,.0f} B원)</span>"
+            for p in profits_usd
+        ],
+        textposition="outside",
+        textfont=dict(size=14),
+        cliponaxis=False,
+        hovertemplate="<b>%{x}</b><br>"
+                      "연 손익: %{y:+,.0f} M$/yr<extra></extra>",
+    ))
+    f_profit.add_hline(y=0, line_color="white", line_width=1.5)
+    ymin = min(profits_usd) * 1.3 if min(profits_usd) < 0 else min(profits_usd) - abs(min(profits_usd))*0.1
+    ymax = max(profits_usd) * 1.4 if max(profits_usd) > 0 else max(profits_usd) + abs(max(profits_usd))*0.1
+    f_profit.update_layout(
+        title="연간 손익 [M$/yr] · 녹색=흑자 / 빨강=적자",
+        template="plotly_dark", height=420,
+        margin=dict(l=10, r=10, t=60, b=40),
+        xaxis_tickangle=0,
+        yaxis=dict(range=[ymin, ymax], zeroline=True, zerolinecolor="white",
+                   zerolinewidth=2),
+        showlegend=False,
+    )
+    st.plotly_chart(f_profit, use_container_width=True)
+
+    # 연간 손익 카드 (선택된 모든 기술)
+    st.markdown("##### 💵 연간 손익 카드")
+    profit_cols = st.columns(min(len(results), 6))
+    for i, r in enumerate(results[:6]):
+        with profit_cols[i]:
+            profit_m_usd = r["annual_profit_usd"] / 1e6
+            profit_b_krw = r["annual_profit_krw"] / 1e9
+            color = "#81C784" if profit_m_usd > 0 else "#E57373"
+            sign = "흑자" if profit_m_usd > 0 else "적자"
+            st.markdown(
+                f"""
+                <div style='background:#1E2128; border-top:3px solid {color};
+                            border-radius:6px; padding:8px 10px;'>
+                    <div style='font-size:0.75rem; color:#8b95a7;'>
+                        {SHORT_NAMES.get(r['key'], r['name'])} — <b style='color:{color};'>{sign}</b>
+                    </div>
+                    <div style='font-size:1.0rem; color:{color}; font-weight:700;
+                                margin-top:3px;'>
+                        {profit_m_usd:+,.0f} M$/yr
+                    </div>
+                    <div style='font-size:0.85rem; color:#E8EAED;'>
+                        {profit_b_krw:+,.0f} B원/yr
+                    </div>
+                    <div style='font-size:0.7rem; color:#8b95a7; margin-top:4px;'>
+                        매출 ${r['annual_revenue_usd']/1e6:,.0f}M − 비용 ${r['annual_cost_usd']/1e6:,.0f}M
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    # 연간 손익 상세 테이블
+    st.markdown("##### 손익 상세")
+    profit_df = pd.DataFrame([{
+        "기술": r["name"],
+        "연 매출 [M$]": f"{r['annual_revenue_usd']/1e6:,.1f}",
+        "연 매출 [B원]": f"{r['annual_revenue_usd']*fx_krw_per_usd/1e9:,.1f}",
+        "연 비용 [M$]": f"{r['annual_cost_usd']/1e6:,.1f}",
+        "연 비용 [B원]": f"{r['annual_cost_usd']*fx_krw_per_usd/1e9:,.1f}",
+        "연 손익 [M$]": f"{r['annual_profit_usd']/1e6:+,.1f}",
+        "연 손익 [B원]": f"{r['annual_profit_krw']/1e9:+,.1f}",
+        "ROI [%]": f"{r['annual_profit_usd']/r['annual_cost_usd']*100:+,.1f}" if r['annual_cost_usd'] > 0 else "—",
+        "Net COCA [USD/t]": f"{r['Net_COCA']:+,.1f}",
+    } for r in results])
+    st.dataframe(profit_df, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+    st.markdown(f"##### 💴 단위 CO₂당 KRW 요약 (환율 {fx_krw_per_usd:,.0f} KRW/USD)")
     krw_cols = st.columns(min(len(results), 4))
     for i, r in enumerate(results[:4]):
         with krw_cols[i]:
