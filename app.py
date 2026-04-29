@@ -35,7 +35,7 @@ import plotly.express as px
 # 페이지 설정 & 다크모드 / 모바일 CSS
 # ======================================================================
 st.set_page_config(
-    page_title="비아민계 CO₂ 포집 벤치마크",
+    page_title="CO₂ 포집·CCUS 벤치마크",
     page_icon="🌫️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -204,7 +204,70 @@ LIT = {
         "loss_kg_per_tCO2": 1.5,
         "loss_mech": "산화·열분해 (degradation)",
         "is_pilot": False,
-        "notes": "30 wt% MEA + reclaimer. 비교 기준선.",
+        "notes": "30 wt% MEA + reclaimer. 1세대 표준, 비교 기준선.",
+    },
+    "MHI_KS21": {
+        "name": "MHI KS-21™",
+        "category": "Advanced Amine",
+        "source": "Mitsubishi Heavy Industries (Petra Nova KS-1 → KS-21)",
+        "status": "commercial",
+        "SRD": 2.80,
+        "T_regen": 120,
+        "T_abs": 40,
+        "p_regen_bar": 1.8,
+        "We_pump": 0.011,
+        "We_comp": 0.40,
+        "We_chill": 0.00,
+        "We_aux": 0.04,
+        "CAPEX_per_t": 920,
+        "OPEX_solvent": 1.8,
+        "OPEX_other": 12.0,
+        "loss_kg_per_tCO2": 0.6,
+        "loss_mech": "Hindered amine 구조 → 산화 분해 ↓",
+        "is_pilot": False,
+        "notes": "MHI 2세대 hindered amine. Petra Nova(KS-1)에서 KS-21로 진화 (2020+). 일본·동남아 적용.",
+    },
+    "Cansolv_DC103": {
+        "name": "Cansolv DC-103",
+        "category": "Advanced Amine",
+        "source": "Shell Cansolv (NETL 2022 Baseline)",
+        "status": "commercial",
+        "SRD": 2.50,
+        "T_regen": 110,
+        "T_abs": 40,
+        "p_regen_bar": 1.8,
+        "We_pump": 0.012,
+        "We_comp": 0.40,
+        "We_chill": 0.00,
+        "We_aux": 0.04,
+        "CAPEX_per_t": 880,
+        "OPEX_solvent": 1.6,
+        "OPEX_other": 11.5,
+        "loss_kg_per_tCO2": 0.7,
+        "loss_mech": "낮은 휘발성, 산화 안정성 ↑",
+        "is_pilot": False,
+        "notes": "Shell 상용 솔벤트. Boundary Dam (1 Mt/yr 운영). NETL 2022 B11B/B12B/B31B 공식 reference.",
+    },
+    "Aker_S26": {
+        "name": "Aker S26",
+        "category": "Advanced Amine",
+        "source": "Aker Carbon Capture (Norcem Brevik, Twence)",
+        "status": "commercial",
+        "SRD": 2.80,
+        "T_regen": 120,
+        "T_abs": 40,
+        "p_regen_bar": 1.8,
+        "We_pump": 0.012,
+        "We_comp": 0.40,
+        "We_chill": 0.00,
+        "We_aux": 0.045,
+        "CAPEX_per_t": 1000,
+        "OPEX_solvent": 1.7,
+        "OPEX_other": 12.5,
+        "loss_kg_per_tCO2": 0.8,
+        "loss_mech": "낮은 emission, 안정성 ↑",
+        "is_pilot": False,
+        "notes": "Norcem Brevik (시멘트, 0.4 Mt/yr, 2024 가동), Twence WtE. 유럽 대표 상용 솔벤트.",
     },
     "K2CO3_KIERSOL": {
         "name": "K₂CO₃ / KIERSOL †",
@@ -746,6 +809,30 @@ REFS = {
         "url": "https://norlights.com/",
         "used_for": "Greenfield 산업 (blue H₂) CAPEX 1.10× 근거",
     },
+    # ────────────── Advanced Commercial Amine 출처 ──────────────
+    "MHI_KS21_2020": {
+        "cat": "report",
+        "cite": "Mitsubishi Heavy Industries (2020). KS-21™ Advanced Amine Solvent for CO₂ "
+                "Capture. KS-1 후속 (Petra Nova 1.4 Mt/yr 사용). Hindered amine 구조로 "
+                "산화 분해 ↓, SRD 2.7~2.9 GJ/tCO₂.",
+        "url": "https://www.mhi.com/products/engineering/co2plant.html",
+        "used_for": "MHI KS-21 SRD/손실/CAPEX",
+    },
+    "Cansolv_DC103_Tech": {
+        "cat": "report",
+        "cite": "Shell Cansolv (2018-2022). DC-103 Solvent Technical Specifications. "
+                "NETL 2022 Baseline B11B/B12B/B31B 공식 reference solvent. "
+                "Boundary Dam (1.0 Mt/yr) 운영 데이터.",
+        "url": "https://www.shell.com/business-customers/catalysts-technologies/",
+        "used_for": "Cansolv DC-103 SRD 2.5, NETL B11B/B12B/B31B 직접 매칭",
+    },
+    "Aker_S26_2023": {
+        "cat": "report",
+        "cite": "Aker Carbon Capture (2023). Just Catch™ S26 Solvent — Performance Reports. "
+                "Norcem Brevik Cement CCS (0.4 Mt/yr, 2024 commissioning), Twence WtE.",
+        "url": "https://akercarboncapture.com/",
+        "used_for": "Aker S26 SRD 2.8, 시멘트·WtE retrofit 데이터",
+    },
 }
 
 
@@ -763,6 +850,9 @@ def ref_link(ref_id: str, label: str = None) -> str:
 LIT_REFS = {
     "MEA_baseline":    ["NETL_Rev4a", "NETL_2022_Baseline", "Rochelle2009",
                          "IEAGHG_Solvents_2014", "Lepaumier2009", "Bui2018", "Cousins_2011"],
+    "MHI_KS21":        ["MHI_KS21_2020", "GCCSI_Boundary_Petra", "Cousins_2011"],
+    "Cansolv_DC103":   ["NETL_2022_Baseline", "Cansolv_DC103_Tech", "GCCSI_Boundary_Petra"],
+    "Aker_S26":        ["Aker_S26_2023", "Norcem_Brevik_2024"],
     "K2CO3_KIERSOL":   ["KIER_KIERSOL_2013", "Yoo2013", "Cullinane2004"],
     "CAP_B12C":        ["NETL_Rev4a", "Darde2010", "Telikapalli2011"],
     "Biphasic_DMX":    ["TotalEnergies_3D", "Raynal2011"],
@@ -792,6 +882,9 @@ FORMULA_REFS = {
 
 SHORT_NAMES = {
     "MEA_baseline":   "MEA",
+    "MHI_KS21":       "KS-21",
+    "Cansolv_DC103":  "DC-103",
+    "Aker_S26":       "Aker S26",
     "K2CO3_KIERSOL":  "K₂CO₃†",
     "CAP_B12C":       "CAP",
     "Biphasic_DMX":   "DMX†",
@@ -801,6 +894,9 @@ SHORT_NAMES = {
 
 MATERIALS = {
     "MEA_baseline":   "MEA 30 wt% 수용액 (HOCH₂CH₂NH₂)",
+    "MHI_KS21":       "Hindered amine 혼합물 (KS-21™, MHI 2세대)",
+    "Cansolv_DC103":  "2세대 amine 혼합물 (Shell Cansolv proprietary)",
+    "Aker_S26":       "Aker S26 솔벤트 (proprietary blend)",
     "K2CO3_KIERSOL":  "K₂CO₃ + 활성화제 (Piperazine 등) 수용액",
     "CAP_B12C":       "NH₃ 28 wt% 수용액 (0~10 °C 냉각)",
     "Biphasic_DMX":   "3차 아민 혼합액 (DMX™, 상분리형)",
@@ -1326,7 +1422,8 @@ with st.sidebar:
     selected = st.multiselect(
         "비교할 기술 선택",
         options=TECH_KEYS,
-        default=["MEA_baseline", "K2CO3_KIERSOL", "CAP_B12C", "Biphasic_DMX", "TSA_Solid", "CaL"],
+        default=["MEA_baseline", "MHI_KS21", "Cansolv_DC103", "Aker_S26",
+                 "CAP_B12C", "TSA_Solid", "CaL"],
         format_func=lambda k: LIT[k]["name"],
         key="selected_techs",
     )
@@ -1674,10 +1771,10 @@ with st.sidebar:
 # ======================================================================
 # 헤더
 # ======================================================================
-st.title("🌫️ 비아민계 CO₂ 포집 흡수제 기술 벤치마크")
+st.title("🌫️ CO₂ 포집·CCUS 기술·경제성 벤치마크")
 st.caption(
-    "NETL Rev4a B12C · IEAGHG · DOE NETL · KIER KIERSOL 기반 | "
-    "MEA 30 wt% 비교 기준선 포함"
+    "Advanced Amine (KS-21·DC-103·Aker S26) + 비아민계 (K₂CO₃·CAP·DMX·TSA·CaL) 통합 비교 · "
+    "NETL 2022 / IEAGHG / IRS 45Q / KIER 기반"
 )
 
 if not selected:
@@ -2594,18 +2691,24 @@ with tab7:
     st.markdown("### 🎯 데이터 신뢰도 (Quality Tier)")
 
     tier_data = pd.DataFrame([
-        {"기술": LIT["MEA_baseline"]["name"], "Tier": "A — 상용",
-         "기준": "다수 상용 플랜트 운영", "불확실성": "± 5%"},
+        {"기술": LIT["MEA_baseline"]["name"], "Tier": "A — 상용 (참고)",
+         "기준": "1세대 표준, 다수 상용 플랜트", "불확실성": "± 5%"},
+        {"기술": LIT["MHI_KS21"]["name"], "Tier": "A — 상용",
+         "기준": "Petra Nova (1.4 Mt/yr) + 다수 일본 적용", "불확실성": "± 5%"},
+        {"기술": LIT["Cansolv_DC103"]["name"], "Tier": "A — 상용",
+         "기준": "Boundary Dam (1 Mt/yr 운영) + NETL 2022 baseline", "불확실성": "± 5%"},
+        {"기술": LIT["Aker_S26"]["name"], "Tier": "A — 상용",
+         "기준": "Norcem Brevik (시멘트, 0.4 Mt/yr 2024 가동), Twence", "불확실성": "± 8%"},
         {"기술": LIT["CAP_B12C"]["name"], "Tier": "A — Demo",
-         "기준": "AEP Mountaineer demo + NETL 케이스", "불확실성": "± 10%"},
+         "기준": "AEP Mountaineer demo + NETL B12C 공식 케이스", "불확실성": "± 10%"},
         {"기술": LIT["CaL"]["name"], "Tier": "B — Demo",
-         "기준": "1.7 MWe La Pereda 파일럿", "불확실성": "± 15%"},
+         "기준": "1.7 MWe La Pereda 파일럿 + IEAGHG", "불확실성": "± 15%"},
         {"기술": LIT["TSA_Solid"]["name"], "Tier": "B — Demo",
-         "기준": "DOE 0.5~1 MWe 파일럿", "불확실성": "± 20%"},
+         "기준": "DOE 0.5~1 MWe 파일럿 (RTI, SRI)", "불확실성": "± 20%"},
         {"기술": LIT["K2CO3_KIERSOL"]["name"] + " †", "Tier": "C — Pilot",
          "기준": "KIER 0.5 MWe 파일럿", "불확실성": "± 25%"},
         {"기술": LIT["Biphasic_DMX"]["name"] + " †", "Tier": "C — Pilot",
-         "기준": "Dunkirk 0.5 t/h 파일럿", "불확실성": "± 25%"},
+         "기준": "Dunkirk 0.5 t/h 파일럿 (3D Project)", "불확실성": "± 25%"},
     ])
     st.dataframe(tier_data, use_container_width=True, hide_index=True)
 
@@ -2957,8 +3060,8 @@ floor 0.3 (부분 압축 시에도 최소 손실)
 # ======================================================================
 st.markdown("---")
 st.caption(
-    "🌫️ 비아민계 CO₂ 포집 벤치마크 v1.2 | "
-    "MEA 기준선 + K₂CO₃ · CAP · Biphasic · TSA · CaL | "
-    "NETL Rev4a/2022 · IEAGHG · DOE · KIER · IRS 45Q · KRX | "
-    "방법론 출처: 36개"
+    "🌫️ CO₂ 포집·CCUS 벤치마크 v1.3 | "
+    "Advanced Amine (KS-21·DC-103·Aker S26) + 비아민계 (K₂CO₃·CAP·DMX·TSA·CaL) | "
+    "NETL Rev4a/2022 · IEAGHG · MHI · Shell Cansolv · Aker CC · IRS 45Q · KRX | "
+    "방법론 출처: 50개"
 )
