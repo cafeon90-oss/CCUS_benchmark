@@ -109,6 +109,23 @@ st.markdown(
         div[data-testid="stMetricValue"] { font-size: 0.9rem !important; }
         div[data-testid="stMetricLabel"] { font-size: 0.65rem !important; }
     }
+
+    /* 모바일 터치 시 그래프 줌/팬 방지 — 페이지 세로 스크롤만 허용 */
+    @media (pointer: coarse) {
+        .js-plotly-plot, .plotly, .plot-container, .main-svg {
+            touch-action: pan-y !important;
+        }
+    }
+
+    /* 사이드바 multiselect 칩 — 긴 이름도 다 보이게 */
+    section[data-testid="stSidebar"] [data-baseweb="tag"] {
+        max-width: 100% !important;
+    }
+    section[data-testid="stSidebar"] [data-baseweb="tag"] span {
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+    }
 </style>
 """,
     unsafe_allow_html=True,
@@ -606,8 +623,47 @@ def short_name(key_or_name: str) -> str:
     return key_or_name
 
 
+def fmt_krw_amt(krw: float, sign: bool = False) -> str:
+    """
+    원화 금액을 한국식 단위로 자동 변환.
+      < 1조원      → 억원 (예: 18.6억원, 186억원, 9,500억원)
+      ≥ 1조원      → 조원 (예: 1.52조원, 15.20조원)
+    sign=True 면 +/- 부호 강제 표시.
+    """
+    abs_krw = abs(krw)
+    if abs_krw >= 1e12:
+        val = krw / 1e12
+        prec = 2
+        unit = "조원"
+    else:
+        val = krw / 1e8
+        # 100억 이상은 정수, 미만은 소수 1자리
+        prec = 0 if abs(val) >= 100 else 1
+        unit = "억원"
+    s = f"{val:+,.{prec}f}" if sign else f"{val:,.{prec}f}"
+    return f"{s}{unit}"
+
+
+def fmt_krw_per_t(krw_per_t: float, sign: bool = False) -> str:
+    """단위 CO₂당 원화 (보통 만원~수십만원 단위) — 그냥 원/t 표기 + 천단위 쉼표"""
+    s = f"{krw_per_t:+,.0f}" if sign else f"{krw_per_t:,.0f}"
+    return f"{s} 원/t"
+
+
 CHART_MARGIN = dict(l=10, r=10, t=50, b=80)
 CHART_MARGIN_STACK = dict(l=10, r=10, t=50, b=120)
+
+# 모바일 친화: 드래그/줌/더블클릭 모두 비활성화 (호버는 유지)
+PLOTLY_CONFIG = {
+    "displayModeBar": False,
+    "scrollZoom": False,
+    "doubleClick": False,
+    "showTips": False,
+    "displaylogo": False,
+    "staticPlot": False,
+    "showAxisDragHandles": False,
+    "showAxisRangeEntryBoxes": False,
+}
 
 # ======================================================================
 # 계산 함수
@@ -741,7 +797,8 @@ with st.sidebar:
         "비교할 기술 선택",
         options=TECH_KEYS,
         default=["MEA_baseline", "K2CO3_KIERSOL", "CAP_B12C", "Biphasic_DMX", "TSA_Solid", "CaL"],
-        format_func=lambda k: LIT[k]["name"],
+        format_func=lambda k: f"{SHORT_NAMES.get(k, k)} — {LIT[k]['category']}",
+        help="짧은 이름 — 분류. 풀네임은 데이터 테이블 참고.",
     )
 
     st.caption("⌨️ 모든 입력은 직접 숫자 입력 가능 (미입력시 default 사용)")
@@ -801,7 +858,7 @@ with st.sidebar:
     fx_krw_per_usd = st.number_input(
         "💱 환율 [KRW/USD]",
         min_value=800.0, max_value=2000.0, value=1400.0, step=10.0,
-        format="%.0f",
+        format="%,.0f",
         help="default: 1,400 (2026.4 기준)",
     )
 
@@ -864,7 +921,7 @@ with st.sidebar:
         ccu_price_krw = st.number_input(
             "액화탄산 판매가 [KRW/t]",
             min_value=0, max_value=2_000_000, value=ccu["price_krw_t"], step=10_000,
-            format="%d",
+            format="%,d",
             help=f"default: {ccu['price_krw_t']:,}",
         )
 
@@ -998,7 +1055,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
 
 # ---------- ① 종합 비교 ----------
 with tab1:
-    with st.expander("📖 **KPI 지표 정의** — 클릭해서 펼치기/접기", expanded=True):
+    with st.expander("📖 **KPI 지표 정의** — 클릭해서 펼치기/접기", expanded=False):
         def_cols = st.columns(4)
         definitions = [
             {"title": "SRD", "full": "Specific Reboiler Duty",
@@ -1114,7 +1171,7 @@ with tab1:
             showlegend=False,
             uniformtext=dict(minsize=12, mode="show"),
         )
-        container.plotly_chart(f, use_container_width=True)
+        container.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
 
     row1 = st.columns(2)
     render_kpi_chart(kpi_specs[0], row1[0])
@@ -1165,7 +1222,7 @@ with tab2:
         xaxis_tickangle=0, margin=CHART_MARGIN_STACK,
         legend=dict(orientation="h", y=-0.18),
     )
-    st.plotly_chart(f, use_container_width=True)
+    st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
 
     st.markdown("---")
     st.markdown("### CAP 냉동기 부하 — 냉각수 온도 민감도")
@@ -1187,7 +1244,7 @@ with tab2:
             template="plotly_dark", height=350,
             xaxis_title="냉각수 온도 [°C]", yaxis_title="We_chill [GJe/tCO₂]",
         )
-        st.plotly_chart(f2, use_container_width=True)
+        st.plotly_chart(f2, use_container_width=True, config=PLOTLY_CONFIG)
     else:
         st.info("CAP을 선택하면 냉동기 민감도 그래프가 활성화됩니다.")
 
@@ -1211,7 +1268,7 @@ with tab3:
             template="plotly_dark", height=400,
             xaxis_tickangle=0, margin=CHART_MARGIN,
         )
-        st.plotly_chart(f, use_container_width=True)
+        st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
 
     with col2:
         f = go.Figure()
@@ -1230,7 +1287,7 @@ with tab3:
             xaxis_tickangle=0, margin=CHART_MARGIN_STACK,
             legend=dict(orientation="h", y=-0.20),
         )
-        st.plotly_chart(f, use_container_width=True)
+        st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
 
     st.markdown("---")
     st.markdown("### COCA 요약")
@@ -1248,7 +1305,7 @@ with tab3:
         template="plotly_dark", height=400,
         xaxis_tickangle=0, margin=CHART_MARGIN,
     )
-    st.plotly_chart(f, use_container_width=True)
+    st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
 
     cost_df = pd.DataFrame([{
         "기술": r["name"],
@@ -1335,9 +1392,9 @@ with tab3:
         xaxis_tickangle=0,
     )
     # Net COCA 막대 아래에 텍스트가 안잘리도록 우측 여유
-    st.plotly_chart(f_net, use_container_width=True)
+    st.plotly_chart(f_net, use_container_width=True, config=PLOTLY_CONFIG)
 
-    st.markdown("##### 매출/보조금 상세 (USD 기준)")
+    st.markdown("##### 매출/보조금 상세")
     rev_rows = []
     for r in results:
         rev_rows.append({
@@ -1349,7 +1406,7 @@ with tab3:
             "보조금 [M$/yr]": f"{r['subsidy']/1e6:,.2f}",
             "CCU 매출 [M$/yr]": f"{r['ccu_revenue']/1e6:,.2f}",
             "총 매출 [M$/yr]": f"{r['total_revenue']/1e6:,.2f}",
-            "총 매출 [B원/yr]": f"{r['total_revenue']*fx_krw_per_usd/1e9:,.2f}",
+            "총 매출 (원)": fmt_krw_amt(r['total_revenue'] * fx_krw_per_usd),
             "COCA": f"{r['COCA']:,.1f}",
             "Net COCA": f"{r['Net_COCA']:+,.1f}",
         })
@@ -1385,7 +1442,8 @@ with tab3:
         marker_color=profit_colors,
         text=[
             f"<b>{p:+,.0f}</b> M$<br>"
-            f"<span style='font-size:11px;'>({p*fx_krw_per_usd/1000:+,.0f} B원)</span>"
+            f"<span style='font-size:11px;'>"
+            f"({fmt_krw_amt(p * 1e6 * fx_krw_per_usd, sign=True)})</span>"
             for p in profits_usd
         ],
         textposition="outside",
@@ -1406,7 +1464,7 @@ with tab3:
                    zerolinewidth=2),
         showlegend=False,
     )
-    st.plotly_chart(f_profit, use_container_width=True)
+    st.plotly_chart(f_profit, use_container_width=True, config=PLOTLY_CONFIG)
 
     # 연간 손익 카드 (선택된 모든 기술)
     st.markdown("##### 💵 연간 손익 카드")
@@ -1414,22 +1472,21 @@ with tab3:
     for i, r in enumerate(results[:6]):
         with profit_cols[i]:
             profit_m_usd = r["annual_profit_usd"] / 1e6
-            profit_b_krw = r["annual_profit_krw"] / 1e9
             color = "#81C784" if profit_m_usd > 0 else "#E57373"
-            sign = "흑자" if profit_m_usd > 0 else "적자"
+            sign_label = "흑자" if profit_m_usd > 0 else "적자"
             st.markdown(
                 f"""
                 <div style='background:#1E2128; border-top:3px solid {color};
                             border-radius:6px; padding:8px 10px;'>
                     <div style='font-size:0.75rem; color:#8b95a7;'>
-                        {SHORT_NAMES.get(r['key'], r['name'])} — <b style='color:{color};'>{sign}</b>
+                        {SHORT_NAMES.get(r['key'], r['name'])} — <b style='color:{color};'>{sign_label}</b>
                     </div>
                     <div style='font-size:1.0rem; color:{color}; font-weight:700;
                                 margin-top:3px;'>
                         {profit_m_usd:+,.0f} M$/yr
                     </div>
                     <div style='font-size:0.85rem; color:#E8EAED;'>
-                        {profit_b_krw:+,.0f} B원/yr
+                        {fmt_krw_amt(r['annual_profit_krw'], sign=True)}/yr
                     </div>
                     <div style='font-size:0.7rem; color:#8b95a7; margin-top:4px;'>
                         매출 ${r['annual_revenue_usd']/1e6:,.0f}M − 비용 ${r['annual_cost_usd']/1e6:,.0f}M
@@ -1443,13 +1500,13 @@ with tab3:
     st.markdown("##### 손익 상세")
     profit_df = pd.DataFrame([{
         "기술": r["name"],
-        "연 매출 [M$]": f"{r['annual_revenue_usd']/1e6:,.1f}",
-        "연 매출 [B원]": f"{r['annual_revenue_usd']*fx_krw_per_usd/1e9:,.1f}",
-        "연 비용 [M$]": f"{r['annual_cost_usd']/1e6:,.1f}",
-        "연 비용 [B원]": f"{r['annual_cost_usd']*fx_krw_per_usd/1e9:,.1f}",
-        "연 손익 [M$]": f"{r['annual_profit_usd']/1e6:+,.1f}",
-        "연 손익 [B원]": f"{r['annual_profit_krw']/1e9:+,.1f}",
-        "ROI [%]": f"{r['annual_profit_usd']/r['annual_cost_usd']*100:+,.1f}" if r['annual_cost_usd'] > 0 else "—",
+        "연 매출 [M$]":   f"{r['annual_revenue_usd']/1e6:,.1f}",
+        "연 매출 (원)":   fmt_krw_amt(r['annual_revenue_usd'] * fx_krw_per_usd),
+        "연 비용 [M$]":   f"{r['annual_cost_usd']/1e6:,.1f}",
+        "연 비용 (원)":   fmt_krw_amt(r['annual_cost_usd'] * fx_krw_per_usd),
+        "연 손익 [M$]":   f"{r['annual_profit_usd']/1e6:+,.1f}",
+        "연 손익 (원)":   fmt_krw_amt(r['annual_profit_krw'], sign=True),
+        "ROI [%]":        f"{r['annual_profit_usd']/r['annual_cost_usd']*100:+,.1f}" if r['annual_cost_usd'] > 0 else "—",
         "Net COCA [USD/t]": f"{r['Net_COCA']:+,.1f}",
     } for r in results])
     st.dataframe(profit_df, use_container_width=True, hide_index=True)
@@ -1487,7 +1544,7 @@ with tab4:
         xaxis_tickangle=0, margin=CHART_MARGIN,
         yaxis_type="log", yaxis_title="kg/tCO₂ (log scale)",
     )
-    st.plotly_chart(f, use_container_width=True)
+    st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
 
     loss_df = pd.DataFrame([{
         "기술": r["name"],
@@ -1552,7 +1609,7 @@ with tab5:
         template="plotly_dark", height=520,
         xaxis_title="SRD [GJ/tCO₂]", yaxis_title="We 총합 [GJe/tCO₂]",
     )
-    st.plotly_chart(f, use_container_width=True)
+    st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
 
     st.markdown("**해석:** 회귀선 아래에 위치하면 동일 SRD 대비 보조전력이 효율적인 기술입니다.")
 
@@ -1577,7 +1634,7 @@ with tab6:
             we_chill = st.number_input("We_chill [GJe/tCO₂]", 0.0, 0.5, 0.0, 0.01)
             we_aux = st.number_input("We_aux [GJe/tCO₂]", 0.0, 0.3, 0.05, 0.01)
         with c3:
-            capex = st.number_input("CAPEX [USD/(t/yr)]", 500, 3000, 1100, 50)
+            capex = st.number_input("CAPEX [USD/(t/yr)]", 500, 3000, 1100, 50, format="%,d")
             opex_sol = st.number_input("OPEX 용매 [USD/tCO₂]", 0.0, 5.0, 1.5, 0.1)
             opex_oth = st.number_input("OPEX 기타 [USD/tCO₂]", 5.0, 25.0, 12.0, 0.5)
             loss = st.number_input("손실 [kg/tCO₂]", 0.0, 50.0, 1.0, 0.1)
