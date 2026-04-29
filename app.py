@@ -682,6 +682,70 @@ REFS = {
         "url": "https://doi.org/10.1016/j.ijggc.2011.01.002",
         "used_for": "MEA 공정 변형 (split flow, intercooling) — SRD 감소 메커니즘",
     },
+    # ────────────── Retrofit vs Greenfield CAPEX 출처 ──────────────
+    "IEAGHG_2011_Retrofit": {
+        "cat": "report",
+        "cite": "IEAGHG (2011). Retrofitting CO₂ Capture to Existing Power Plants. "
+                "Report 2011/02. Retrofit CAPEX 1.2~1.8× greenfield, site constraints, "
+                "tie-in complexity, derating analysis.",
+        "url": "https://ieaghg.org/publications/technical-reports",
+        "used_for": "Retrofit 발전소 CAPEX multiplier 1.0× (baseline), "
+                    "greenfield 0.75× 근거",
+    },
+    "NETL_QGESS_Retrofit": {
+        "cat": "methodology",
+        "cite": "DOE/NETL (2019). Quality Guidelines for Energy System Studies — "
+                "Retrofit Cost Estimation Methodology. DOE/NETL-2019/2095. "
+                "Site-specific cost factors, brownfield premium 0.85~0.95×.",
+        "url": "https://netl.doe.gov/energy-analysis/details?id=4314",
+        "used_for": "Retrofit/Brownfield CAPEX 산정 방법론",
+    },
+    "IEAGHG_2013_Cement": {
+        "cat": "report",
+        "cite": "IEAGHG (2013). Deployment of CCS in the Cement Industry. Report 2013/19. "
+                "Cement retrofit CAPEX $1,500~2,500/(t/yr), low-CO₂ flue gas (12~20%), "
+                "small unit scale.",
+        "url": "https://ieaghg.org/publications/technical-reports",
+        "used_for": "Retrofit 산업 (시멘트) multiplier 1.65× 근거",
+    },
+    "Norcem_Brevik_2024": {
+        "cat": "report",
+        "cite": "Heidelberg Materials / Norcem Brevik CCS Project (2024). "
+                "World's first cement plant CCS, 0.4 Mt/yr, ~€500M CAPEX, "
+                "Norwegian government 80% funding.",
+        "url": "https://www.heidelbergmaterials.com/en/sustainability/ccus",
+        "used_for": "시멘트 retrofit 실제 CAPEX 검증",
+    },
+    "CMU_CAEM_Retrofit": {
+        "cat": "paper",
+        "cite": "Rubin, E. S., Davison, J. E., Herzog, H. J. (2015). The cost of CO₂ "
+                "capture and storage. International Journal of Greenhouse Gas Control, "
+                "40, 378-400. CMU CAEM retrofit cost framework.",
+        "url": "https://doi.org/10.1016/j.ijggc.2015.05.018",
+        "used_for": "Retrofit/Greenfield CAPEX 비교 학술 표준",
+    },
+    "POSCO_Steel_CCS": {
+        "cat": "report",
+        "cite": "POSCO E&C (2022-2024). 한국 철강·시멘트 산업 CCS 도입 검토 보고서. "
+                "Retrofit ~$1,800~2,400/(t/yr), 한국 산업단지 적용 가능성 분석.",
+        "url": "",
+        "used_for": "한국 철강·시멘트 retrofit CAPEX 검증",
+    },
+    "GCCSI_Boundary_Petra": {
+        "cat": "report",
+        "cite": "Global CCS Institute. Boundary Dam Carbon Capture Project (Saskatchewan, "
+                "2014, 1.0 Mt/yr, $1.3B CAD). Petra Nova (Texas, 2017, 1.4 Mt/yr, ~$1B). "
+                "공개된 retrofit 실제 CAPEX 데이터.",
+        "url": "https://www.globalccsinstitute.com/resources/projects-database/",
+        "used_for": "Retrofit 발전소 실제 CAPEX 검증 ($900~1,800/(t/yr))",
+    },
+    "Northern_Lights_2024": {
+        "cat": "report",
+        "cite": "Northern Lights JV (Equinor/Shell/TotalEnergies, 2024). 1.5 Mt/yr "
+                "transport & storage, ~€800M CAPEX. Greenfield 산업 (blue H₂) 대표 사례.",
+        "url": "https://norlights.com/",
+        "used_for": "Greenfield 산업 (blue H₂) CAPEX 1.10× 근거",
+    },
 }
 
 
@@ -719,6 +783,11 @@ FORMULA_REFS = {
     "CAPEX 규모 효과: ∝ scale^0.65 (CCS specific, ref=3.7 Mt/yr)":                      ["IEAGHG_2007_PostComb", "NETL_QGESS"],
     "SRD 규모 효과: ±10%/decade (파일럿 → 상용 +10%, 메가 +5%)":                         ["IEAGHG_2013_SolventRD"],
     "We_comp 규모 효과: ±6%/decade (소형 왕복식 → 대형 다단 원심)":                       ["IEAGHG_2014_Solvents", "NETL_Rev3_2015"],
+    "Retrofit 발전소 multiplier 1.00× (baseline)":                                      ["IEAGHG_2011_Retrofit", "GCCSI_Boundary_Petra"],
+    "Greenfield 발전소 multiplier 0.75× (통합 설계 최적화)":                              ["IEAGHG_2011_Retrofit", "NETL_2022_Baseline", "CMU_CAEM_Retrofit"],
+    "Greenfield 산업 multiplier 1.10× (blue H₂, LNG)":                                   ["Northern_Lights_2024", "CMU_CAEM_Retrofit"],
+    "Retrofit 산업 multiplier 1.65× (시멘트·철강)":                                       ["IEAGHG_2013_Cement", "Norcem_Brevik_2024", "POSCO_Steel_CCS"],
+    "Brownfield multiplier 0.90× (부지 재활용)":                                          ["NETL_QGESS_Retrofit"],
 }
 
 SHORT_NAMES = {
@@ -748,6 +817,177 @@ CCU_GRADES = {
                 "yield": 0.75, "price_krw_t": 700_000, "capex_mult": 1.65},
 }
 
+# ────────────── 시나리오 프리셋 (Quick Start) ──────────────
+PRESETS = {
+    "us_petra_nova": {
+        "label": "🇺🇸 미국 발전소 retrofit + 45Q (Petra Nova형)",
+        "description": "1.4 Mt/yr 석탄 발전소 retrofit · 45Q-CCS + EOR 매출",
+        "techs": ["MEA_baseline", "K2CO3_KIERSOL", "CAP_B12C"],
+        "settings": {
+            "capture_mt_yr": 1.4, "facility_mode": "CCS",
+            "project_scenario": "retrofit_power",
+            "cm_select": "None", "sub_select": "45Q-CCS",
+            "sub_price_45Q-CCS": 85.0, "extra_rev": 30.0,
+        },
+    },
+    "kr_cement": {
+        "label": "🇰🇷 한국 시멘트 산업 retrofit (POSCO형)",
+        "description": "0.5 Mt/yr 시멘트 retrofit · K-ETS + K-CCUS Act",
+        "techs": ["MEA_baseline", "CaL"],
+        "settings": {
+            "capture_mt_yr": 0.5, "facility_mode": "CCS",
+            "project_scenario": "retrofit_industrial",
+            "cm_select": "K-ETS", "cm_price_K-ETS": 7.0,
+            "sub_select": "K-CCUS-est", "sub_price_K-CCUS-est": 21.0,
+            "extra_rev": 0.0,
+        },
+    },
+    "eu_blue_h2": {
+        "label": "🇪🇺 EU 블루수소 greenfield + SDE++",
+        "description": "1.5 Mt/yr 신규 산업 + 네덜란드 SDE++ (€110/t)",
+        "techs": ["MEA_baseline", "CAP_B12C", "Biphasic_DMX"],
+        "settings": {
+            "capture_mt_yr": 1.5, "facility_mode": "CCS",
+            "project_scenario": "greenfield_industrial",
+            "cm_select": "None", "sub_select": "NL-SDE",
+            "sub_price_NL-SDE": 120.0, "extra_rev": 0.0,
+        },
+    },
+    "us_dac_lcfs": {
+        "label": "🇺🇸 미국 DAC + LCFS (Carbon Engineering형)",
+        "description": "0.5 Mt/yr DAC급 · 45Q-DAC $180 + LCFS $150",
+        "techs": ["MEA_baseline", "CAP_B12C", "TSA_Solid"],
+        "settings": {
+            "capture_mt_yr": 0.5, "facility_mode": "CCS",
+            "project_scenario": "greenfield_industrial",
+            "cm_select": "CA-CAT", "cm_price_CA-CAT": 30.0,
+            "sub_select": "Custom_subsidy", "sub_custom": 180.0,
+            "extra_rev": 150.0,
+        },
+    },
+    "kr_food_lco2": {
+        "label": "🇰🇷 한국 식품급 액화탄산 (300천원/t)",
+        "description": "0.3 Mt/yr CCU · 식품급 99.9% · 무보조금",
+        "techs": ["MEA_baseline", "K2CO3_KIERSOL"],
+        "settings": {
+            "capture_mt_yr": 0.3, "facility_mode": "CCU",
+            "project_scenario": "greenfield_industrial",
+            "ccu_grade": "food", "ccu_price_krw": 300_000,
+            "sub_select": "None", "extra_rev": 0.0,
+        },
+    },
+    "kr_ultra_lco2": {
+        "label": "🇰🇷 반도체 초고순도 LCO₂ (700천원/t)",
+        "description": "0.05 Mt/yr 소규모 CCU · 초고순도 99.999%",
+        "techs": ["MEA_baseline", "CAP_B12C", "TSA_Solid"],
+        "settings": {
+            "capture_mt_yr": 0.05, "facility_mode": "CCU",
+            "project_scenario": "greenfield_industrial",
+            "ccu_grade": "ultra", "ccu_price_krw": 700_000,
+            "sub_select": "None", "extra_rev": 0.0,
+        },
+    },
+}
+
+
+def apply_preset():
+    """프리셋 선택 시 모든 입력값을 자동 세팅"""
+    preset_key = st.session_state.get("preset_select")
+    if not preset_key or preset_key == "custom":
+        return
+    preset = PRESETS.get(preset_key)
+    if not preset:
+        return
+    # 설정값 적용
+    for k, v in preset["settings"].items():
+        st.session_state[k] = v
+    # 선택 기술 적용
+    st.session_state["selected_techs"] = preset["techs"]
+
+
+# ────────────── 통화 표시 헬퍼 ──────────────
+def fmt_money(usd_amount, fx, mode="Both", per_t=False):
+    """
+    통화 표시 헬퍼.
+    mode: "USD" | "KRW" | "Both"
+    per_t: True면 단위 톤당 (KRW 단위로 원/t 표기), False면 총액 (억원/조원 자동)
+    """
+    if per_t:
+        krw_str = f"{usd_amount * fx:+,.0f} 원/t" if usd_amount < 0 else f"{usd_amount * fx:,.0f} 원/t"
+        usd_str = f"${usd_amount:+,.1f}/t" if usd_amount < 0 else f"${usd_amount:,.1f}/t"
+    else:
+        krw_str = fmt_krw_amt(usd_amount * fx, sign=usd_amount < 0)
+        usd_str = f"${usd_amount/1e6:+,.1f}M" if usd_amount < 0 else f"${usd_amount/1e6:,.1f}M"
+    if mode == "USD":
+        return usd_str
+    if mode == "KRW":
+        return krw_str
+    return f"{usd_str} ({krw_str})"
+
+
+# ────────────── 호버 툴팁용 정의 ──────────────
+TOOLTIPS = {
+    "SRD":      "Specific Reboiler Duty — 흡수제 재생에 필요한 단위 CO₂당 열량 [GJ/tCO₂]",
+    "We":       "Equivalent Work — 전력등가 일 [GJe/tCO₂]. 열+전기 통합 페널티 척도",
+    "SPECCA":   "Specific Primary Energy Consumption for CO₂ Avoided [MJ/tCO₂]",
+    "COCA":     "Cost Of CO₂ Captured — 단위 CO₂당 종합 비용 [USD/tCO₂]",
+    "Net COCA": "Net COCA = COCA − 매출/보조금 (음수 = 흑자, 양수 = 적자)",
+    "CRF":      "Capital Recovery Factor — 연환산 자본금 비율 = i(1+i)ⁿ/[(1+i)ⁿ-1]",
+    "Carnot":   "이론 열기관 효율 = (T_hot − T_cold) / T_hot. 열을 일로 바꾸는 한계",
+    "LCFS":     "Low Carbon Fuel Standard — 캘리포니아 운송연료 탄소집약도 인센티브",
+}
+
+
+def tip(term: str, label: str = None) -> str:
+    """HTML abbr 태그로 호버 툴팁 적용"""
+    desc = TOOLTIPS.get(term, "")
+    text = label or term
+    if desc:
+        return f"<abbr title=\"{desc}\" style=\"text-decoration: underline dotted; cursor: help;\">{text}</abbr>"
+    return text
+
+
+# ────────────── 프로젝트 시나리오 (CAPEX scope + multiplier) ──────────────
+# 출처: IEAGHG 2011/02, NETL QGESS Retrofit, Bui 2018, GCCSI 2023
+PROJECT_SCENARIOS = {
+    "retrofit_power": {
+        "label": "🔧 Retrofit 발전소 (default)",
+        "multiplier": 1.00,
+        "scope": "기존 발전소에 CCS 추가",
+        "examples": "Boundary Dam, Petra Nova, AEP Mountaineer",
+        "color": "#FFB74D",
+    },
+    "greenfield_power": {
+        "label": "🏭 Greenfield 발전소 (신규)",
+        "multiplier": 0.75,
+        "scope": "발전소 + CCS 동시 신축, 통합 설계 최적화",
+        "examples": "NETL B12B SC PC 신규, FutureGen-style",
+        "color": "#81C784",
+    },
+    "greenfield_industrial": {
+        "label": "🏗️ Greenfield 산업 (수소·LNG)",
+        "multiplier": 1.10,
+        "scope": "신규 산업시설 + CCS",
+        "examples": "Northern Lights, Blue H₂ 신축, Quest",
+        "color": "#4FC3F7",
+    },
+    "retrofit_industrial": {
+        "label": "🔩 Retrofit 산업 (시멘트·철강)",
+        "multiplier": 1.65,
+        "scope": "저농도/불순물 flue gas, 소규모 + 공정 통합 어려움",
+        "examples": "Norcem Brevik, POSCO 철강, 시멘트 retrofit",
+        "color": "#E57373",
+    },
+    "brownfield": {
+        "label": "🏘️ Brownfield (부지 재활용)",
+        "multiplier": 0.90,
+        "scope": "폐기 시설 부지 재활용 (기존 인프라 일부 활용)",
+        "examples": "폐탄광 EOR, 기존 산업단지 전환",
+        "color": "#BA68C8",
+    },
+}
+
+
 CARBON_MARKETS = {
     "K-ETS":      {"label": "🇰🇷 K-ETS (한국)",            "type": "credit",   "price_usd_t": 7.0,   "native": "10,000 KRW/t",        "region": "KR"},
     "EU-ETS":     {"label": "🇪🇺 EU ETS (유럽)",           "type": "credit",   "price_usd_t": 80.0,  "native": "€75/t",               "region": "EU"},
@@ -762,21 +1002,22 @@ CARBON_MARKETS = {
 }
 
 
-def stack_compat_icon(key_a: str, key_b: str) -> str:
-    """
-    두 인센티브 항목의 stack 호환성 이모지.
-      🟢 같은 지역 → stack 현실적으로 가능
-      🔴 지역 불일치 → 동일 시설 적용 어려움
-      ⚪ 한쪽이 None / Custom → 충돌 없음
-    """
-    if key_a in ("None", "Custom", "Custom_subsidy", None) or \
-       key_b in ("None", "Custom", "Custom_subsidy", None):
+# 지역별 정적 색상 그룹 (양 dropdown 동일 — 같은 색끼리만 stack 가능)
+REGION_COLORS = {
+    "US": "🟦",   # 미국
+    "EU": "🟨",   # 유럽 / NL
+    "UK": "🟪",   # 영국
+    "KR": "🟧",   # 한국
+    "ANY": "⚪",  # 없음 / Custom
+}
+
+
+def region_icon(key: str) -> str:
+    """LIT 키 → 지역 색깔 이모지 (정적, 다른 선택과 무관)"""
+    if key in ("None", "Custom", "Custom_subsidy", None):
         return "⚪"
-    region_a = CARBON_MARKETS.get(key_a, {}).get("region", "ANY")
-    region_b = CARBON_MARKETS.get(key_b, {}).get("region", "ANY")
-    if region_a == "ANY" or region_b == "ANY":
-        return "⚪"
-    return "🟢" if region_a == region_b else "🔴"
+    region = CARBON_MARKETS.get(key, {}).get("region", "ANY")
+    return REGION_COLORS.get(region, "⚪")
 
 def short_name(key_or_name: str) -> str:
     if key_or_name in SHORT_NAMES:
@@ -957,11 +1198,19 @@ def scale_we_comp(we_comp_ref: float, capture_t_yr: float,
 def calc_COCA(
     capex_per_t, opex_solvent, opex_other, we_elec, capture_t_yr,
     lifetime_yr=25, discount=0.08, elec_price_usd_mwh=USD_PER_MWH_GRID,
-    capex_mult=1.0, ccu_share=0.0,
+    capex_mult=1.0, ccu_share=0.0, project_multiplier=1.0,
 ) -> dict:
-    # 규모의 경제 적용 (NETL B12C 3.7 Mt/yr 대비 보정)
-    scaled_capex_per_t = scale_capex_per_t(capex_per_t, capture_t_yr)
-    # CCU 정제 등급 CAPEX adder 적용
+    """
+    CAPEX 적용 순서:
+      1) LIT base × project_multiplier (retrofit/greenfield 시나리오)
+      2) 규모의 경제 (Lang's n=0.65)
+      3) CCU 정제 등급 CAPEX adder
+    """
+    # 1) 프로젝트 시나리오 보정 (retrofit/greenfield/industrial)
+    project_capex_per_t = capex_per_t * project_multiplier
+    # 2) 규모의 경제 적용 (NETL B12C 3.7 Mt/yr 대비)
+    scaled_capex_per_t = scale_capex_per_t(project_capex_per_t, capture_t_yr)
+    # 3) CCU 정제 등급 CAPEX adder
     eff_capex_per_t = scaled_capex_per_t * (1 + ccu_share * (capex_mult - 1))
 
     crf = (discount * (1 + discount) ** lifetime_yr) / ((1 + discount) ** lifetime_yr - 1)
@@ -970,22 +1219,23 @@ def calc_COCA(
     opex_total = opex_solvent + opex_other + elec_cost
     coca = annual_capex_usd_per_t + opex_total
 
-    # 규모 보정 배율 (UI 표시용)
-    scale_factor = scaled_capex_per_t / capex_per_t if capex_per_t > 0 else 1.0
+    scale_factor = scaled_capex_per_t / project_capex_per_t if project_capex_per_t > 0 else 1.0
 
     return {
-        "base_capex_per_t":    capex_per_t,            # LIT 원본 (3.7 Mt 기준)
-        "scaled_capex_per_t":  scaled_capex_per_t,     # 규모 보정 후
-        "eff_capex_per_t":     eff_capex_per_t,        # +CCU adder 후
-        "scale_factor":        scale_factor,
-        "capex_adder":         eff_capex_per_t - scaled_capex_per_t,
-        "annual_capex":        annual_capex_usd_per_t,
-        "opex_solvent":        opex_solvent,
-        "opex_other":          opex_other,
-        "elec_cost":           elec_cost,
-        "opex_total":          opex_total,
-        "COCA":                coca,
-        "annual_total_usd":    coca * capture_t_yr,
+        "base_capex_per_t":     capex_per_t,            # LIT 원본
+        "project_capex_per_t":  project_capex_per_t,    # × project multiplier
+        "scaled_capex_per_t":   scaled_capex_per_t,     # × 규모 보정
+        "eff_capex_per_t":      eff_capex_per_t,        # + CCU adder
+        "project_multiplier":   project_multiplier,
+        "scale_factor":         scale_factor,
+        "capex_adder":          eff_capex_per_t - scaled_capex_per_t,
+        "annual_capex":         annual_capex_usd_per_t,
+        "opex_solvent":         opex_solvent,
+        "opex_other":           opex_other,
+        "elec_cost":            elec_cost,
+        "opex_total":           opex_total,
+        "COCA":                 coca,
+        "annual_total_usd":     coca * capture_t_yr,
     }
 
 
@@ -1039,6 +1289,38 @@ def calc_revenue(capture_t_yr, ccs_share, ccs_yield, ccu_share, ccu_yield,
 # 사이드바
 # ======================================================================
 with st.sidebar:
+    # ──────────────────────────────────────────────
+    # 🚀 시나리오 프리셋 (Quick Start)
+    # ──────────────────────────────────────────────
+    st.markdown("### 🚀 빠른 시작 — 시나리오 프리셋")
+    preset_options = ["custom"] + list(PRESETS.keys())
+    st.selectbox(
+        "프리셋 선택 (자동 설정)",
+        options=preset_options,
+        format_func=lambda k: ("✏️ Custom (직접 설정)" if k == "custom"
+                                else PRESETS[k]["label"]),
+        on_change=apply_preset,
+        key="preset_select",
+        help="대표 시나리오를 선택하면 모든 입력이 자동으로 채워집니다",
+    )
+    _selected_preset = st.session_state.get("preset_select", "custom")
+    if _selected_preset != "custom":
+        st.caption(f"📌 {PRESETS[_selected_preset]['description']}")
+
+    # ──────────────────────────────────────────────
+    # 💱 통화 표시 toggle (전역)
+    # ──────────────────────────────────────────────
+    st.markdown("### 💱 표시 통화")
+    display_currency = st.radio(
+        "통화 표시 방식",
+        options=["Both", "USD", "KRW"],
+        format_func=lambda x: {"Both": "USD + KRW", "USD": "USD만", "KRW": "KRW만"}[x],
+        horizontal=True,
+        index=0,
+        key="display_currency",
+    )
+
+    st.markdown("---")
     st.markdown("### ⚙️ 입력 파라미터")
 
     selected = st.multiselect(
@@ -1046,6 +1328,7 @@ with st.sidebar:
         options=TECH_KEYS,
         default=["MEA_baseline", "K2CO3_KIERSOL", "CAP_B12C", "Biphasic_DMX", "TSA_Solid", "CaL"],
         format_func=lambda k: LIT[k]["name"],
+        key="selected_techs",
     )
 
     st.caption("⌨️ 모든 입력은 직접 숫자 입력 가능 (미입력시 default 사용)")
@@ -1061,6 +1344,7 @@ with st.sidebar:
             "• SRD: ±10%/decade (IEAGHG 2013/04)\n"
             "• We_comp: ±6%/decade (NETL Rev4)"
         ),
+        key="capture_mt_yr",
     )
     capture_t_yr = capture_mt_yr * 1e6
 
@@ -1118,6 +1402,34 @@ with st.sidebar:
     st.caption(f"→ 추정 용도: **{_use_label}**")
 
     st.markdown("---")
+    st.markdown("### 🏗️ 프로젝트 시나리오")
+    st.caption("Retrofit/Greenfield/산업별 CAPEX 차이 반영 (IEAGHG 2011/02, NETL QGESS)")
+
+    project_scenario_key = st.selectbox(
+        "프로젝트 유형",
+        options=list(PROJECT_SCENARIOS.keys()),
+        format_func=lambda k: PROJECT_SCENARIOS[k]["label"],
+        index=0,  # retrofit_power default
+        help="LIT CAPEX는 발전소 retrofit 기준(1.0×). 다른 유형은 multiplier 적용.",
+        key="project_scenario",
+    )
+    project = PROJECT_SCENARIOS[project_scenario_key]
+    project_multiplier = project["multiplier"]
+
+    # 시나리오 카드 표시
+    st.markdown(
+        f"<div style='background:#1E2128; border-left:3px solid {project['color']}; "
+        f"padding:8px 10px; border-radius:4px; margin:4px 0;'>"
+        f"<b style='color:{project['color']};'>CAPEX 배수: ×{project['multiplier']:.2f}</b>"
+        f"<span style='color:#8b95a7; font-size:0.78rem;'> "
+        f"(예: MEA $950 × {project['multiplier']:.2f} = ${950*project['multiplier']:,.0f}/(t/yr))</span><br>"
+        f"<span style='font-size:0.75rem; color:#B0BEC5;'><b>적용 범위</b>: {project['scope']}</span><br>"
+        f"<span style='font-size:0.72rem; color:#8b95a7;'><b>실제 사례</b>: {project['examples']}</span>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
     st.markdown("### 💰 경제성 가정")
 
     lifetime = st.number_input("플랜트 수명 [년]", 10, 50, 25, 1, help="default: 25")
@@ -1142,6 +1454,7 @@ with st.sidebar:
         options=["CCS", "CCU"],
         format_func=lambda x: "🏔️ CCS — 지중저장" if x == "CCS" else "🥤 CCU — 액화탄산 출하",
         horizontal=True,
+        key="facility_mode",
     )
 
     if facility_mode == "CCS":
@@ -1169,6 +1482,7 @@ with st.sidebar:
             format_func=lambda k: CCU_GRADES[k]["label"],
             index=0,
             help="순도↑ → 수율↓ + 정제 CAPEX↑",
+            key="ccu_grade",
         )
         ccu = CCU_GRADES[ccu_grade_key]
         st.caption(
@@ -1181,6 +1495,7 @@ with st.sidebar:
             min_value=0, max_value=2_000_000, value=ccu["price_krw_t"], step=10_000,
             format="%d",
             help=f"default: {ccu['price_krw_t']:,}",
+            key="ccu_price_krw",
         )
         st.caption(f"→ 입력값: **{ccu_price_krw:,} KRW/t**")
 
@@ -1190,8 +1505,18 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 💚 인센티브 (다중 적용 — Stacking)")
     st.caption(
-        "🇺🇸 실제 미국 CCS는 **45Q + 주별 시장 + LCFS** 동시 적용 가능 (정책 도구 다름 — 중복지원 ✗). "
+        "🇺🇸 미국 CCS는 **45Q + 주별 시장 + LCFS** 동시 적용 (정책 도구 다름 — 중복지원 ✗). "
         "🇪🇺 EU는 SDE++ 단독, 🇰🇷 한국은 K-ETS + K-CCUS stack 가능."
+    )
+    # 지역 색상 범례 (정적)
+    st.markdown(
+        "<div style='font-size:0.78rem; padding:6px 10px; background:#1E2128; "
+        "border-radius:4px; margin:6px 0;'>"
+        "<b>📍 지역 색상</b> &nbsp;"
+        "🟦 미국 &nbsp; 🟨 유럽 &nbsp; 🟪 영국 &nbsp; 🟧 한국 &nbsp; ⚪ 없음/Custom<br>"
+        "<span style='color:#8b95a7;'>같은 색끼리 stack 가능 · 다른 색은 지역 불일치</span>"
+        "</div>",
+        unsafe_allow_html=True,
     )
 
     # 1️⃣ 배출권 시장 (compliance trading)
@@ -1203,39 +1528,42 @@ with st.sidebar:
 
     if facility_mode == "CCS":
         st.markdown("##### 1️⃣ 배출권 시장 (compliance)")
-        st.caption("CCS 격리량 기준 거래 가능 (CCU는 격리 안 됨). 🇰🇷/🇪🇺/🇺🇸 깃발로 지역 구분")
-        # 이전 선택 보조금과의 호환성 미리 보기 (session_state에서)
-        _prev_sub = st.session_state.get("sub_select", "45Q-CCS")
+        st.caption("CCS 격리량 기준 거래 (CCU는 격리 안 됨). 색깔로 지역 그룹 식별")
 
-        def _fmt_market(k):
+        def _fmt_market_static(k):
             if k == "None":
                 return "⚪ 없음"
             if k == "Custom":
                 return "⚪ ✏️ Custom 입력"
-            icon = stack_compat_icon(k, _prev_sub)
-            return f"{icon} {CARBON_MARKETS[k]['label']}"
+            return f"{region_icon(k)} {CARBON_MARKETS[k]['label']}"
 
         carbon_market_key = st.selectbox(
             "탄소시장 선택",
             options=credit_market_keys,
-            format_func=_fmt_market,
+            format_func=_fmt_market_static,
             index=0,
             key="cm_select",
         )
         if carbon_market_key == "None":
             carbon_market_usd = 0.0
         elif carbon_market_key == "Custom":
+            # 정적 label — 동적 값 변경 시에도 widget 재초기화 방지
             carbon_market_usd = st.number_input(
-                "Custom 시장가 [$/t]", 0.0, 500.0, 30.0, 1.0, format="%.1f",
+                "Custom 시장가 [USD/t]",
+                min_value=0.0, max_value=500.0, value=30.0, step=1.0, format="%.1f",
                 key="cm_custom",
             )
+            st.caption("→ 사용자 정의 단가")
         else:
             mkt = CARBON_MARKETS[carbon_market_key]
+            # 정적 label "탄소시장 단가 [USD/t]" 고정 — native 표시는 caption으로 분리
             carbon_market_usd = st.number_input(
-                f"단가 [$/t] ({mkt['native']})",
-                0.0, 500.0, float(mkt["price_usd_t"]), 1.0, format="%.1f",
-                key="cm_price",
+                "탄소시장 단가 [USD/t]",
+                min_value=0.0, max_value=500.0,
+                value=float(mkt["price_usd_t"]), step=1.0, format="%.1f",
+                key=f"cm_price_{carbon_market_key}",  # 시장별 별도 key → 충돌 방지
             )
+            st.caption(f"→ 표준값: {mkt['native']}")
     else:
         carbon_market_key = "None"
         carbon_market_usd = 0.0
@@ -1244,7 +1572,7 @@ with st.sidebar:
 
     # 2️⃣ 정부 보조금 (federal/state subsidy)
     st.markdown("##### 2️⃣ 정부 보조금 (federal/state)")
-    st.caption("🟢 = 1️⃣ 시장과 같은 지역 (stack 가능) · 🔴 = 지역 불일치 · ⚪ = 충돌 없음")
+    st.caption("위 1️⃣ 시장과 **같은 색** 보조금만 stack 현실적")
     subsidy_keys = (
         ["None"]
         + [k for k, v in CARBON_MARKETS.items() if v["type"] == "subsidy"]
@@ -1253,18 +1581,17 @@ with st.sidebar:
     default_sub_idx = (subsidy_keys.index("45Q-CCS") if facility_mode == "CCS"
                        else subsidy_keys.index("45Q-EOR"))
 
-    def _fmt_subsidy(k):
+    def _fmt_subsidy_static(k):
         if k == "None":
             return "⚪ 없음"
         if k == "Custom_subsidy":
             return "⚪ ✏️ Custom 입력"
-        icon = stack_compat_icon(carbon_market_key, k)
-        return f"{icon} {CARBON_MARKETS[k]['label']}"
+        return f"{region_icon(k)} {CARBON_MARKETS[k]['label']}"
 
     subsidy_key = st.selectbox(
         "보조금 제도",
         options=subsidy_keys,
-        format_func=_fmt_subsidy,
+        format_func=_fmt_subsidy_static,
         index=default_sub_idx,
         key="sub_select",
     )
@@ -1272,16 +1599,21 @@ with st.sidebar:
         subsidy_usd = 0.0
     elif subsidy_key == "Custom_subsidy":
         subsidy_usd = st.number_input(
-            "Custom 보조금 [$/t]", 0.0, 500.0, 50.0, 1.0, format="%.1f",
+            "Custom 보조금 [USD/t]",
+            min_value=0.0, max_value=500.0, value=50.0, step=1.0, format="%.1f",
             key="sub_custom",
         )
+        st.caption("→ 사용자 정의 단가")
     else:
         sub = CARBON_MARKETS[subsidy_key]
+        # 정적 label + 보조금별 별도 key → 보조금 변경 시에만 default값 적용, 같은 보조금 내 +/- 안전
         subsidy_usd = st.number_input(
-            f"단가 [$/t] ({sub['native']})",
-            0.0, 500.0, float(sub["price_usd_t"]), 1.0, format="%.1f",
-            key="sub_price",
+            "보조금 단가 [USD/t]",
+            min_value=0.0, max_value=500.0,
+            value=float(sub["price_usd_t"]), step=1.0, format="%.1f",
+            key=f"sub_price_{subsidy_key}",
         )
+        st.caption(f"→ 표준값: {sub['native']}")
 
     # 3️⃣ LCFS / 자발적 크레딧 / 기타
     st.markdown("##### 3️⃣ LCFS / 자발적 / 기타")
@@ -1373,6 +1705,7 @@ for k in selected:
         t["CAPEX_per_t"], t["OPEX_solvent"], t["OPEX_other"],
         we["We_elec"], capture_t_yr, lifetime, discount, elec_price,
         capex_mult=ccu["capex_mult"], ccu_share=ccu_share,
+        project_multiplier=project_multiplier,
     )
     rev = calc_revenue(
         capture_t_yr, ccs_share, ccs_yield,
@@ -1424,6 +1757,115 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
 
 # ---------- ① 종합 비교 ----------
 with tab1:
+    # ──────────────────────────────────────────────
+    # 🎯 자동 인사이트 박스 (메인 상단 - 사용자가 처음 보는 것)
+    # ──────────────────────────────────────────────
+    if results:
+        # 핵심 통계 계산
+        min_coca_r = min(results, key=lambda r: r['COCA'])
+        min_net_coca_r = min(results, key=lambda r: r['Net_COCA'])
+        max_profit_r = max(results, key=lambda r: r['annual_profit_usd'])
+        profit_count = sum(1 for r in results if r['annual_profit_usd'] > 0)
+        n = len(results)
+
+        # 흑자/적자 판정
+        if profit_count == n:
+            status_icon, status_text, status_color = "✅", f"전체 {n}/{n} 흑자", "#81C784"
+        elif profit_count == 0:
+            status_icon, status_text, status_color = "⚠️", f"전체 {n}/{n} 적자 — 인센티브 부족", "#E57373"
+        else:
+            status_icon, status_text, status_color = "⚖️", f"{profit_count}/{n} 흑자", "#FFB74D"
+
+        # 평균 + 최고 손익
+        avg_profit_usd = sum(r['annual_profit_usd'] for r in results) / n
+        best_profit_usd = max_profit_r['annual_profit_usd']
+
+        # 자동 인사이트 텍스트
+        recommendations = []
+        if facility_mode == "CCS" and profit_count == 0:
+            recommendations.append("💡 인센티브 stack 부족 — 45Q-CCS + 주별 시장 + LCFS 검토")
+        if facility_mode == "CCS" and capture_mt_yr < 5 and profit_count < n / 2:
+            recommendations.append("💡 소규모 CCS는 적자 valley — 10 Mt 이상 또는 CCU 전환 검토")
+        if facility_mode == "CCU" and ccu_grade_key == "food":
+            recommendations.append("💡 식품급 CCU는 안정 흑자 모델 — 규모 확장에 비례 수익 증가")
+        if not recommendations:
+            recommendations.append(f"💡 {min_coca_r['name']}이(가) 가장 효율적 (COCA ${min_coca_r['COCA']:.1f}/t)")
+
+        st.markdown(
+            f"""
+            <div style='background:linear-gradient(135deg, #1E2128 0%, #2A2F3A 100%);
+                        border-left: 4px solid {status_color};
+                        border-radius: 6px; padding: 12px 16px; margin-bottom: 12px;'>
+                <div style='font-size:0.85rem; color:#8b95a7; margin-bottom: 4px;'>
+                    🎯 시뮬레이션 결과 요약
+                    <span style='color:{status_color}; font-weight:600;'>
+                        · {status_icon} {status_text}
+                    </span>
+                </div>
+                <div style='display:flex; flex-wrap:wrap; gap:18px; margin-top:6px;'>
+                    <div>
+                        <span style='font-size:0.7rem; color:#8b95a7;'>최저 COCA</span><br>
+                        <b style='color:#4FC3F7; font-size:0.95rem;'>{min_coca_r['name']}</b>
+                        <span style='color:#E8EAED;'>${min_coca_r['COCA']:.1f}/t</span>
+                    </div>
+                    <div>
+                        <span style='font-size:0.7rem; color:#8b95a7;'>최고 흑자 기술</span><br>
+                        <b style='color:#81C784; font-size:0.95rem;'>{max_profit_r['name']}</b>
+                        <span style='color:#E8EAED;'>{fmt_money(best_profit_usd, fx_krw_per_usd, display_currency)}/yr</span>
+                    </div>
+                    <div>
+                        <span style='font-size:0.7rem; color:#8b95a7;'>평균 연 손익</span><br>
+                        <b style='color:{"#81C784" if avg_profit_usd > 0 else "#E57373"};
+                                  font-size:0.95rem;'>
+                            {fmt_money(avg_profit_usd, fx_krw_per_usd, display_currency)}/yr
+                        </b>
+                    </div>
+                </div>
+                <div style='margin-top:8px; font-size:0.78rem; color:#B0BEC5;'>
+                    {' · '.join(recommendations)}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # ──────────────────────────────────────────────
+    # 💰 연 손익 — 메인 KPI (4대 KPI보다 우선 표시)
+    # ──────────────────────────────────────────────
+    st.markdown(f"### 💰 {tip('Net COCA', '연 손익')} — 핵심 결과")
+    st.caption(
+        f"매출 − 비용 = 연 손익. 녹색 = 흑자 / 빨강 = 적자 · 환율 {fx_krw_per_usd:,.0f} KRW/USD",
+        unsafe_allow_html=True,
+    )
+    profit_cards = st.columns(min(len(results), 6))
+    sorted_profit = sorted(results, key=lambda r: -r['annual_profit_usd'])  # 흑자 순
+    for i, r in enumerate(sorted_profit[:6]):
+        with profit_cards[i]:
+            profit_usd = r['annual_profit_usd']
+            color = "#81C784" if profit_usd > 0 else "#E57373"
+            sign_icon = "🟢" if profit_usd > 0 else "🔴"
+            money_str = fmt_money(profit_usd, fx_krw_per_usd, display_currency)
+            st.markdown(
+                f"""
+                <div style='background:#1E2128; border-top:3px solid {color};
+                            border-radius:6px; padding:10px 12px; height:100px;'>
+                    <div style='font-size:0.7rem; color:#8b95a7;'>
+                        {sign_icon} {SHORT_NAMES.get(r['key'], r['name'])}
+                    </div>
+                    <div style='font-size:0.85rem; color:{color}; font-weight:700;
+                                margin-top:4px; line-height:1.3;'>
+                        {money_str}/yr
+                    </div>
+                    <div style='font-size:0.65rem; color:#8b95a7; margin-top:4px;'>
+                        Net COCA {r['Net_COCA']:+,.1f} $/t
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    st.markdown("---")
+
     with st.expander("📖 **KPI 지표 정의** — 클릭해서 펼치기/접기", expanded=False):
         def_cols = st.columns(4)
         definitions = [
@@ -1485,8 +1927,9 @@ with tab1:
             """, unsafe_allow_html=True)
 
     st.markdown("")
-    st.markdown("### 핵심 KPI 비교")
-    st.caption("4대 지표를 KPI별 순위 정렬 · 🟢 최고 · 🔴 최악 (모든 지표 낮을수록 우수)")
+    st.markdown(f"### 4대 기술 지표 비교 — {tip('SRD')} · {tip('We')} · {tip('SPECCA')} · {tip('COCA')}",
+                unsafe_allow_html=True)
+    st.caption("KPI별 순위 정렬 · 🟢 최고 · 🔴 최악 (모든 지표 낮을수록 우수) · 약어에 마우스 올리면 정의")
 
     kpi_specs = [
         ("SRD", "SRD", "GJ/tCO₂", "{:,.2f}"),
@@ -1633,13 +2076,15 @@ with tab3:
             textposition="outside",
         ))
         scale_pct_calc = ((REF_CAPTURE_MT_YR / capture_mt_yr) ** (1 - CAPEX_SCALE_EXPONENT) - 1) * 100
-        scale_label = (f"규모 보정 +{scale_pct_calc:.0f}%" if scale_pct_calc > 1
-                       else f"규모 보정 {scale_pct_calc:.0f}%" if scale_pct_calc < -1
-                       else "규모 보정 ≈ 0%")
+        scale_label = (f"규모 +{scale_pct_calc:.0f}%" if scale_pct_calc > 1
+                       else f"규모 {scale_pct_calc:.0f}%" if scale_pct_calc < -1
+                       else "규모 ≈ 0%")
+        proj_label = f"{project['label'].split(' ', 1)[1] if ' ' in project['label'] else project['label']} ×{project_multiplier:.2f}"
         f.update_layout(
             title=(f"연환산 CAPEX [USD/tCO₂] · 수명 {lifetime}년 · 할인율 {discount*100:.1f}%"
                    f"<br><span style='font-size:11px; color:#8b95a7;'>"
-                   f"포집 {capture_mt_yr:.1f} Mt/yr → {scale_label} (기준 {REF_CAPTURE_MT_YR} Mt)</span>"),
+                   f"포집 {capture_mt_yr:.1f} Mt/yr → {scale_label} · 시나리오: {proj_label}"
+                   f"</span>"),
             template="plotly_dark", height=420,
             xaxis_tickangle=0, margin=dict(l=10, r=10, t=70, b=80),
         )
