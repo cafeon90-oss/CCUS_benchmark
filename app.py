@@ -973,31 +973,37 @@ def calc_COCA(
 
 
 def calc_revenue(capture_t_yr, ccs_share, ccs_yield, ccu_share, ccu_yield,
-                 ccu_price_krw_t, market_price_usd_t, market_type, fx_krw_per_usd) -> dict:
+                 ccu_price_krw_t,
+                 carbon_market_usd_t,    # 배출권 시장 (compliance trading)
+                 subsidy_usd_t,          # 정부 보조금 (45Q, SDE++ 등)
+                 extra_revenue_usd_t,    # LCFS / voluntary / 기타
+                 fx_krw_per_usd) -> dict:
     """
-    매출/보조금 계산.
-      - stored_t  = 격리량 (CCS 모드) — 배출권 거래/45Q-CCS 보조금 대상
-      - sold_lco2_t = 출하량 (CCU 모드) — 액화탄산 매출 + 45Q-EOR 보조금 대상
-      - 보조금은 격리량 또는 활용량 양쪽에 적용 가능 (한쪽은 0)
+    매출 통합 계산 — 다중 인센티브 stacking 지원.
+
+    실제 글로벌 CCS 프로젝트는 다음 조합을 모두 받음 (중복지원 아님):
+      1) CCU 액화탄산 매출 (CCU 모드)
+      2) 배출권 시장 매출 (compliance trading: K-ETS, CA-CAT 등) — 격리량 기준
+      3) 정부 보조금 (45Q, SDE++ 등) — 격리량 또는 활용량
+      4) LCFS / voluntary 추가 매출 — 격리량 기준 (DAC 등)
     """
     stored_t = capture_t_yr * ccs_share * ccs_yield
     sold_lco2_t = capture_t_yr * ccu_share * ccu_yield
-    ccu_revenue_usd = sold_lco2_t * ccu_price_krw_t / fx_krw_per_usd
-
-    # 보조금 적용 대상 (CCS면 격리량, CCU면 활용량 — 한쪽은 0)
     qualifying_t = stored_t + sold_lco2_t
 
-    if market_type == "credit":
-        # 배출권 거래제: CCS 격리량만 (CCU는 격리 안되므로 거래 불가)
-        market_revenue_usd = stored_t * market_price_usd_t
-        subsidy_usd = 0.0
-    else:
-        # 정부 보조금: CCS 격리량 또는 CCU 활용량 양쪽 적용 가능
-        # (45Q-CCS는 stored, 45Q-EOR/CCU는 sold, NL SDE++는 stored 등)
-        market_revenue_usd = 0.0
-        subsidy_usd = qualifying_t * market_price_usd_t
+    # 1) CCU 액화탄산 매출
+    ccu_revenue_usd = sold_lco2_t * ccu_price_krw_t / fx_krw_per_usd
 
-    total_revenue_usd = ccu_revenue_usd + market_revenue_usd + subsidy_usd
+    # 2) 배출권 시장 (compliance) — 격리량만 (CCU는 격리 안됨)
+    market_revenue_usd = stored_t * carbon_market_usd_t
+
+    # 3) 정부 보조금 — 격리량 또는 활용량 양쪽 가능
+    subsidy_usd = qualifying_t * subsidy_usd_t
+
+    # 4) LCFS / 추가 매출 — 보통 격리량 (DAC) 또는 사용자 정의
+    extra_revenue_usd = stored_t * extra_revenue_usd_t
+
+    total_revenue_usd = ccu_revenue_usd + market_revenue_usd + subsidy_usd + extra_revenue_usd
     revenue_per_capture = total_revenue_usd / capture_t_yr if capture_t_yr > 0 else 0
     return {
         "stored_t":         stored_t,
@@ -1006,6 +1012,7 @@ def calc_revenue(capture_t_yr, ccs_share, ccs_yield, ccu_share, ccu_yield,
         "ccu_revenue":      ccu_revenue_usd,
         "market_revenue":   market_revenue_usd,
         "subsidy":          subsidy_usd,
+        "extra_revenue":    extra_revenue_usd,
         "total_revenue":    total_revenue_usd,
         "rev_per_capture":  revenue_per_capture,
     }
@@ -1125,6 +1132,7 @@ with st.sidebar:
     else:
         ccs_share, ccu_share = 0.0, 1.0
 
+    # CCS / CCU 모드별 입력 (격리수율, CCU 등급/판매가)
     if facility_mode == "CCS":
         ccs_yield_pct = st.number_input(
             "CCS 격리 수율 [%]",
@@ -1133,24 +1141,11 @@ with st.sidebar:
             help="포집→탈수→압축→수송→주입 누적. default: 92%",
         )
         ccs_yield = ccs_yield_pct / 100.0
-
         ccu_grade_key = "food"
         ccu = CCU_GRADES[ccu_grade_key]
         ccu_price_krw = 0
-
-        st.markdown("##### 💚 탄소시장 / CCUS 보조금")
-        market_options = list(CARBON_MARKETS.keys())
-        market_key = st.selectbox(
-            "시장/제도 선택",
-            options=market_options,
-            format_func=lambda k: CARBON_MARKETS[k]["label"],
-            index=market_options.index("45Q-CCS"),
-            help="default: US 45Q CCS ($85/t)",
-        )
-
     else:
         ccs_yield = 1.0
-
         ccu_grade_key = st.selectbox(
             "CCU 정제 등급",
             options=list(CCU_GRADES.keys()),
@@ -1164,7 +1159,6 @@ with st.sidebar:
             f"표준가 **{ccu['price_krw_t']:,} KRW/t** · "
             f"CAPEX ×**{ccu['capex_mult']:.2f}**"
         )
-
         ccu_price_krw = st.number_input(
             "액화탄산 판매가 [KRW/t]",
             min_value=0, max_value=2_000_000, value=ccu["price_krw_t"], step=10_000,
@@ -1173,46 +1167,136 @@ with st.sidebar:
         )
         st.caption(f"→ 입력값: **{ccu_price_krw:,} KRW/t**")
 
-        st.markdown("##### 💚 CCU 보조금 (선택)")
-        st.caption("CCU는 배출권 매출 없음. 일부 보조금만 가능.")
-        ccu_market_options = ["None", "45Q-EOR", "Custom"]
-        market_key = st.selectbox(
-            "보조금 제도",
-            options=ccu_market_options,
-            format_func=lambda k: ("없음" if k == "None" else CARBON_MARKETS[k]["label"]),
+    # ──────────────────────────────────────────────
+    # 다중 인센티브 stacking (옵션 B)
+    # ──────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("### 💚 인센티브 (다중 적용 — Stacking)")
+    st.caption(
+        "🇺🇸 실제 미국 CCS는 **45Q + 주별 시장 + LCFS** 동시 적용 가능 (정책 도구 다름 — 중복지원 ✗). "
+        "🇪🇺 EU는 SDE++ 단독, 🇰🇷 한국은 K-ETS + K-CCUS stack 가능."
+    )
+
+    # 1️⃣ 배출권 시장 (compliance trading)
+    credit_market_keys = (
+        ["None"]
+        + [k for k, v in CARBON_MARKETS.items() if v["type"] == "credit" and k != "Custom"]
+        + ["Custom"]
+    )
+
+    if facility_mode == "CCS":
+        st.markdown("##### 1️⃣ 배출권 시장 (compliance)")
+        st.caption("CCS 격리량 기준 거래 가능 (CCU는 격리 안 됨)")
+        carbon_market_key = st.selectbox(
+            "탄소시장 선택",
+            options=credit_market_keys,
+            format_func=lambda k: ("없음" if k == "None"
+                                   else "✏️ Custom 입력" if k == "Custom"
+                                   else CARBON_MARKETS[k]["label"]),
             index=0,
+            key="cm_select",
         )
-
-    if market_key == "None":
-        market_price_usd = 0.0
-        market_type = "credit"
-        market_label = "없음"
-    elif market_key == "Custom":
-        market_price_usd = st.number_input(
-            "Custom 단가 [USD/tCO₂]",
-            min_value=0.0, max_value=500.0, value=50.0, step=1.0,
-            format="%.1f",
-        )
-        market_type = st.radio("종류", ["credit", "subsidy"], horizontal=True,
-                                format_func=lambda x: "배출권 (매출)" if x=="credit" else "보조금")
-        market_label = "Custom"
+        if carbon_market_key == "None":
+            carbon_market_usd = 0.0
+        elif carbon_market_key == "Custom":
+            carbon_market_usd = st.number_input(
+                "Custom 시장가 [$/t]", 0.0, 500.0, 30.0, 1.0, format="%.1f",
+                key="cm_custom",
+            )
+        else:
+            mkt = CARBON_MARKETS[carbon_market_key]
+            carbon_market_usd = st.number_input(
+                f"단가 [$/t] ({mkt['native']})",
+                0.0, 500.0, float(mkt["price_usd_t"]), 1.0, format="%.1f",
+                key="cm_price",
+            )
     else:
-        market = CARBON_MARKETS[market_key]
-        market_price_usd = st.number_input(
-            f"단가 [USD/tCO₂]  ({market['native']})",
-            min_value=0.0, max_value=500.0, value=float(market["price_usd_t"]), step=1.0,
-            format="%.1f",
-            help=f"default: {market['price_usd_t']} USD/t",
-        )
-        market_type = market["type"]
-        market_label = market["label"]
+        carbon_market_key = "None"
+        carbon_market_usd = 0.0
+        st.markdown("##### 1️⃣ 배출권 시장")
+        st.caption("⚠️ CCU 모드 — 격리 안 되어 배출권 거래 불가 ($0/t)")
 
-    if market_price_usd > 0:
-        st.caption(
-            f"→ {('💰 배출권 매출' if market_type=='credit' else '🎁 정부 보조금')} · "
-            f"**${market_price_usd:.1f}/t** "
-            f"(≈ {market_price_usd*fx_krw_per_usd:,.0f} KRW/t)"
+    # 2️⃣ 정부 보조금 (federal/state subsidy)
+    st.markdown("##### 2️⃣ 정부 보조금 (federal/state)")
+    subsidy_keys = (
+        ["None"]
+        + [k for k, v in CARBON_MARKETS.items() if v["type"] == "subsidy"]
+        + ["Custom_subsidy"]
+    )
+    default_sub_idx = (subsidy_keys.index("45Q-CCS") if facility_mode == "CCS"
+                       else subsidy_keys.index("45Q-EOR"))
+    subsidy_key = st.selectbox(
+        "보조금 제도",
+        options=subsidy_keys,
+        format_func=lambda k: ("없음" if k == "None"
+                               else "✏️ Custom 입력" if k == "Custom_subsidy"
+                               else CARBON_MARKETS[k]["label"]),
+        index=default_sub_idx,
+        key="sub_select",
+    )
+    if subsidy_key == "None":
+        subsidy_usd = 0.0
+    elif subsidy_key == "Custom_subsidy":
+        subsidy_usd = st.number_input(
+            "Custom 보조금 [$/t]", 0.0, 500.0, 50.0, 1.0, format="%.1f",
+            key="sub_custom",
         )
+    else:
+        sub = CARBON_MARKETS[subsidy_key]
+        subsidy_usd = st.number_input(
+            f"단가 [$/t] ({sub['native']})",
+            0.0, 500.0, float(sub["price_usd_t"]), 1.0, format="%.1f",
+            key="sub_price",
+        )
+
+    # 3️⃣ LCFS / 자발적 크레딧 / 기타
+    st.markdown("##### 3️⃣ LCFS / 자발적 / 기타")
+    extra_revenue_usd = st.number_input(
+        "추가 매출 [$/t]",
+        0.0, 500.0, 0.0, 5.0, format="%.1f",
+        help=(
+            "California LCFS: ~$150/t (DAC pathway, biofuels)\n"
+            "Voluntary credits (Stripe/Frontier): $200~600/t (DAC, removal)\n"
+            "기타 직접 매출: 사용자 정의"
+        ),
+        key="extra_rev",
+    )
+
+    # 지역 호환성 경고
+    incompat = []
+    if carbon_market_key.startswith("K-") and subsidy_key.startswith("45Q"):
+        incompat.append("K-ETS(KR) + 45Q(US)")
+    if carbon_market_key == "EU-ETS" and subsidy_key.startswith("45Q"):
+        incompat.append("EU ETS + 45Q(US)")
+    if carbon_market_key in ("RGGI", "CA-CAT") and subsidy_key == "K-CCUS-est":
+        incompat.append("US 시장 + K-CCUS(KR)")
+    if carbon_market_key == "EU-ETS" and subsidy_key == "K-CCUS-est":
+        incompat.append("EU ETS + K-CCUS(KR)")
+    if incompat:
+        st.warning(f"⚠️ 지역 불일치 가능: {', '.join(incompat)} — 동일 시설에 적용 어려움")
+
+    # 합계 표시 카드
+    total_incentive_usd = carbon_market_usd + subsidy_usd + extra_revenue_usd
+    if total_incentive_usd > 0:
+        st.markdown(
+            f"<div style='background:#1E3A1E; border-left:3px solid #81C784; "
+            f"padding:8px 10px; border-radius:4px; margin-top:6px;'>"
+            f"<b style='color:#81C784;'>💰 총 인센티브 stack: "
+            f"${total_incentive_usd:.1f}/t</b><br>"
+            f"<span style='font-size:0.78rem; color:#B0BEC5;'>"
+            f"≈ {total_incentive_usd*fx_krw_per_usd:,.0f} KRW/t<br>"
+            f"시장 ${carbon_market_usd:.0f} + 보조금 ${subsidy_usd:.0f} + 추가 ${extra_revenue_usd:.0f}"
+            f"</span></div>",
+            unsafe_allow_html=True,
+        )
+
+    # 호환 변수 (기존 표시 코드용)
+    market_label = (
+        f"Stack (${total_incentive_usd:.0f}/t)" if total_incentive_usd > 0 else "없음"
+    )
+    market_price_usd = total_incentive_usd  # 표시용 합계
+    market_type = "stack"
+    market_key = subsidy_key if subsidy_usd > 0 else carbon_market_key
 
     st.markdown("---")
     st.caption(
@@ -1259,7 +1343,8 @@ for k in selected:
     rev = calc_revenue(
         capture_t_yr, ccs_share, ccs_yield,
         ccu_share, ccu["yield"], ccu_price_krw,
-        market_price_usd, market_type, fx_krw_per_usd,
+        carbon_market_usd, subsidy_usd, extra_revenue_usd,
+        fx_krw_per_usd,
     )
     net_coca = cost["COCA"] - rev["rev_per_capture"]
 
@@ -1582,13 +1667,15 @@ with tab3:
     if facility_mode == "CCS":
         st.caption(
             f"🏔️ **CCS 모드** · 격리수율 **{ccs_yield*100:.0f}%** · "
-            f"시장: **{market_label}** ${market_price_usd:.1f}/t · "
+            f"인센티브 stack: 시장 ${carbon_market_usd:.0f} + 보조금 ${subsidy_usd:.0f} "
+            f"+ 추가 ${extra_revenue_usd:.0f} = **${total_incentive_usd:.1f}/t** · "
             f"환율 **{fx_krw_per_usd:,.0f} KRW/USD**"
         )
     else:
         st.caption(
-            f"🥤 **CCU 모드** · {ccu['label']} · "
-            f"수율 **{ccu['yield']*100:.0f}%** · 판매가 **{ccu_price_krw:,} KRW/t** · "
+            f"🥤 **CCU 모드** · {ccu['label']} · 수율 **{ccu['yield']*100:.0f}%** · "
+            f"판매가 **{ccu_price_krw:,} KRW/t** + 보조금 ${subsidy_usd:.0f} "
+            f"+ 추가 ${extra_revenue_usd:.0f} · "
             f"CAPEX adder **+{(ccu['capex_mult']-1)*100:.0f}%** · "
             f"환율 **{fx_krw_per_usd:,.0f} KRW/USD**"
         )
@@ -1658,8 +1745,9 @@ with tab3:
             "포집량 [kt/yr]": f"{capture_t_yr/1000:,.1f}",
             "격리량 [kt/yr]": f"{r['stored_t']/1000:,.1f}" if facility_mode == "CCS" else "—",
             "출하량 [kt/yr]": f"{r['sold_lco2_t']/1000:,.1f}" if facility_mode == "CCU" else "—",
-            "배출권 매출 [M$/yr]": f"{r['market_revenue']/1e6:,.2f}",
+            "배출권 [M$/yr]": f"{r['market_revenue']/1e6:,.2f}",
             "보조금 [M$/yr]": f"{r['subsidy']/1e6:,.2f}",
+            "추가매출 [M$/yr]": f"{r.get('extra_revenue', 0)/1e6:,.2f}",
             "CCU 매출 [M$/yr]": f"{r['ccu_revenue']/1e6:,.2f}",
             "총 매출 [M$/yr]": f"{r['total_revenue']/1e6:,.2f}",
             "총 매출 (원)": fmt_krw_amt(r['total_revenue'] * fx_krw_per_usd),
