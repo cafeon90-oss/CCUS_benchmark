@@ -117,14 +117,25 @@ st.markdown(
         }
     }
 
-    /* 사이드바 multiselect 칩 — 긴 이름도 다 보이게 */
+    /* 사이드바 multiselect — 각 칩을 세로 1열로 강제 (풀네임 한 줄 표시) */
+    section[data-testid="stSidebar"] [data-baseweb="select"] > div:first-child {
+        flex-wrap: wrap !important;
+    }
     section[data-testid="stSidebar"] [data-baseweb="tag"] {
+        display: flex !important;
+        width: 100% !important;
         max-width: 100% !important;
+        margin: 3px 0 !important;
+        flex-basis: 100% !important;
+        flex-shrink: 0 !important;
+        flex-grow: 1 !important;
     }
     section[data-testid="stSidebar"] [data-baseweb="tag"] span {
         white-space: normal !important;
         overflow: visible !important;
         text-overflow: clip !important;
+        word-break: keep-all !important;
+        flex: 1 !important;
     }
 </style>
 """,
@@ -797,8 +808,7 @@ with st.sidebar:
         "비교할 기술 선택",
         options=TECH_KEYS,
         default=["MEA_baseline", "K2CO3_KIERSOL", "CAP_B12C", "Biphasic_DMX", "TSA_Solid", "CaL"],
-        format_func=lambda k: f"{SHORT_NAMES.get(k, k)} — {LIT[k]['category']}",
-        help="짧은 이름 — 분류. 풀네임은 데이터 테이블 참고.",
+        format_func=lambda k: LIT[k]["name"],
     )
 
     st.caption("⌨️ 모든 입력은 직접 숫자 입력 가능 (미입력시 default 사용)")
@@ -858,9 +868,10 @@ with st.sidebar:
     fx_krw_per_usd = st.number_input(
         "💱 환율 [KRW/USD]",
         min_value=800.0, max_value=2000.0, value=1400.0, step=10.0,
-        format="%,.0f",
+        format="%.0f",
         help="default: 1,400 (2026.4 기준)",
     )
+    st.caption(f"→ 현재 환율: **{fx_krw_per_usd:,.0f} KRW/USD**")
 
     st.markdown("---")
     st.markdown("### ♻️ CCUS 시설 모드")
@@ -921,9 +932,10 @@ with st.sidebar:
         ccu_price_krw = st.number_input(
             "액화탄산 판매가 [KRW/t]",
             min_value=0, max_value=2_000_000, value=ccu["price_krw_t"], step=10_000,
-            format="%,d",
+            format="%d",
             help=f"default: {ccu['price_krw_t']:,}",
         )
+        st.caption(f"→ 입력값: **{ccu_price_krw:,} KRW/t**")
 
         st.markdown("##### 💚 CCU 보조금 (선택)")
         st.caption("CCU는 배출권 매출 없음. 일부 보조금만 가능.")
@@ -1634,7 +1646,7 @@ with tab6:
             we_chill = st.number_input("We_chill [GJe/tCO₂]", 0.0, 0.5, 0.0, 0.01)
             we_aux = st.number_input("We_aux [GJe/tCO₂]", 0.0, 0.3, 0.05, 0.01)
         with c3:
-            capex = st.number_input("CAPEX [USD/(t/yr)]", 500, 3000, 1100, 50, format="%,d")
+            capex = st.number_input("CAPEX [USD/(t/yr)]", 500, 3000, 1100, 50, format="%d")
             opex_sol = st.number_input("OPEX 용매 [USD/tCO₂]", 0.0, 5.0, 1.5, 0.1)
             opex_oth = st.number_input("OPEX 기타 [USD/tCO₂]", 5.0, 25.0, 12.0, 0.5)
             loss = st.number_input("손실 [kg/tCO₂]", 0.0, 50.0, 1.0, 0.1)
