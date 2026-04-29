@@ -117,25 +117,29 @@ st.markdown(
         }
     }
 
-    /* 사이드바 multiselect — 각 칩을 세로 1열로 강제 (풀네임 한 줄 표시) */
-    section[data-testid="stSidebar"] [data-baseweb="select"] > div:first-child {
-        flex-wrap: wrap !important;
-    }
+    /* 사이드바 multiselect 칩 — 글자 잘림만 방지 (단순) */
     section[data-testid="stSidebar"] [data-baseweb="tag"] {
-        display: flex !important;
-        width: 100% !important;
         max-width: 100% !important;
-        margin: 3px 0 !important;
-        flex-basis: 100% !important;
-        flex-shrink: 0 !important;
-        flex-grow: 1 !important;
+        height: auto !important;
+        margin: 2px 2px !important;
     }
-    section[data-testid="stSidebar"] [data-baseweb="tag"] span {
+    section[data-testid="stSidebar"] [data-baseweb="tag"] > div {
         white-space: normal !important;
+        word-break: break-word !important;
         overflow: visible !important;
         text-overflow: clip !important;
-        word-break: keep-all !important;
-        flex: 1 !important;
+        line-height: 1.3 !important;
+    }
+
+    /* 데스크톱에서 사이드바 폭 확대 — 풀네임 한 줄에 들어가게 */
+    @media (min-width: 768px) {
+        section[data-testid="stSidebar"] {
+            min-width: 340px !important;
+            width: 340px !important;
+        }
+        section[data-testid="stSidebar"] > div {
+            min-width: 340px !important;
+        }
     }
 </style>
 """,
