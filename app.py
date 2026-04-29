@@ -749,17 +749,34 @@ CCU_GRADES = {
 }
 
 CARBON_MARKETS = {
-    "K-ETS":      {"label": "🇰🇷 K-ETS (한국)",            "type": "credit",   "price_usd_t": 7.0,   "native": "10,000 KRW/t"},
-    "EU-ETS":     {"label": "🇪🇺 EU ETS (유럽)",           "type": "credit",   "price_usd_t": 80.0,  "native": "€75/t"},
-    "RGGI":       {"label": "🇺🇸 RGGI (미 동부)",           "type": "credit",   "price_usd_t": 20.0,  "native": "$20/t"},
-    "CA-CAT":     {"label": "🇺🇸 CA Cap-Trade (캘리포니아)", "type": "credit",   "price_usd_t": 30.0,  "native": "$30/t"},
-    "45Q-CCS":    {"label": "🇺🇸 US 45Q — CCS 지중저장",    "type": "subsidy",  "price_usd_t": 85.0,  "native": "$85/t (12yr)"},
-    "45Q-EOR":    {"label": "🇺🇸 US 45Q — CCU/EOR",        "type": "subsidy",  "price_usd_t": 60.0,  "native": "$60/t (12yr)"},
-    "NL-SDE":     {"label": "🇳🇱 NL SDE++ (네덜란드)",      "type": "subsidy",  "price_usd_t": 120.0, "native": "€110/t"},
-    "UK-CfD":     {"label": "🇬🇧 UK CCUS CfD",              "type": "subsidy",  "price_usd_t": 180.0, "native": "£150/t"},
-    "K-CCUS-est": {"label": "🇰🇷 Korea CCUS Act (추정)",   "type": "subsidy",  "price_usd_t": 21.0,  "native": "30,000 KRW/t (placeholder)"},
-    "Custom":     {"label": "✏️  Custom 입력",               "type": "credit",   "price_usd_t": 0.0,   "native": "—"},
+    "K-ETS":      {"label": "🇰🇷 K-ETS (한국)",            "type": "credit",   "price_usd_t": 7.0,   "native": "10,000 KRW/t",        "region": "KR"},
+    "EU-ETS":     {"label": "🇪🇺 EU ETS (유럽)",           "type": "credit",   "price_usd_t": 80.0,  "native": "€75/t",               "region": "EU"},
+    "RGGI":       {"label": "🇺🇸 RGGI (미 동부)",           "type": "credit",   "price_usd_t": 20.0,  "native": "$20/t",               "region": "US"},
+    "CA-CAT":     {"label": "🇺🇸 CA Cap-Trade (캘리포니아)", "type": "credit",   "price_usd_t": 30.0,  "native": "$30/t",               "region": "US"},
+    "45Q-CCS":    {"label": "🇺🇸 US 45Q — CCS 지중저장",    "type": "subsidy",  "price_usd_t": 85.0,  "native": "$85/t (12yr)",        "region": "US"},
+    "45Q-EOR":    {"label": "🇺🇸 US 45Q — CCU/EOR",        "type": "subsidy",  "price_usd_t": 60.0,  "native": "$60/t (12yr)",        "region": "US"},
+    "NL-SDE":     {"label": "🇳🇱 NL SDE++ (네덜란드)",      "type": "subsidy",  "price_usd_t": 120.0, "native": "€110/t",              "region": "EU"},
+    "UK-CfD":     {"label": "🇬🇧 UK CCUS CfD",              "type": "subsidy",  "price_usd_t": 180.0, "native": "£150/t",              "region": "UK"},
+    "K-CCUS-est": {"label": "🇰🇷 Korea CCUS Act (추정)",   "type": "subsidy",  "price_usd_t": 21.0,  "native": "30,000 KRW/t (placeholder)", "region": "KR"},
+    "Custom":     {"label": "✏️ Custom 입력",                "type": "credit",   "price_usd_t": 0.0,   "native": "—",                   "region": "ANY"},
 }
+
+
+def stack_compat_icon(key_a: str, key_b: str) -> str:
+    """
+    두 인센티브 항목의 stack 호환성 이모지.
+      🟢 같은 지역 → stack 현실적으로 가능
+      🔴 지역 불일치 → 동일 시설 적용 어려움
+      ⚪ 한쪽이 None / Custom → 충돌 없음
+    """
+    if key_a in ("None", "Custom", "Custom_subsidy", None) or \
+       key_b in ("None", "Custom", "Custom_subsidy", None):
+        return "⚪"
+    region_a = CARBON_MARKETS.get(key_a, {}).get("region", "ANY")
+    region_b = CARBON_MARKETS.get(key_b, {}).get("region", "ANY")
+    if region_a == "ANY" or region_b == "ANY":
+        return "⚪"
+    return "🟢" if region_a == region_b else "🔴"
 
 def short_name(key_or_name: str) -> str:
     if key_or_name in SHORT_NAMES:
@@ -1186,13 +1203,22 @@ with st.sidebar:
 
     if facility_mode == "CCS":
         st.markdown("##### 1️⃣ 배출권 시장 (compliance)")
-        st.caption("CCS 격리량 기준 거래 가능 (CCU는 격리 안 됨)")
+        st.caption("CCS 격리량 기준 거래 가능 (CCU는 격리 안 됨). 🇰🇷/🇪🇺/🇺🇸 깃발로 지역 구분")
+        # 이전 선택 보조금과의 호환성 미리 보기 (session_state에서)
+        _prev_sub = st.session_state.get("sub_select", "45Q-CCS")
+
+        def _fmt_market(k):
+            if k == "None":
+                return "⚪ 없음"
+            if k == "Custom":
+                return "⚪ ✏️ Custom 입력"
+            icon = stack_compat_icon(k, _prev_sub)
+            return f"{icon} {CARBON_MARKETS[k]['label']}"
+
         carbon_market_key = st.selectbox(
             "탄소시장 선택",
             options=credit_market_keys,
-            format_func=lambda k: ("없음" if k == "None"
-                                   else "✏️ Custom 입력" if k == "Custom"
-                                   else CARBON_MARKETS[k]["label"]),
+            format_func=_fmt_market,
             index=0,
             key="cm_select",
         )
@@ -1218,6 +1244,7 @@ with st.sidebar:
 
     # 2️⃣ 정부 보조금 (federal/state subsidy)
     st.markdown("##### 2️⃣ 정부 보조금 (federal/state)")
+    st.caption("🟢 = 1️⃣ 시장과 같은 지역 (stack 가능) · 🔴 = 지역 불일치 · ⚪ = 충돌 없음")
     subsidy_keys = (
         ["None"]
         + [k for k, v in CARBON_MARKETS.items() if v["type"] == "subsidy"]
@@ -1225,12 +1252,19 @@ with st.sidebar:
     )
     default_sub_idx = (subsidy_keys.index("45Q-CCS") if facility_mode == "CCS"
                        else subsidy_keys.index("45Q-EOR"))
+
+    def _fmt_subsidy(k):
+        if k == "None":
+            return "⚪ 없음"
+        if k == "Custom_subsidy":
+            return "⚪ ✏️ Custom 입력"
+        icon = stack_compat_icon(carbon_market_key, k)
+        return f"{icon} {CARBON_MARKETS[k]['label']}"
+
     subsidy_key = st.selectbox(
         "보조금 제도",
         options=subsidy_keys,
-        format_func=lambda k: ("없음" if k == "None"
-                               else "✏️ Custom 입력" if k == "Custom_subsidy"
-                               else CARBON_MARKETS[k]["label"]),
+        format_func=_fmt_subsidy,
         index=default_sub_idx,
         key="sub_select",
     )
