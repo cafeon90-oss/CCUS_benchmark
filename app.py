@@ -1832,7 +1832,11 @@ with tab1:
     # ──────────────────────────────────────────────
     # 💰 연 손익 — 메인 KPI (4대 KPI보다 우선 표시)
     # ──────────────────────────────────────────────
-    st.markdown(f"### 💰 {tip('Net COCA', '연 손익')} — 핵심 결과")
+    st.markdown(
+        f"<h3 style='margin-top:0; margin-bottom:6px;'>"
+        f"💰 {tip('Net COCA', '연 손익')} — 핵심 결과</h3>",
+        unsafe_allow_html=True,
+    )
     st.caption(
         f"매출 − 비용 = 연 손익. 녹색 = 흑자 / 빨강 = 적자 · 환율 {fx_krw_per_usd:,.0f} KRW/USD",
         unsafe_allow_html=True,
@@ -1927,8 +1931,11 @@ with tab1:
             """, unsafe_allow_html=True)
 
     st.markdown("")
-    st.markdown(f"### 4대 기술 지표 비교 — {tip('SRD')} · {tip('We')} · {tip('SPECCA')} · {tip('COCA')}",
-                unsafe_allow_html=True)
+    st.markdown(
+        f"<h3 style='margin-top:8px;'>4대 기술 지표 비교 — "
+        f"{tip('SRD')} · {tip('We')} · {tip('SPECCA')} · {tip('COCA')}</h3>",
+        unsafe_allow_html=True,
+    )
     st.caption("KPI별 순위 정렬 · 🟢 최고 · 🔴 최악 (모든 지표 낮을수록 우수) · 약어에 마우스 올리면 정의")
 
     kpi_specs = [
