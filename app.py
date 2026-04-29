@@ -1513,7 +1513,7 @@ with tab3:
             text=[f"{r['annual_capex']:,.1f}" for r in results],
             textposition="outside",
         ))
-        scale_pct_calc = ((REF_CAPTURE_MT_YR / capture_mt_yr) ** (1 - SCALE_EXPONENT) - 1) * 100
+        scale_pct_calc = ((REF_CAPTURE_MT_YR / capture_mt_yr) ** (1 - CAPEX_SCALE_EXPONENT) - 1) * 100
         scale_label = (f"규모 보정 +{scale_pct_calc:.0f}%" if scale_pct_calc > 1
                        else f"규모 보정 {scale_pct_calc:.0f}%" if scale_pct_calc < -1
                        else "규모 보정 ≈ 0%")
@@ -1908,8 +1908,9 @@ with tab6:
             "OPEX_other": opex_oth, "loss_kg_per_tCO2": loss,
             "loss_mech": "사용자 정의", "is_pilot": True,
         }
-        we = calc_We(custom, T_cool_C, p_final_bar)
-        specca = calc_SPECCA(srd, we["We_elec"], capture_eff)
+        we = calc_We(custom, T_cool_C, p_final_bar, capture_t_yr=capture_t_yr)
+        # 규모 보정된 SRD 사용 (다른 기술과 동일한 방식)
+        specca = calc_SPECCA(we["SRD_scaled"], we["We_elec"], capture_eff)
         cost = calc_COCA(capex, opex_sol, opex_oth, we["We_elec"],
                          capture_t_yr, lifetime, discount, elec_price)
 
