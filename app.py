@@ -337,9 +337,9 @@ LIT = {
         "notes": "Norcem Brevik (시멘트, 0.4 Mt/yr, 2024 가동), Twence WtE. 유럽 대표 상용 솔벤트.",
     },
     "K2CO3_KIERSOL": {
-        "name": "K₂CO₃ / KIERSOL †",
+        "name": "KIERSOL (KIER 한국) †",
         "category": "Hot Carbonate",
-        "source": "KIER KIERSOL 파일럿 (Korea)",
+        "source": "KIER KIERSOL 파일럿 (Korea Institute of Energy Research)",
         "status": "pilot",
         "SRD": 2.95,
         "T_regen": 105,
@@ -355,7 +355,9 @@ LIT = {
         "loss_kg_per_tCO2": 0.5,
         "loss_mech": "촉진제 열화·미량 분해",
         "is_pilot": True,
-        "notes": "KIER KIERSOL 파일럿. K₂CO₃ + 활성화제. SRD 이론 유리, 반응 느려 L/G 大.",
+        "notes": "한국에너지기술연구원(KIER) 자체 개발 솔벤트. "
+                 "K₂CO₃ 25-30 wt% + 활성화제 (Piperazine 계열 amine). "
+                 "0.5 MWe 파일럿 실증. 70°C warm absorber로 reaction kinetics 보완.",
     },
     "CAP_B12C": {
         "name": "Chilled Ammonia (CAP)",
@@ -1045,7 +1047,7 @@ SHORT_NAMES = {
     "MHI_KS21":       "KS-21",
     "Cansolv_DC103":  "DC-103",
     "Aker_S26":       "Aker S26",
-    "K2CO3_KIERSOL":  "K₂CO₃†",
+    "K2CO3_KIERSOL":  "KIERSOL†",
     "CAP_B12C":       "CAP",
     "Biphasic_DMX":   "DMX†",
     "TSA_Solid":      "TSA",
@@ -1057,7 +1059,7 @@ MATERIALS = {
     "MHI_KS21":       "Hindered amine 혼합물 (KS-21™, MHI 2세대)",
     "Cansolv_DC103":  "2세대 amine 혼합물 (Shell Cansolv proprietary)",
     "Aker_S26":       "Aker S26 솔벤트 (proprietary blend)",
-    "K2CO3_KIERSOL":  "K₂CO₃ + 활성화제 (Piperazine 등) 수용액",
+    "K2CO3_KIERSOL":  "KIERSOL™ — K₂CO₃ 25~30wt% + Piperazine 계열 활성화제",
     "CAP_B12C":       "NH₃ 28 wt% 수용액 (0~10 °C 냉각)",
     "Biphasic_DMX":   "3차 아민 혼합액 (DMX™, 상분리형)",
     "TSA_Solid":      "고체 흡착제 (아민 함침/제올라이트/MOF)",
@@ -2193,7 +2195,8 @@ with st.sidebar:
 # ======================================================================
 st.title("🌫️ CO₂ 포집·CCUS 기술·경제성 벤치마크")
 st.caption(
-    "Advanced Amine (KS-21·DC-103·Aker S26) + 비아민계 (K₂CO₃·CAP·DMX·TSA·CaL) 통합 비교 · "
+    "Advanced Amine (KS-21·DC-103·Aker S26) + 🇰🇷 **KIERSOL (KIER)** + "
+    "비아민계 (CAP·DMX·TSA·CaL) 통합 비교 · "
     "NETL 2022 / IEAGHG / IRS 45Q / KIER 기반"
 )
 
@@ -3866,8 +3869,9 @@ st.markdown(
             🌫️ CO₂ 포집·CCUS 기술·경제성 벤치마크 v1.3
         </div>
         <div style='font-size:0.78rem; color:#8b95a7; margin-bottom:14px;'>
-            Advanced Amine (KS-21 · DC-103 · Aker S26) + 비아민계 (K₂CO₃ · CAP · DMX · TSA · CaL)
-            · 9종 통합 비교 · LCA/Net CO₂ (CRCF·ICVCM) · 71개 출처 audit trail
+            Advanced Amine (KS-21 · DC-103 · Aker S26) + 🇰🇷 KIERSOL (KIER) +
+            비아민계 (CAP · DMX · TSA · CaL) · 9종 통합 비교 ·
+            LCA/Net CO₂ (CRCF·ICVCM) · 71개 출처 audit trail
         </div>
         <div style='font-size:0.85rem; color:#B0BEC5; margin-bottom:4px;'>
             👤 Built by
