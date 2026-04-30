@@ -181,6 +181,14 @@ SRD_CLIP = (0.85, 1.20)          # 범위 제한
 WE_COMP_SCALE_PER_DECADE = 0.06  # ±6% per decade
 WE_COMP_CLIP = (0.85, 1.20)
 
+# Capture rate effect (IEAGHG 2019, NETL "Beyond 90% capture")
+# 포집율이 100%에 접근할수록 lean loading의 평형 한계로 SRD/CAPEX 비선형 증가
+# Reference: 90% capture (NETL baseline)
+REF_CAPTURE_EFF = 0.90
+SRD_VS_CAPTURE_COEF = 0.18    # ±18% per decade of (1-η) → 99%에서 약 +18%
+CAPEX_VS_CAPTURE_COEF = 0.10  # ±10% per decade — column size 증가
+CAPTURE_FACTOR_CLIP = (0.85, 1.35)
+
 # ======================================================================
 # 기술 라이브러리 (LIT) — NETL Rev4a / IEAGHG / DOE / KIER 기반
 # ======================================================================
@@ -833,6 +841,14 @@ REFS = {
         "url": "https://akercarboncapture.com/",
         "used_for": "Aker S26 SRD 2.8, 시멘트·WtE retrofit 데이터",
     },
+    "IEAGHG_2019_99pct": {
+        "cat": "report",
+        "cite": "IEAGHG (2019). Towards Zero Emissions CCS in Power Plants Using Higher "
+                "Capture Rates. Report 2019/02. 90% → 99% 포집율 SRD +15~20%, "
+                "CAPEX +8~12% (column size, lean loading 평형 한계).",
+        "url": "https://ieaghg.org/publications/technical-reports",
+        "used_for": "포집율 효과 — SRD ±18%/decade, CAPEX ±10%/decade",
+    },
 }
 
 
@@ -878,6 +894,8 @@ FORMULA_REFS = {
     "Greenfield 산업 multiplier 1.10× (blue H₂, LNG)":                                   ["Northern_Lights_2024", "CMU_CAEM_Retrofit"],
     "Retrofit 산업 multiplier 1.65× (시멘트·철강)":                                       ["IEAGHG_2013_Cement", "Norcem_Brevik_2024", "POSCO_Steel_CCS"],
     "Brownfield multiplier 0.90× (부지 재활용)":                                          ["NETL_QGESS_Retrofit"],
+    "포집율 효과: SRD ±18%/decade (90% 기준, 99% → +18%)":                                 ["IEAGHG_2019_99pct"],
+    "포집율 효과: CAPEX ±10%/decade (column 크기, lean loading 한계)":                      ["IEAGHG_2019_99pct", "NETL_2022_Baseline"],
 }
 
 SHORT_NAMES = {
@@ -1021,16 +1039,65 @@ def fmt_money(usd_amount, fx, mode="Both", per_t=False):
     return f"{usd_str} ({krw_str})"
 
 
-# ────────────── 호버 툴팁용 정의 ──────────────
+# ────────────── 호버 툴팁용 정의 (계산식·출처 포함) ──────────────
 TOOLTIPS = {
-    "SRD":      "Specific Reboiler Duty — 흡수제 재생에 필요한 단위 CO₂당 열량 [GJ/tCO₂]",
-    "We":       "Equivalent Work — 전력등가 일 [GJe/tCO₂]. 열+전기 통합 페널티 척도",
-    "SPECCA":   "Specific Primary Energy Consumption for CO₂ Avoided [MJ/tCO₂]",
-    "COCA":     "Cost Of CO₂ Captured — 단위 CO₂당 종합 비용 [USD/tCO₂]",
-    "Net COCA": "Net COCA = COCA − 매출/보조금 (음수 = 흑자, 양수 = 적자)",
-    "CRF":      "Capital Recovery Factor — 연환산 자본금 비율 = i(1+i)ⁿ/[(1+i)ⁿ-1]",
-    "Carnot":   "이론 열기관 효율 = (T_hot − T_cold) / T_hot. 열을 일로 바꾸는 한계",
-    "LCFS":     "Low Carbon Fuel Standard — 캘리포니아 운송연료 탄소집약도 인센티브",
+    "SRD": (
+        "Specific Reboiler Duty — 흡수제 재생탑 reboiler 열부하 [GJ/tCO₂]\n"
+        "■ 계산: LIT base × 규모 보정(±10%/decade) × 포집율 효과\n"
+        "■ 규모: 큰 플랜트일수록 +SRD (실운영 비효율, 열통합 한계)\n"
+        "■ 포집율: 90%→99% 시 +18% (평형 한계)\n"
+        "■ 출처: NETL Rev4a/2022 B12B, IEAGHG 2013/04 (Solvent R&D), IEAGHG 2019"
+    ),
+    "We": (
+        "Equivalent Work — 전력등가 일 [GJe/tCO₂]\n"
+        "■ 계산: We_thermal(Carnot) + 펌프 + CO₂ 압축 + 냉동기(CAP) + 보조\n"
+        "■ We_thermal = SRD × Carnot η × 0.55 (second-law factor)\n"
+        "■ Carnot η = (T_regen − T_cool) / T_regen (절대온도 K)\n"
+        "■ 압축: log(p_final/p_regen) × We_comp_LIT (5단 + intercool)\n"
+        "■ CAP 냉동기: Q_chill / COP_eff (역카르노 × 0.55)\n"
+        "■ 출처: Bejan 2016, Kotas 1985, ASHRAE, NETL Aspen"
+    ),
+    "SPECCA": (
+        "Specific Primary Energy Consumption for CO₂ Avoided [MJ/tCO₂]\n"
+        "■ 계산: (SRD × 500 + We_elec × 2,500) / capture_rate\n"
+        "■ 가중치 500/2500: 1차 에너지(steam/elec) 환산\n"
+        "■ 포집율로 정규화 (다른 포집율 기술 간 비교)\n"
+        "■ 출처: Manzolini et al. 2015 변형식"
+    ),
+    "COCA": (
+        "Cost Of CO₂ Captured — 단위 CO₂당 종합 비용 [USD/tCO₂]\n"
+        "■ 계산: 연환산 CAPEX + OPEX(용매 + 기타 + 전력)\n"
+        "■ CAPEX 적용: LIT × project type × 포집율 × 규모(0.65) × CCU adder\n"
+        "■ 연환산 CAPEX = CAPEX × CRF\n"
+        "■ CRF = i(1+i)ⁿ/[(1+i)ⁿ-1], default 8%/25년 = 0.0937\n"
+        "■ 출처: NETL QGESS 2019, IEAGHG 2007, Peters & Timmerhaus"
+    ),
+    "Net COCA": (
+        "Net COCA = COCA − 매출/보조금 [USD/tCO₂]\n"
+        "■ 음수 = 흑자, 양수 = 적자\n"
+        "■ 매출 = 배출권 + 정부보조금 + LCFS + CCU 매출(액화탄산)\n"
+        "■ 격리량 기준 (CCS) 또는 출하량 기준 (CCU) 적용\n"
+        "■ 다중 인센티브 stacking 가능 (45Q + 주별 시장 + LCFS)"
+    ),
+    "CRF": (
+        "Capital Recovery Factor — 연환산 자본금 비율\n"
+        "■ CRF = i(1+i)ⁿ / [(1+i)ⁿ - 1]\n"
+        "■ default i=8%, n=25년 → CRF = 0.0937\n"
+        "■ 출처: NETL QGESS Cost Methodology"
+    ),
+    "Carnot": (
+        "이론 열기관 효율 = (T_hot − T_cold) / T_hot (절대온도 K)\n"
+        "■ 열을 일로 바꾸는 thermodynamic 한계\n"
+        "■ 실효 효율 = Carnot η × 0.55 (second-law factor)\n"
+        "■ 출처: Bejan 2016, Kotas 1985"
+    ),
+    "LCFS": (
+        "Low Carbon Fuel Standard\n"
+        "■ 캘리포니아 운송연료 탄소집약도 인센티브\n"
+        "■ DAC pathway: ~$150/tCO₂\n"
+        "■ Voluntary credits (Stripe/Frontier): $200~600/tCO₂\n"
+        "■ 출처: California ARB LCFS Program"
+    ),
 }
 
 
@@ -1188,15 +1255,19 @@ def chiller_We(Q_chill_GJ: float, T_abs_C: float, T_amb_C: float) -> float:
 
 
 def calc_We(tech: dict, T_cool_C: float, p_final_bar: float,
-            capture_t_yr: float = REF_CAPTURE_MT_YR * 1e6) -> dict:
+            capture_t_yr: float = REF_CAPTURE_MT_YR * 1e6,
+            capture_eff: float = REF_CAPTURE_EFF) -> dict:
     """
-    규모 보정 적용:
-      SRD     → IEAGHG 2013/04 (큰 플랜트 → +SRD)
-      We_comp → NETL Rev4 / IEAGHG 2014 (큰 플랜트 → -We_comp)
+    보정 적용:
+      SRD     → 규모 (IEAGHG 2013/04) + 포집율 (IEAGHG 2019)
+      We_comp → 규모 (NETL Rev4 / IEAGHG 2014)
     """
     # 1) 규모 효과 적용 (SRD, We_comp)
     srd_scaled = scale_srd(tech["SRD"], capture_t_yr)
     we_comp_scaled = scale_we_comp(tech["We_comp"], capture_t_yr)
+    # 2) 포집율 효과 적용 (SRD에만 — 99% 접근 시 비선형 ↑)
+    srd_capture_factor = capture_rate_factor(capture_eff, SRD_VS_CAPTURE_COEF)
+    srd_scaled = srd_scaled * srd_capture_factor
 
     # 2) 열의 전기등가
     eta_c = carnot_efficiency(tech["T_regen"], T_cool_C) * ETA_CARNOT_FRAC
@@ -1225,6 +1296,8 @@ def calc_We(tech: dict, T_cool_C: float, p_final_bar: float,
         "SRD_scaled": srd_scaled,
         "SRD_base": tech["SRD"],
         "srd_scale_pct": (srd_scaled / tech["SRD"] - 1) * 100,
+        "srd_capture_factor": srd_capture_factor,
+        "srd_capture_pct": (srd_capture_factor - 1) * 100,
         "We_comp_scale_pct": (we_comp_scaled / tech["We_comp"] - 1) * 100 if tech["We_comp"] > 0 else 0,
         "We_thermal_eq": We_thermal_eq,
         "We_pump": we_pump,
@@ -1291,22 +1364,45 @@ def scale_we_comp(we_comp_ref: float, capture_t_yr: float,
     return we_comp_ref * factor
 
 
+def capture_rate_factor(capture_eff: float, coef: float) -> float:
+    """
+    포집율(capture rate) 효과 (IEAGHG 2019, NETL "Beyond 90% capture").
+      factor = 1 + coef × log10((1-0.9) / (1-η))
+      90% capture → 1.0 (baseline)
+      99% capture → 1 + coef × 1.0 (큰 폭 증가)
+      70% capture → 1 + coef × log10(0.1/0.3) ≈ 1 - 0.48×coef
+    포집율 → 100% 접근 시 평형 driving force 감소로 SRD·CAPEX ↑
+    """
+    if capture_eff <= 0 or capture_eff >= 1:
+        return 1.0
+    if abs(capture_eff - REF_CAPTURE_EFF) < 1e-6:
+        return 1.0
+    log_ratio = np.log10((1 - REF_CAPTURE_EFF) / (1 - capture_eff))
+    factor = 1 + coef * log_ratio
+    return max(CAPTURE_FACTOR_CLIP[0], min(factor, CAPTURE_FACTOR_CLIP[1]))
+
+
 def calc_COCA(
     capex_per_t, opex_solvent, opex_other, we_elec, capture_t_yr,
     lifetime_yr=25, discount=0.08, elec_price_usd_mwh=USD_PER_MWH_GRID,
     capex_mult=1.0, ccu_share=0.0, project_multiplier=1.0,
+    capture_eff=REF_CAPTURE_EFF,
 ) -> dict:
     """
     CAPEX 적용 순서:
       1) LIT base × project_multiplier (retrofit/greenfield 시나리오)
-      2) 규모의 경제 (Lang's n=0.65)
-      3) CCU 정제 등급 CAPEX adder
+      2) × 포집율 효과 (90% 기준, 99% → +10%, 70% → -5%)
+      3) 규모의 경제 (Lang's n=0.65)
+      4) CCU 정제 등급 CAPEX adder
     """
     # 1) 프로젝트 시나리오 보정 (retrofit/greenfield/industrial)
     project_capex_per_t = capex_per_t * project_multiplier
-    # 2) 규모의 경제 적용 (NETL B12C 3.7 Mt/yr 대비)
+    # 2) 포집율 효과 — 90% baseline, 99% 접근 시 column 크기 ↑
+    capture_factor = capture_rate_factor(capture_eff, CAPEX_VS_CAPTURE_COEF)
+    project_capex_per_t = project_capex_per_t * capture_factor
+    # 3) 규모의 경제 적용 (NETL B12C 3.7 Mt/yr 대비)
     scaled_capex_per_t = scale_capex_per_t(project_capex_per_t, capture_t_yr)
-    # 3) CCU 정제 등급 CAPEX adder
+    # 4) CCU 정제 등급 CAPEX adder
     eff_capex_per_t = scaled_capex_per_t * (1 + ccu_share * (capex_mult - 1))
 
     crf = (discount * (1 + discount) ** lifetime_yr) / ((1 + discount) ** lifetime_yr - 1)
@@ -1319,10 +1415,11 @@ def calc_COCA(
 
     return {
         "base_capex_per_t":     capex_per_t,            # LIT 원본
-        "project_capex_per_t":  project_capex_per_t,    # × project multiplier
+        "project_capex_per_t":  project_capex_per_t,    # × project × capture rate
         "scaled_capex_per_t":   scaled_capex_per_t,     # × 규모 보정
         "eff_capex_per_t":      eff_capex_per_t,        # + CCU adder
         "project_multiplier":   project_multiplier,
+        "capex_capture_factor": capture_factor,         # 포집율 효과 (CAPEX)
         "scale_factor":         scale_factor,
         "capex_adder":          eff_capex_per_t - scaled_capex_per_t,
         "annual_capex":         annual_capex_usd_per_t,
@@ -1465,9 +1562,24 @@ with st.sidebar:
     capture_eff_pct = st.number_input(
         "포집율 [%]",
         min_value=50, max_value=99, value=90, step=1,
-        help="default: 90",
+        help=(
+            "default: 90 (NETL baseline, 비용 최적점)\n"
+            "포집율 효과 (IEAGHG 2019):\n"
+            "• SRD: 90%→99% +18% (평형 한계)\n"
+            "• CAPEX: 90%→99% +10% (column 크기 ↑)"
+        ),
     )
     capture_eff = capture_eff_pct / 100.0
+    # 포집율 효과 자동 표시
+    _srd_capt_pct = (capture_rate_factor(capture_eff, SRD_VS_CAPTURE_COEF) - 1) * 100
+    _capex_capt_pct = (capture_rate_factor(capture_eff, CAPEX_VS_CAPTURE_COEF) - 1) * 100
+    if abs(_srd_capt_pct) > 0.5 or abs(_capex_capt_pct) > 0.5:
+        _arr_s = "↑" if _srd_capt_pct > 0 else "↓"
+        _arr_c = "↑" if _capex_capt_pct > 0 else "↓"
+        st.caption(
+            f"→ 포집율 보정 (90% 기준): SRD **{_arr_s}{abs(_srd_capt_pct):.1f}%** · "
+            f"CAPEX **{_arr_c}{abs(_capex_capt_pct):.1f}%**"
+        )
 
     T_cool_C = st.number_input(
         "냉각수 온도 [°C]",
@@ -1795,14 +1907,16 @@ if pilot_techs:
 results = []
 for k in selected:
     t = LIT[k]
-    we = calc_We(t, T_cool_C, p_final_bar, capture_t_yr=capture_t_yr)
-    # 규모 보정된 SRD를 SPECCA에 사용
+    we = calc_We(t, T_cool_C, p_final_bar,
+                  capture_t_yr=capture_t_yr, capture_eff=capture_eff)
+    # 규모·포집율 보정된 SRD를 SPECCA에 사용
     specca = calc_SPECCA(we["SRD_scaled"], we["We_elec"], capture_eff)
     cost = calc_COCA(
         t["CAPEX_per_t"], t["OPEX_solvent"], t["OPEX_other"],
         we["We_elec"], capture_t_yr, lifetime, discount, elec_price,
         capex_mult=ccu["capex_mult"], ccu_share=ccu_share,
         project_multiplier=project_multiplier,
+        capture_eff=capture_eff,
     )
     rev = calc_revenue(
         capture_t_yr, ccs_share, ccs_yield,
@@ -2147,7 +2261,10 @@ with tab2:
     if any(r["category"] == "Chilled NH₃" for r in results):
         T_range = np.arange(5, 46, 2)
         cap_data = LIT["CAP_B12C"]
-        Q_chill = cap_data["SRD"] * 0.18
+        # 현재 시나리오 (scale + capture rate)와 일관된 scaled SRD 사용
+        cap_srd_scaled = scale_srd(cap_data["SRD"], capture_t_yr) * \
+                         capture_rate_factor(capture_eff, SRD_VS_CAPTURE_COEF)
+        Q_chill = cap_srd_scaled * 0.18
         chill_we = [chiller_We(Q_chill, cap_data["T_abs"], T) for T in T_range]
         f2 = go.Figure()
         f2.add_trace(go.Scatter(
@@ -2579,11 +2696,17 @@ with tab6:
             "OPEX_other": opex_oth, "loss_kg_per_tCO2": loss,
             "loss_mech": "사용자 정의", "is_pilot": True,
         }
-        we = calc_We(custom, T_cool_C, p_final_bar, capture_t_yr=capture_t_yr)
-        # 규모 보정된 SRD 사용 (다른 기술과 동일한 방식)
+        # 메인 결과 루프와 동일한 파라미터 셋 사용 (포집율, 프로젝트 유형, CCU 등급 모두 반영)
+        we = calc_We(custom, T_cool_C, p_final_bar,
+                     capture_t_yr=capture_t_yr, capture_eff=capture_eff)
         specca = calc_SPECCA(we["SRD_scaled"], we["We_elec"], capture_eff)
-        cost = calc_COCA(capex, opex_sol, opex_oth, we["We_elec"],
-                         capture_t_yr, lifetime, discount, elec_price)
+        cost = calc_COCA(
+            capex, opex_sol, opex_oth, we["We_elec"],
+            capture_t_yr, lifetime, discount, elec_price,
+            capex_mult=ccu["capex_mult"], ccu_share=ccu_share,
+            project_multiplier=project_multiplier,
+            capture_eff=capture_eff,
+        )
 
         st.success(f"✅ **{name}** 계산 완료")
         c = st.columns(4)
