@@ -1029,7 +1029,7 @@ FORMULA_REFS = {
     "Net Removed = Stored - Σ(lifecycle emissions)":                                      ["EU_CRCF_2024", "ICVCM_CCP_2023", "IEAGHG_2010_LCA"],
     "시장 매출 기준 (compliance): 격리량 기준 (gross stored)":                              ["IRS_45Q_IRA", "K_ETS_Act_Art14"],
     "시장 매출 기준 (voluntary, CRCF): net removed 기준":                                   ["EU_CRCF_2024", "ICVCM_CCP_2023"],
-    "한국 K-ETS CCU 차감: 할당대상업체 CCU 출하량 = 보고배출량 차감":                          ["K_ETS_Act_Art14"],
+    "한국 K-ETS CCU 차감: 보고배출량 차감만 (직접 매출 아님, 조건부 가치)":                    ["K_ETS_Act_Art14"],
 }
 
 SHORT_NAMES = {
@@ -1629,19 +1629,15 @@ def calc_revenue(capture_t_yr, ccs_share, ccs_yield, ccu_share, ccu_yield,
     # 1) CCU 액화탄산 매출
     ccu_revenue_usd = sold_lco2_t * ccu_price_krw_t / fx_krw_per_usd
 
-    # 2) 배출권 시장 (compliance) — 모드별 적용
-    #    - CCS: 격리량 기준 (모든 시장 거래 가능)
-    #    - CCU: 출하량 기준 (한국 K-ETS CCU 차감만 — 사이드바 toggle)
-    if ccs_share > 0:
-        market_revenue_usd = stored_t * carbon_market_usd_t
-    else:
-        # CCU 모드: K-ETS CCU 차감 적용 시만 출하량 × 가격
-        market_revenue_usd = sold_lco2_t * carbon_market_usd_t
+    # 2) 배출권 시장 (compliance) — CCS 격리량만 (gross stored)
+    #    K-ETS CCU 차감은 직접 매출 아님 (조건부 가치 — 탭 ⑨ 별도 표시)
+    market_revenue_usd = stored_t * carbon_market_usd_t
 
-    # 3) 정부 보조금 — 격리량 또는 활용량 양쪽 가능
+    # 3) 정부 보조금 (45Q-CCS, 45Q-EOR, NL SDE++, UK CfD 등) — 직접 매출
+    #    격리량 또는 활용량 양쪽 가능 (정책에 따라)
     subsidy_usd = qualifying_t * subsidy_usd_t
 
-    # 4) LCFS / 추가 매출 — 격리량 (CCS) 또는 출하량 (CCU)
+    # 4) LCFS / voluntary credits — 직접 매출 (격리량 또는 출하량)
     extra_revenue_usd = qualifying_t * extra_revenue_usd_t
 
     total_revenue_usd = ccu_revenue_usd + market_revenue_usd + subsidy_usd + extra_revenue_usd
@@ -1847,6 +1843,10 @@ with st.sidebar:
         key="facility_mode",
     )
 
+    # K-ETS CCU 차감 변수 default (CCS 모드에서도 정의되도록)
+    apply_kets_ccu = False
+    kets_ccu_price_info = 0.0
+
     if facility_mode == "CCS":
         ccs_share, ccu_share = 1.0, 0.0
     else:
@@ -1955,33 +1955,36 @@ with st.sidebar:
             )
             st.caption(f"→ 표준값: {mkt['native']}")
     else:
-        # CCU 모드 — 한국 K-ETS CCU 차감 옵션 제공
+        # CCU 모드 — 한국 K-ETS CCU 차감 보고 (정보용, 매출 아님)
         st.markdown("##### 1️⃣ 배출권 시장 (CCU 모드)")
         st.caption(
-            "🇰🇷 한국 할당대상업체는 CO₂ 포집·외부판매(CCU) 시 "
-            "K-ETS 배출량에서 **출하량만큼 차감** 가능. "
-            "(「온실가스 배출권법」 Art.14, 환경부 고시 「배출량 보고·검증 지침」)"
+            "🇰🇷 한국 할당대상업체는 CCU 출하량을 K-ETS 배출량에서 차감 가능. "
+            "**단, 직접 매출 아님 — 배출권 수급 상황에 따라 조건부 가치**. "
+            "탭 ⑨에서 톤수·조건부 가치 별도 분석."
         )
         apply_kets_ccu = st.checkbox(
-            "🇰🇷 K-ETS CCU 차감 적용 (할당대상업체)",
+            "🇰🇷 K-ETS CCU 차감 보고 (할당대상업체, 정보용)",
             value=False,
-            help="체크 시: K-ETS 단가 × 출하량 = 배출권 매입 회피 가치 (implicit revenue)",
+            help="체크 시: 탭 ⑨에서 배출량 차감 톤수 + 조건부 경제 가치 표시 "
+                 "(매출 계산에는 미반영)",
             key="kets_ccu_deduction",
         )
         if apply_kets_ccu:
-            carbon_market_key = "K-ETS"
-            carbon_market_usd = st.number_input(
-                "K-ETS 단가 [USD/t]",
+            kets_ccu_price_info = st.number_input(
+                "K-ETS 단가 [USD/t] — 조건부 가치 산정용",
                 min_value=0.0, max_value=100.0, value=7.0, step=0.5,
                 format="%.1f",
-                help="K-ETS KAU 시세 default $7 (≈10,000 KRW)",
+                help="배출권 매입 회피 시나리오 산정용. **실제 매출 아님**.",
                 key="kets_ccu_price",
             )
-            st.caption(f"→ 출하량 × ${carbon_market_usd:.1f}/t = 배출량 차감 가치")
+            st.caption(
+                f"ℹ️ {kets_ccu_price_info:.1f}$/t × 출하량 = 조건부 가치 (탭 ⑨ 표시)"
+            )
         else:
-            carbon_market_key = "None"
-            carbon_market_usd = 0.0
-            st.caption("→ K-ETS 차감 미적용 (CCU 차감 미인정 또는 비대상업체)")
+            kets_ccu_price_info = 0.0
+        # CCU 모드는 carbon_market 매출 항상 0
+        carbon_market_key = "None"
+        carbon_market_usd = 0.0
 
     # 2️⃣ 정부 보조금 (federal/state subsidy)
     st.markdown("##### 2️⃣ 정부 보조금 (federal/state)")
@@ -3520,33 +3523,43 @@ Net Removed [%] = (Gross stored/sold - Σ e_i) × 100
 """)
 
     # ── 12. 한국 K-ETS CCU 차감 ──
-    with st.expander("🇰🇷 **12. 한국 K-ETS CCU 차감 제도**"):
+    with st.expander("🇰🇷 **12. 한국 K-ETS CCU 차감 제도** (직접 매출 아님 — 조건부 가치)"):
         st.markdown("""
 **제도 근거**
 - 「온실가스 배출권의 할당 및 거래에 관한 법률」 Art. 14 (배출량 산정·보고)
 - 환경부 고시 「배출량 보고·검증 지침」 (Phase 4, 2024~)
 
-**적용 조건 (할당대상업체)**
+**제도 본질** ⚠️
+K-ETS CCU 차감은 **"배출량 보고 시 출하량만큼 차감"**일 뿐, 직접 현금 매출이 아닙니다.
+실제 경제 가치는 회사의 배출권 수급 상황에 따라 결정:
+
+| 상황 | 차감 효과 | 실효 경제 가치 |
+|---|---|---|
+| 🟢 **할당 부족 (short)** | 부족분 감소 | **= 출하량 × K-ETS 가격** (배출권 매입 회피) |
+| 🟡 **할당 균형 (balance)** | 잉여 발생 | **시장 매도 가능분만큼** (유동성 의존) |
+| 🔴 **할당 잉여 (long)** | 잉여 더 증가 | **즉시 가치 ≈ 0** (차기 이월 가능) |
+
+**적용 조건 (차감 인정)**
+- 할당대상업체 (Phase 4: ~700개사)
 - CO₂ 포집 후 외부 판매 (CCU)
 - buyer 측에서 배출 책임 (또는 영구 incorporation, 예: 시멘트 mineralization)
 - MRV (Measurement, Reporting, Verification) 체계 충족
 
-**경제적 효과**:
-포집·판매한 CO₂ 1톤당 = 배출권 1톤 매입 회피
-→ implicit revenue = 출하량 × K-ETS 가격
+**본 모델 처리 방식**:
+- **매출 계산에 미포함** — calc_revenue의 market_revenue는 CCS 격리량만
+- **탭 ⑨에서 별도 표시** — 보고 차감 톤수 + 조건부 가치 시나리오
+- **사이드바 toggle**: K-ETS CCU 차감 보고 ON 시 정보용 가격 입력
 
-**예시 시나리오** (K-ETS $7/t, 출하량 0.3 Mt/yr CCU):
-- implicit revenue = 0.3M × $7 = **$2.1M/yr** (29억원/yr)
-- 명시적 매출 (액화탄산 30만원/t × 0.3M × 0.88 yield) = $56M/yr
-- 합계: $58M/yr (+ K-ETS 차감 가치)
+**예시** (K-ETS $7/t, CCU 0.3 Mt/yr 출하):
+- Gross 출하량 = 264 kt (yield 88%)
+- Net 감축량 (LCA 반영) ≈ 200 kt
+- 조건부 가치 (시나리오 1, short인 경우) = 264k × $7 = **$1.85M/yr (≈ 26억원)**
+- 위는 **실제 매출에 더하지 않고**, 의사결정 시 별도 검토 사항
 
-**본 모델 적용**:
-사이드바 CCU 모드 → "🇰🇷 K-ETS CCU 차감 적용" toggle → market_revenue에 sold_lco2_t × K-ETS 가격 반영
-
-**주의**:
-- CCU buyer 책임이 명확해야 차감 인정 (산업용 중간 판매·보관 시 분쟁 가능)
-- Beverage/식품용 CCU는 단기 재배출 → 일부 인정 또는 미인정 (사례별)
-- 한국 환경부 case-by-case 판단
+**미인정 사례 (case-by-case)**:
+- Beverage/식품용 단기 재배출 CCU → 일부 미인정
+- 산업용 중간 판매·보관 시 buyer 명확치 않으면 차감 인정 어려움
+- 화학 합성·중간재로 단기 사용 → MRV 검증 필요
         """)
 
     # ── 13. 한계 ──
@@ -3705,6 +3718,55 @@ with tab9:
 - **최고 효율**: {best_net_r['name']} ({best_net_r['crcf_efficiency_pct']:.1f}%) — voluntary credit 발행에 가장 적합
 - **최저 효율**: {worst_net_r['name']} ({worst_net_r['crcf_efficiency_pct']:.1f}%) — 열원/grid 변경 검토 필요
 - **현재 가정에서 dominant emission**: {('열' if results[0]['lca_e_heat'] >= max(results[0]['lca_e_elec'], results[0]['lca_e_solvent']) else '전력' if results[0]['lca_e_elec'] >= results[0]['lca_e_solvent'] else '흡수제')} ({max(results[0]['lca_e_heat'], results[0]['lca_e_elec'], results[0]['lca_e_solvent'])*100:.1f}% of captured)
+""")
+
+    # ── NEW: 🇰🇷 한국 K-ETS CCU 차감 분석 (CCU 모드 + toggle ON 시만 표시) ──
+    if facility_mode == "CCU" and apply_kets_ccu:
+        st.markdown("---")
+        st.markdown("### 🇰🇷 한국 K-ETS CCU 차감 효과 (할당대상업체 보고용)")
+        st.caption(
+            "본 섹션은 **K-ETS 배출량 보고 시 차감 가능 톤수** 계산. "
+            "**금전적 매출 아님** — 회사의 배출권 수급 상황에 따라 조건부 경제 가치."
+        )
+
+        # 기술별 K-ETS 차감 톤수 + 조건부 가치
+        kets_rows = []
+        for r in results:
+            sold = r['sold_lco2_t']                  # 보고 차감 (gross 출하량)
+            net_t = r['net_removed_t_yr']            # LCA 반영 net 감축
+            net_pct = (net_t / sold * 100) if sold > 0 else 0
+            implicit_usd = sold * kets_ccu_price_info
+            implicit_krw = implicit_usd * fx_krw_per_usd
+            kets_rows.append({
+                "기술": r['name'],
+                "Gross 출하량 (보고 차감)": f"{sold/1000:,.1f} kt/yr",
+                "Net 감축량 (LCA 반영)":   f"{net_t/1000:,.1f} kt/yr",
+                "실제 감축 효율 [%]":       f"{net_pct:.1f}",
+                f"조건부 가치 (×${kets_ccu_price_info:.1f}/t)":
+                                            fmt_money(implicit_usd, fx_krw_per_usd, display_currency),
+            })
+        st.dataframe(pd.DataFrame(kets_rows), use_container_width=True, hide_index=True)
+
+        # 조건부 시나리오 안내
+        st.info(f"""
+**💡 K-ETS CCU 차감의 실제 경제 가치 — 회사 상황별 시나리오**
+
+🟢 **시나리오 1: 할당량 < 실제 배출량** (할당 부족, short)
+→ CCU 차감으로 부족분 감소 → 배출권 매입 회피
+→ **실효 가치 ≈ Gross 출하량 × K-ETS 가격** (위 표의 '조건부 가치'와 일치)
+
+🟡 **시나리오 2: 할당량 ≈ 실제 배출량** (균형, balance)
+→ CCU 차감으로 잉여 발생 → 배출권 시장에 매도 가능
+→ **실효 가치 = 잉여 매도 가능분만큼만** (시장 유동성 의존, 보통 90% 이상 회수)
+
+🔴 **시나리오 3: 할당량 > 실제 배출량** (잉여, long)
+→ CCU 차감으로 잉여 더 증가 → 차기 의무이월 가능 but 즉시 현금화 어려움
+→ **즉시 가치 ≈ 0**, 장기 가치 = 차기 가격 × 차감량 (불확실)
+
+⚠️ **본 모델의 매출 계산에는 K-ETS 차감 가치 미포함** (조건부이므로).
+의사결정 시 자체 판단 필요.
+
+📚 **출처**: 「온실가스 배출권의 할당 및 거래에 관한 법률」 Art.14 + 환경부 고시 「배출량 보고·검증 지침」
 """)
 
     # ── 4. 시장별 매출 기준 (gross vs net) ──
