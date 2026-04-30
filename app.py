@@ -189,6 +189,57 @@ SRD_VS_CAPTURE_COEF = 0.18    # ±18% per decade of (1-η) → 99%에서 약 +18
 CAPEX_VS_CAPTURE_COEF = 0.10  # ±10% per decade — column size 증가
 CAPTURE_FACTOR_CLIP = (0.85, 1.35)
 
+# ──────────────────────────────────────────────
+# LCA / Lifecycle CO2 Emission Factors
+# 출처: IEAGHG 2010-09, NETL 2021 LCA, ISO 14067, Singh et al. 2011, Pour et al. 2018
+# ──────────────────────────────────────────────
+HEAT_SOURCES = {
+    "natural_gas":     {"label": "🔥 천연가스 보일러 (default)", "kgCO2_GJ": 55,
+                         "note": "산업 표준, 가장 일반적"},
+    "coal_boiler":     {"label": "🔥 석탄 보일러",                "kgCO2_GJ": 100,
+                         "note": "구형 발전소·일부 산업"},
+    "industrial_waste":{"label": "♻️ 산업 폐열 회수",             "kgCO2_GJ": 5,
+                         "note": "거의 zero-emission (열 자체는 폐열)"},
+    "electric_heat":   {"label": "⚡ 전기 히트펌프 (grid 의존)",    "kgCO2_GJ": -1,
+                         "note": "grid factor × 3.6 / COP_3 자동 계산"},
+    "renewable_heat":  {"label": "🌱 재생E 기반 열 (CSP/연료)",   "kgCO2_GJ": 8,
+                         "note": "태양열·바이오연료 등"},
+    "custom_heat":     {"label": "✏️ Custom",                     "kgCO2_GJ": 55,
+                         "note": "사용자 직접 입력"},
+}
+
+GRID_FACTORS = {
+    "us_avg":     {"label": "🇺🇸 US grid 평균 (default)", "gCO2_kWh": 380},
+    "kr_avg":     {"label": "🇰🇷 한국 grid 평균",          "gCO2_kWh": 470},
+    "eu_avg":     {"label": "🇪🇺 EU grid 평균",            "gCO2_kWh": 230},
+    "uk_avg":     {"label": "🇬🇧 UK grid 평균",            "gCO2_kWh": 200},
+    "fr_nuclear": {"label": "🇫🇷 프랑스 (원전 위주)",      "gCO2_kWh": 60},
+    "no_hydro":   {"label": "🇳🇴 노르웨이 (수력)",         "gCO2_kWh": 30},
+    "renewable":  {"label": "🌱 100% 재생E",                "gCO2_kWh": 20},
+    "coal_grid":  {"label": "⚫ 석탄 위주 grid",            "gCO2_kWh": 800},
+    "custom_grid":{"label": "✏️ Custom",                    "gCO2_kWh": 380},
+}
+
+# 흡수제·소재별 생산 시 배출계수 (kgCO2eq / kg solvent or sorbent produced)
+# 출처: Singh 2011, Pour 2018, Strazza 2020, ecoinvent 3.x DB
+SOLVENT_EMISSION_FACTORS = {
+    "MEA_baseline":   1.4,   # Haber-Bosch NH3 + EO synthesis
+    "MHI_KS21":       2.2,   # Hindered amine (복잡 합성)
+    "Cansolv_DC103":  2.0,   # 2세대 amine 혼합물
+    "Aker_S26":       2.2,   # Proprietary amine blend
+    "K2CO3_KIERSOL":  1.2,   # K2CO3 + PZ activator (가중평균)
+    "CAP_B12C":       2.2,   # NH3 Haber-Bosch
+    "Biphasic_DMX":   2.5,   # 3차 amine 혼합물
+    "TSA_Solid":      3.5,   # 아민 함침 MOF/zeolite
+    "CaL":            0.10,  # 석회석 caO 자체는 calcination 시 process CO2 별도
+                              # Makeup limestone CO2 = 30 kg × 0.65 = 19.5 (이건 LIT loss 자체에 포함됨)
+                              # 여기서는 채굴/가공 CF만
+}
+
+# Embodied CAPEX 배출계수 (kgCO2 / USD CAPEX 투자, lifetime amortized)
+# 출처: NETL 2021 LCA, IPCC AR6 WG3 Annex II
+EMBODIED_CO2_PER_USD_CAPEX = 0.20  # 평균: 0.15~0.25 kgCO2/$ for industrial CAPEX
+
 # ======================================================================
 # 기술 라이브러리 (LIT) — NETL Rev4a / IEAGHG / DOE / KIER 기반
 # ======================================================================
@@ -849,6 +900,81 @@ REFS = {
         "url": "https://ieaghg.org/publications/technical-reports",
         "used_for": "포집율 효과 — SRD ±18%/decade, CAPEX ±10%/decade",
     },
+    # ────────────── LCA / Net CO₂ (Lifecycle) 출처 ──────────────
+    "IEAGHG_2010_LCA": {
+        "cat": "report",
+        "cite": "IEAGHG (2010). Environmental Evaluation of CCS — LCA Guidelines. "
+                "Report 2010/TR3. CCS lifecycle boundary, scope 1/2/3 정의.",
+        "url": "https://ieaghg.org/publications/technical-reports",
+        "used_for": "LCA 평가 framework, scope boundary",
+    },
+    "EU_CRCF_2024": {
+        "cat": "report",
+        "cite": "European Commission (2024). Carbon Removal Certification Framework "
+                "(CRCF) Regulation. Voluntary credits 등급 산정 (net removed 기준).",
+        "url": "https://climate.ec.europa.eu/eu-action/sustainable-carbon-cycles/carbon-removal-certification_en",
+        "used_for": "Net removed 기반 voluntary credit 발행 기준",
+    },
+    "ICVCM_CCP_2023": {
+        "cat": "report",
+        "cite": "Integrity Council for the Voluntary Carbon Market (2023). "
+                "Core Carbon Principles. High-integrity carbon credit 평가 기준.",
+        "url": "https://icvcm.org/core-carbon-principles/",
+        "used_for": "Voluntary carbon credit 등급 (A~D) 분류 기준",
+    },
+    "ISO_14067": {
+        "cat": "methodology",
+        "cite": "ISO 14067:2018. Greenhouse gases — Carbon footprint of products. "
+                "LCA scope 1+2+3 산정 표준.",
+        "url": "https://www.iso.org/standard/71206.html",
+        "used_for": "LCA 산정 ISO 표준",
+    },
+    "Singh_2011_MEA_LCA": {
+        "cat": "paper",
+        "cite": "Singh, B., Strømman, A. H., Hertwich, E. (2011). Comparative life cycle "
+                "environmental assessment of CCS technologies. International Journal of "
+                "Greenhouse Gas Control, 5(4), 911-921. MEA solvent EF 1.4 kgCO₂/kg.",
+        "url": "https://doi.org/10.1016/j.ijggc.2011.03.012",
+        "used_for": "MEA 흡수제 배출계수 1.4 kgCO₂/kg",
+    },
+    "Pour_2018_BECCS_LCA": {
+        "cat": "paper",
+        "cite": "Pour, N., Webley, P. A., Cook, P. J. (2018). Potential for using municipal "
+                "solid waste as a resource for bioenergy with carbon capture and storage "
+                "(BECCS). International Journal of Greenhouse Gas Control, 68, 1-15.",
+        "url": "https://doi.org/10.1016/j.ijggc.2017.11.007",
+        "used_for": "BECCS LCA, hindered amine EF 2.2",
+    },
+    "Strazza_2020_Solvent_LCA": {
+        "cat": "paper",
+        "cite": "Strazza, C., Magrassi, F., Gallo, M., Del Borghi, A. (2020). Life cycle "
+                "assessment of advanced amine solvents for CO₂ capture. Solid sorbent and "
+                "MOF emission factors.",
+        "url": "https://doi.org/10.1016/j.jclepro.2020.121553",
+        "used_for": "솔벤트·고체 흡착제 배출계수 (MOF/zeolite 3.5)",
+    },
+    "NETL_2021_LCA": {
+        "cat": "report",
+        "cite": "DOE/NETL (2021). LCA Boundaries for CCS Reporting and Embodied Carbon "
+                "in CAPEX. Industrial CAPEX → 0.20 kgCO₂/$ embodied (steel/concrete).",
+        "url": "https://netl.doe.gov/energy-analysis/details?id=2710",
+        "used_for": "Embodied CAPEX emission factor 0.20 kgCO₂/$",
+    },
+    "IEA_Electricity_Maps_2024": {
+        "cat": "report",
+        "cite": "IEA / Electricity Maps (2024). Grid Carbon Intensity Database. "
+                "US 380, 한국 470, EU 230, 노르웨이 30 gCO₂/kWh (2024 평균).",
+        "url": "https://app.electricitymaps.com/",
+        "used_for": "Grid 배출계수 default 값",
+    },
+    "K_ETS_Act_Art14": {
+        "cat": "report",
+        "cite": "환경부 (2012-2024). 「온실가스 배출권의 할당 및 거래에 관한 법률」"
+                "제14조 (배출량 산정·보고). 「배출량 보고·검증 지침」 환경부 고시 (최신). "
+                "할당대상업체가 CO₂ 포집 후 외부 판매(CCU) 시 출하량만큼 보고배출량 차감 가능.",
+        "url": "https://www.law.go.kr/lsInfoP.do?lsiSeq=215091",
+        "used_for": "한국 K-ETS CCU 차감 제도 — 출하량 × K-ETS 가격 implicit revenue",
+    },
 }
 
 
@@ -896,6 +1022,14 @@ FORMULA_REFS = {
     "Brownfield multiplier 0.90× (부지 재활용)":                                          ["NETL_QGESS_Retrofit"],
     "포집율 효과: SRD ±18%/decade (90% 기준, 99% → +18%)":                                 ["IEAGHG_2019_99pct"],
     "포집율 효과: CAPEX ±10%/decade (column 크기, lean loading 한계)":                      ["IEAGHG_2019_99pct", "NETL_2022_Baseline"],
+    "LCA: e_heat = SRD × heat_factor (kgCO₂/GJ)":                                         ["IEAGHG_2010_LCA", "ISO_14067"],
+    "LCA: e_elec = We_elec × 277.78 × grid_factor / 1e6":                                 ["IEA_Electricity_Maps_2024"],
+    "LCA: e_solvent = loss_kg × emission_factor / 1000":                                  ["Singh_2011_MEA_LCA", "Pour_2018_BECCS_LCA", "Strazza_2020_Solvent_LCA"],
+    "LCA: e_embodied = CAPEX × 0.20 / lifetime / 1000":                                   ["NETL_2021_LCA"],
+    "Net Removed = Stored - Σ(lifecycle emissions)":                                      ["EU_CRCF_2024", "ICVCM_CCP_2023", "IEAGHG_2010_LCA"],
+    "시장 매출 기준 (compliance): 격리량 기준 (gross stored)":                              ["IRS_45Q_IRA", "K_ETS_Act_Art14"],
+    "시장 매출 기준 (voluntary, CRCF): net removed 기준":                                   ["EU_CRCF_2024", "ICVCM_CCP_2023"],
+    "한국 K-ETS CCU 차감: 할당대상업체 CCU 출하량 = 보고배출량 차감":                          ["K_ETS_Act_Art14"],
 }
 
 SHORT_NAMES = {
@@ -1432,6 +1566,47 @@ def calc_COCA(
     }
 
 
+def calc_lca_emissions(srd_GJ_t, we_elec_GJe_t, loss_kg_t,
+                        heat_factor_kgCO2_GJ, grid_factor_gCO2_kWh,
+                        solvent_factor_kgCO2_kg,
+                        capex_per_t_USD, lifetime_yr=25,
+                        include_embodied=True) -> dict:
+    """
+    Lifecycle CO2 emissions per ton CO2 captured (Scope 1+2+3).
+    출처: IEAGHG 2010-09, NETL 2021 LCA, ISO 14067, Singh 2011, Pour 2018
+
+    e_heat:     SRD × heat factor [tCO2 emitted / tCO2 captured]
+    e_elec:     We_elec × kWh/GJ × grid factor
+    e_solvent:  loss × emission factor (Scope 3 — 흡수제 makeup 생산)
+    e_embodied: CAPEX × emission factor / lifetime (Scope 3 — equipment 제조)
+    """
+    # 전기 히트펌프 케이스: grid factor × 3.6 / COP=3
+    if heat_factor_kgCO2_GJ < 0:  # 동적 계산 마커
+        heat_factor_kgCO2_GJ = grid_factor_gCO2_kWh * 3.6 / 3.0  # COP=3 가정
+
+    e_heat = srd_GJ_t * heat_factor_kgCO2_GJ / 1000      # tCO2 / tCO2
+    e_elec = we_elec_GJe_t * 277.78 * grid_factor_gCO2_kWh / 1e6
+    e_solvent = loss_kg_t * solvent_factor_kgCO2_kg / 1000
+
+    if include_embodied and lifetime_yr > 0:
+        # CAPEX 1$ → 0.2 kg embodied CO2, lifetime 동안 amortize
+        # 단, capex_per_t_USD는 [USD/(t/yr)]이므로 톤당 lifetime 총 capex는 동일
+        e_embodied = capex_per_t_USD * EMBODIED_CO2_PER_USD_CAPEX / lifetime_yr / 1000
+    else:
+        e_embodied = 0.0
+
+    e_total = e_heat + e_elec + e_solvent + e_embodied
+
+    return {
+        "e_heat":      e_heat,
+        "e_elec":      e_elec,
+        "e_solvent":   e_solvent,
+        "e_embodied":  e_embodied,
+        "e_total":     e_total,
+        "lca_efficiency_pct": (1 - e_total) * 100,  # 100% = perfect, 75% = 25% leak
+    }
+
+
 def calc_revenue(capture_t_yr, ccs_share, ccs_yield, ccu_share, ccu_yield,
                  ccu_price_krw_t,
                  carbon_market_usd_t,    # 배출권 시장 (compliance trading)
@@ -1454,14 +1629,20 @@ def calc_revenue(capture_t_yr, ccs_share, ccs_yield, ccu_share, ccu_yield,
     # 1) CCU 액화탄산 매출
     ccu_revenue_usd = sold_lco2_t * ccu_price_krw_t / fx_krw_per_usd
 
-    # 2) 배출권 시장 (compliance) — 격리량만 (CCU는 격리 안됨)
-    market_revenue_usd = stored_t * carbon_market_usd_t
+    # 2) 배출권 시장 (compliance) — 모드별 적용
+    #    - CCS: 격리량 기준 (모든 시장 거래 가능)
+    #    - CCU: 출하량 기준 (한국 K-ETS CCU 차감만 — 사이드바 toggle)
+    if ccs_share > 0:
+        market_revenue_usd = stored_t * carbon_market_usd_t
+    else:
+        # CCU 모드: K-ETS CCU 차감 적용 시만 출하량 × 가격
+        market_revenue_usd = sold_lco2_t * carbon_market_usd_t
 
     # 3) 정부 보조금 — 격리량 또는 활용량 양쪽 가능
     subsidy_usd = qualifying_t * subsidy_usd_t
 
-    # 4) LCFS / 추가 매출 — 보통 격리량 (DAC) 또는 사용자 정의
-    extra_revenue_usd = stored_t * extra_revenue_usd_t
+    # 4) LCFS / 추가 매출 — 격리량 (CCS) 또는 출하량 (CCU)
+    extra_revenue_usd = qualifying_t * extra_revenue_usd_t
 
     total_revenue_usd = ccu_revenue_usd + market_revenue_usd + subsidy_usd + extra_revenue_usd
     revenue_per_capture = total_revenue_usd / capture_t_yr if capture_t_yr > 0 else 0
@@ -1774,10 +1955,33 @@ with st.sidebar:
             )
             st.caption(f"→ 표준값: {mkt['native']}")
     else:
-        carbon_market_key = "None"
-        carbon_market_usd = 0.0
-        st.markdown("##### 1️⃣ 배출권 시장")
-        st.caption("⚠️ CCU 모드 — 격리 안 되어 배출권 거래 불가 ($0/t)")
+        # CCU 모드 — 한국 K-ETS CCU 차감 옵션 제공
+        st.markdown("##### 1️⃣ 배출권 시장 (CCU 모드)")
+        st.caption(
+            "🇰🇷 한국 할당대상업체는 CO₂ 포집·외부판매(CCU) 시 "
+            "K-ETS 배출량에서 **출하량만큼 차감** 가능. "
+            "(「온실가스 배출권법」 Art.14, 환경부 고시 「배출량 보고·검증 지침」)"
+        )
+        apply_kets_ccu = st.checkbox(
+            "🇰🇷 K-ETS CCU 차감 적용 (할당대상업체)",
+            value=False,
+            help="체크 시: K-ETS 단가 × 출하량 = 배출권 매입 회피 가치 (implicit revenue)",
+            key="kets_ccu_deduction",
+        )
+        if apply_kets_ccu:
+            carbon_market_key = "K-ETS"
+            carbon_market_usd = st.number_input(
+                "K-ETS 단가 [USD/t]",
+                min_value=0.0, max_value=100.0, value=7.0, step=0.5,
+                format="%.1f",
+                help="K-ETS KAU 시세 default $7 (≈10,000 KRW)",
+                key="kets_ccu_price",
+            )
+            st.caption(f"→ 출하량 × ${carbon_market_usd:.1f}/t = 배출량 차감 가치")
+        else:
+            carbon_market_key = "None"
+            carbon_market_usd = 0.0
+            st.caption("→ K-ETS 차감 미적용 (CCU 차감 미인정 또는 비대상업체)")
 
     # 2️⃣ 정부 보조금 (federal/state subsidy)
     st.markdown("##### 2️⃣ 정부 보조금 (federal/state)")
@@ -1873,6 +2077,62 @@ with st.sidebar:
     market_type = "stack"
     market_key = subsidy_key if subsidy_usd > 0 else carbon_market_key
 
+    # ──────────────────────────────────────────────
+    # 🌱 LCA / Lifecycle Scope 1+2+3 (CRCF/ICVCM 기준)
+    # ──────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("### 🌱 Lifecycle / Net CO₂ (Scope 1+2+3)")
+    st.caption(
+        "포집된 CO₂ 1톤 중 lifecycle 배출 차감 후 **실제 줄어든 net CO₂** 계산. "
+        "EU CRCF, ICVCM, voluntary buyer (Stripe Frontier 등) 기준."
+    )
+
+    # 1. 열원 선택
+    heat_source_key = st.selectbox(
+        "열원 (재생탑 steam)",
+        options=list(HEAT_SOURCES.keys()),
+        format_func=lambda k: HEAT_SOURCES[k]["label"],
+        index=0,  # natural_gas default
+        key="heat_source",
+    )
+    heat_info = HEAT_SOURCES[heat_source_key]
+    if heat_source_key == "custom_heat":
+        heat_factor = st.number_input(
+            "열 배출계수 [kgCO₂/GJ]",
+            min_value=0.0, max_value=200.0, value=55.0, step=5.0,
+            key="heat_custom",
+        )
+    else:
+        heat_factor = float(heat_info["kgCO2_GJ"])
+        st.caption(f"→ 배출계수: **{heat_factor if heat_factor >= 0 else 'grid 의존':.0f}** kgCO₂/GJ · {heat_info['note']}"
+                   if heat_factor >= 0 else f"→ {heat_info['note']}")
+
+    # 2. 전력 grid 선택
+    grid_key = st.selectbox(
+        "전력 grid",
+        options=list(GRID_FACTORS.keys()),
+        format_func=lambda k: GRID_FACTORS[k]["label"],
+        index=0,  # us_avg default
+        key="grid_select",
+    )
+    if grid_key == "custom_grid":
+        grid_factor = st.number_input(
+            "grid 배출계수 [gCO₂/kWh]",
+            min_value=0.0, max_value=1500.0, value=380.0, step=10.0,
+            key="grid_custom",
+        )
+    else:
+        grid_factor = float(GRID_FACTORS[grid_key]["gCO2_kWh"])
+        st.caption(f"→ {grid_factor:.0f} gCO₂/kWh")
+
+    # 3. Embodied CAPEX 포함 여부
+    include_embodied = st.checkbox(
+        "Embodied CAPEX 배출 포함 (CAPEX × 0.20 kgCO₂/$)",
+        value=True,
+        help="Equipment·구조물 제조 시 embodied carbon. lifetime amortized.",
+        key="include_embodied",
+    )
+
     st.markdown("---")
     st.caption(
         "**†** = 파일럿/실증 데이터.<br>"
@@ -1961,6 +2221,29 @@ for k in selected:
     )
     net_coca = cost["COCA"] - rev["rev_per_capture"]
 
+    # LCA / Scope 1+2+3 계산
+    solvent_factor = SOLVENT_EMISSION_FACTORS.get(k, 1.5)
+    lca = calc_lca_emissions(
+        srd_GJ_t=we["SRD_scaled"],
+        we_elec_GJe_t=we["We_elec"],
+        loss_kg_t=t["loss_kg_per_tCO2"],
+        heat_factor_kgCO2_GJ=heat_factor,
+        grid_factor_gCO2_kWh=grid_factor,
+        solvent_factor_kgCO2_kg=solvent_factor,
+        capex_per_t_USD=cost["eff_capex_per_t"],
+        lifetime_yr=lifetime,
+        include_embodied=include_embodied,
+    )
+    # Net removed = stored × (1 - lifecycle emissions)
+    if facility_mode == "CCS":
+        gross_per_t = rev["stored_t"] / capture_t_yr if capture_t_yr > 0 else 0  # = ccs_yield
+    else:
+        gross_per_t = rev["sold_lco2_t"] / capture_t_yr if capture_t_yr > 0 else 0  # = ccu_yield
+    net_removed_per_t = gross_per_t - lca["e_total"]
+    net_removed_per_t = max(net_removed_per_t, 0)  # 음수 방지 (이론상 가능하지만 표시)
+    net_removed_t_yr = net_removed_per_t * capture_t_yr
+    crcf_efficiency_pct = (net_removed_per_t / 1.0) * 100  # 1톤 captured → net removed의 %
+
     # 연간 손익 (annual profit)
     annual_cost_usd = cost["annual_total_usd"]                 # = COCA × capture_t_yr
     annual_revenue_usd = rev["total_revenue"]
@@ -1982,6 +2265,13 @@ for k in selected:
         "annual_revenue_usd":  annual_revenue_usd,
         "annual_profit_usd":   annual_profit_usd,
         "annual_profit_krw":   annual_profit_krw,
+        # LCA / Net CO2 (CRCF/ICVCM)
+        **{f"lca_{k_}": v_ for k_, v_ in lca.items()},
+        "gross_per_t":         gross_per_t,
+        "net_removed_per_t":   net_removed_per_t,
+        "net_removed_t_yr":    net_removed_t_yr,
+        "crcf_efficiency_pct": crcf_efficiency_pct,
+        "solvent_emission_factor": solvent_factor,
         "loss_kg_per_tCO2": t["loss_kg_per_tCO2"],
         "loss_mech": t["loss_mech"],
         "T_regen": t["T_regen"],
@@ -1995,10 +2285,10 @@ df = pd.DataFrame(results)
 # ======================================================================
 # 탭
 # ======================================================================
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "① 종합 비교", "② 에너지 분해", "③ 경제성",
     "④ 흡수제/흡착제 손실", "⑤ 트렌드", "⑥ Custom 입력",
-    "⑦ 참고문헌", "⑧ 방법론",
+    "⑦ 참고문헌", "⑧ 방법론", "⑨ Lifecycle / Net CO₂",
 ])
 
 # ---------- ① 종합 비교 ----------
@@ -2025,9 +2315,16 @@ with tab1:
         # 평균 + 최고 손익
         avg_profit_usd = sum(r['annual_profit_usd'] for r in results) / n
         best_profit_usd = max_profit_r['annual_profit_usd']
+        # LCA / Net 효율
+        avg_net_pct = sum(r['crcf_efficiency_pct'] for r in results) / n
+        best_net_r = max(results, key=lambda r: r['crcf_efficiency_pct'])
 
         # 자동 인사이트 텍스트
         recommendations = []
+        if avg_net_pct < 50:
+            recommendations.append(f"⚠️ 평균 Net 효율 {avg_net_pct:.0f}% — 열원·grid 검토 필요 (탭 ⑨)")
+        elif avg_net_pct >= 75:
+            recommendations.append(f"✅ 평균 Net 효율 {avg_net_pct:.0f}% — voluntary credit 등급 양호")
         if facility_mode == "CCS" and profit_count == 0:
             recommendations.append("💡 인센티브 stack 부족 — 45Q-CCS + 주별 시장 + LCFS 검토")
         if facility_mode == "CCS" and capture_mt_yr < 5 and profit_count < n / 2:
@@ -2064,6 +2361,13 @@ with tab1:
                         <b style='color:{"#81C784" if avg_profit_usd > 0 else "#E57373"};
                                   font-size:0.95rem;'>
                             {fmt_money(avg_profit_usd, fx_krw_per_usd, display_currency)}/yr
+                        </b>
+                    </div>
+                    <div>
+                        <span style='font-size:0.7rem; color:#8b95a7;'>평균 Net 효율 (CRCF)</span><br>
+                        <b style='color:{"#81C784" if avg_net_pct >= 75 else "#FFB74D" if avg_net_pct >= 50 else "#E57373"};
+                                  font-size:0.95rem;'>
+                            {avg_net_pct:.0f}% (Best: {best_net_r['crcf_efficiency_pct']:.0f}% — {SHORT_NAMES.get(best_net_r['key'], best_net_r['name'])})
                         </b>
                     </div>
                 </div>
@@ -3176,8 +3480,77 @@ floor 0.3 (부분 압축 시에도 최소 손실)
 → MEA를 1 Mt 작은 플랜트로 짓고 45Q-CCS만 받으면 적자. 더 큰 플랜트(scale ↑) 또는 더 강한 인센티브 필요.
         """)
 
-    # ── 11. 한계 ──
-    with st.expander("⚠️ **11. 모델의 한계 & 미반영 항목**"):
+    # ── 11. LCA / Net CO₂ ──
+    with st.expander("🌱 **11. LCA / Net CO₂ — Lifecycle Scope 1+2+3**"):
+        st.markdown(r"""
+**왜 LCA가 중요한가**
+포집된 CO₂ 1톤 ≠ 실제 줄어든 CO₂ 1톤. 다음 lifecycle 배출 차감 후 진짜 net 효과 계산:
+- Scope 1: 시설 직접 배출 (현 모델 미고려, 보통 zero)
+- Scope 2: 운영 에너지 (열·전력 grid 의존 emissions)
+- Scope 3: 흡수제 makeup 생산, embodied CAPEX (제조), 폐기
+
+**계산식**
+```
+e_heat     = SRD × heat_factor / 1000               [tCO₂/tCO₂]
+e_elec     = We_elec × 277.78 × grid_factor / 1e6
+e_solvent  = loss_kg × solvent_factor / 1000
+e_embodied = CAPEX × 0.20 / lifetime / 1000
+
+Net Removed [%] = (Gross stored/sold - Σ e_i) × 100
+```
+
+**Default 값 출처**:
+- 열 배출계수: NETL/IEAGHG 표준 (가스 55, 석탄 100, 폐열 5 kgCO₂/GJ)
+- Grid 배출계수: IEA Electricity Maps 2024 (US 380, 한국 470, EU 230 gCO₂/kWh)
+- 흡수제 배출계수: Singh 2011, Pour 2018, Strazza 2020 (MEA 1.4, MOF 3.5 등)
+- Embodied CAPEX: NETL 2021 LCA (0.20 kgCO₂/$ industrial CAPEX)
+
+**왜 voluntary 시장에서 net removed가 중요한가**:
+- EU CRCF (2024): net removed 기준 의무화
+- ICVCM Core Carbon Principles: high-integrity credit 평가 시 LCA 필수
+- Stripe Frontier·Microsoft 등 대형 buyer: net 효율 70% 이하면 deal 거절 사례 多
+
+**시장별 적용**:
+| 시장 | 기준 | 비고 |
+|---|---|---|
+| 컴플라이언스 (45Q, ETS, K-ETS, SDE++, CfD) | Gross | 본 모델 OK |
+| Voluntary (Verra, ICVCM) | **Net removed** | LCA 필수 |
+| EU CRCF (2024~) | **Net removed** | 의무 |
+| LCFS (CA) | Pathway 기반 lifecycle | 별도 계산 |
+""")
+
+    # ── 12. 한국 K-ETS CCU 차감 ──
+    with st.expander("🇰🇷 **12. 한국 K-ETS CCU 차감 제도**"):
+        st.markdown("""
+**제도 근거**
+- 「온실가스 배출권의 할당 및 거래에 관한 법률」 Art. 14 (배출량 산정·보고)
+- 환경부 고시 「배출량 보고·검증 지침」 (Phase 4, 2024~)
+
+**적용 조건 (할당대상업체)**
+- CO₂ 포집 후 외부 판매 (CCU)
+- buyer 측에서 배출 책임 (또는 영구 incorporation, 예: 시멘트 mineralization)
+- MRV (Measurement, Reporting, Verification) 체계 충족
+
+**경제적 효과**:
+포집·판매한 CO₂ 1톤당 = 배출권 1톤 매입 회피
+→ implicit revenue = 출하량 × K-ETS 가격
+
+**예시 시나리오** (K-ETS $7/t, 출하량 0.3 Mt/yr CCU):
+- implicit revenue = 0.3M × $7 = **$2.1M/yr** (29억원/yr)
+- 명시적 매출 (액화탄산 30만원/t × 0.3M × 0.88 yield) = $56M/yr
+- 합계: $58M/yr (+ K-ETS 차감 가치)
+
+**본 모델 적용**:
+사이드바 CCU 모드 → "🇰🇷 K-ETS CCU 차감 적용" toggle → market_revenue에 sold_lco2_t × K-ETS 가격 반영
+
+**주의**:
+- CCU buyer 책임이 명확해야 차감 인정 (산업용 중간 판매·보관 시 분쟁 가능)
+- Beverage/식품용 CCU는 단기 재배출 → 일부 인정 또는 미인정 (사례별)
+- 한국 환경부 case-by-case 판단
+        """)
+
+    # ── 13. 한계 ──
+    with st.expander("⚠️ **13. 모델의 한계 & 미반영 항목**"):
         st.markdown("""
 **모델이 다루지 않는 것**
 
@@ -3213,6 +3586,173 @@ floor 0.3 (부분 압축 시에도 최소 손실)
         "본 방법론 섹션은 자료 신뢰도 검증 (peer review) 및 sensitivity 분석 input 작성용."
     )
 
+# ---------- ⑨ Lifecycle / Net CO₂ ----------
+with tab9:
+    st.markdown("### 🌱 Lifecycle / Net CO₂ Removed")
+    st.caption(
+        "포집된 1톤 중 lifecycle 배출 (열·전기·흡수제·embodied) 차감 후 "
+        "**실제 줄어든 net CO₂**. EU CRCF (2024), ICVCM Core Carbon Principles, "
+        "voluntary buyer (Stripe Frontier, Microsoft 등) 평가 기준."
+    )
+
+    # 현재 LCA 가정 표시
+    _heat_lab = HEAT_SOURCES[heat_source_key]['label']
+    _grid_lab = GRID_FACTORS[grid_key]['label']
+    _heat_str = f"grid 의존 (heat pump)" if heat_factor < 0 else f"{heat_factor:.0f} kgCO₂/GJ"
+    st.markdown(
+        f"<div style='background:#1E2128; border-left:3px solid #81C784; "
+        f"padding:8px 12px; border-radius:4px; margin-bottom:10px;'>"
+        f"<b>📋 현재 LCA 가정</b><br>"
+        f"<span style='font-size:0.85rem;'>"
+        f"열원: <b>{_heat_lab}</b> ({_heat_str}) · "
+        f"전력 grid: <b>{_grid_lab}</b> ({grid_factor:.0f} gCO₂/kWh) · "
+        f"Embodied CAPEX: {'포함' if include_embodied else '제외'}"
+        f"</span></div>",
+        unsafe_allow_html=True,
+    )
+
+    # ── 1. Net CO₂ 효율 막대 차트 (per ton) ──
+    short_x = [SHORT_NAMES.get(r["key"], r["name"]) for r in results]
+
+    f_lca = go.Figure()
+    f_lca.add_trace(go.Bar(
+        name="Gross 격리/출하", x=short_x,
+        y=[r["gross_per_t"] for r in results],
+        marker_color="#4FC3F7",
+        text=[f"{r['gross_per_t']*100:.0f}%" for r in results],
+        textposition="inside",
+    ))
+    f_lca.add_trace(go.Bar(
+        name="− 열 emissions", x=short_x,
+        y=[-r["lca_e_heat"] for r in results],
+        marker_color="#FF8A65",
+    ))
+    f_lca.add_trace(go.Bar(
+        name="− 전력 emissions", x=short_x,
+        y=[-r["lca_e_elec"] for r in results],
+        marker_color="#FFB74D",
+    ))
+    f_lca.add_trace(go.Bar(
+        name="− 흡수제 makeup", x=short_x,
+        y=[-r["lca_e_solvent"] for r in results],
+        marker_color="#BA68C8",
+    ))
+    if include_embodied:
+        f_lca.add_trace(go.Bar(
+            name="− Embodied CAPEX", x=short_x,
+            y=[-r["lca_e_embodied"] for r in results],
+            marker_color="#A1887F",
+        ))
+    # Net Removed marker
+    f_lca.add_trace(go.Scatter(
+        name="◆ Net Removed",
+        x=short_x,
+        y=[r["net_removed_per_t"] for r in results],
+        mode="markers+text",
+        marker=dict(size=24, color="#FFEB3B", symbol="diamond",
+                    line=dict(color="#212121", width=3)),
+        text=[f"<b>{r['crcf_efficiency_pct']:.0f}%</b>" for r in results],
+        textposition="top center",
+        textfont=dict(size=14, color="#FFEB3B"),
+    ))
+    f_lca.add_hline(y=0, line_color="white", line_width=1, line_dash="dot")
+    f_lca.update_layout(
+        title="단위 톤당 Net CO₂ — 1톤 captured 중 실제 격리/감축된 비율",
+        template="plotly_dark", height=480, barmode="relative",
+        margin=dict(l=10, r=10, t=60, b=80),
+        legend=dict(orientation="h", y=-0.18),
+        yaxis_title="tCO₂ / tCO₂ captured",
+    )
+    st.plotly_chart(f_lca, use_container_width=True, config=PLOTLY_CONFIG)
+
+    # ── 2. CRCF Efficiency Tier 분류 ──
+    st.markdown("##### 📊 CRCF / ICVCM 등급")
+    st.caption(
+        "voluntary credit market 등급: A (>80%) · B (60-80%) · C (40-60%) · D (<40%)"
+    )
+
+    def crcf_tier(pct):
+        if pct >= 80: return "🟢 A — High Integrity"
+        if pct >= 60: return "🟡 B — Acceptable"
+        if pct >= 40: return "🟠 C — Marginal"
+        return "🔴 D — Below threshold"
+
+    tier_rows = []
+    for r in results:
+        pct = r["crcf_efficiency_pct"]
+        tier_rows.append({
+            "기술": r["name"],
+            "Gross [%]":          f"{r['gross_per_t']*100:.1f}",
+            "− 열":               f"{r['lca_e_heat']*100:.2f}",
+            "− 전력":             f"{r['lca_e_elec']*100:.2f}",
+            "− 흡수제":           f"{r['lca_e_solvent']*100:.3f}",
+            "− Embodied":         f"{r['lca_e_embodied']*100:.3f}" if include_embodied else "—",
+            "Net Removed [%]":    f"{pct:.1f}",
+            "연 Net 감축 [kt/yr]": f"{r['net_removed_t_yr']/1000:,.1f}",
+            "CRCF 등급":          crcf_tier(pct),
+        })
+    st.dataframe(pd.DataFrame(tier_rows), use_container_width=True, hide_index=True)
+
+    # ── 3. 시나리오 비교 인사이트 ──
+    avg_net = sum(r["crcf_efficiency_pct"] for r in results) / len(results)
+    best_net_r = max(results, key=lambda r: r["crcf_efficiency_pct"])
+    worst_net_r = min(results, key=lambda r: r["crcf_efficiency_pct"])
+
+    st.markdown(f"""
+##### 💡 분석 인사이트
+
+- **평균 Net 효율**: {avg_net:.1f}% (1톤 잡으면 평균 {avg_net/100:.2f}톤 실제 감축)
+- **최고 효율**: {best_net_r['name']} ({best_net_r['crcf_efficiency_pct']:.1f}%) — voluntary credit 발행에 가장 적합
+- **최저 효율**: {worst_net_r['name']} ({worst_net_r['crcf_efficiency_pct']:.1f}%) — 열원/grid 변경 검토 필요
+- **현재 가정에서 dominant emission**: {('열' if results[0]['lca_e_heat'] >= max(results[0]['lca_e_elec'], results[0]['lca_e_solvent']) else '전력' if results[0]['lca_e_elec'] >= results[0]['lca_e_solvent'] else '흡수제')} ({max(results[0]['lca_e_heat'], results[0]['lca_e_elec'], results[0]['lca_e_solvent'])*100:.1f}% of captured)
+""")
+
+    # ── 4. 시장별 매출 기준 (gross vs net) ──
+    st.markdown("---")
+    st.markdown("##### 📋 시장별 매출 기준 (gross vs net)")
+    st.markdown("""
+| 시장/제도 | 기준 | 본 모델 | 출처 |
+|---|---|---|---|
+| 🇺🇸 **45Q (CCS/EOR/DAC)** | 격리·이용량 (**gross**) | ✅ 정확 | IRS Section 45Q (IRA 2022) |
+| 🇪🇺 **EU ETS** | 격리량 (**gross**) | ✅ 정확 | EU Directive Art. 49 |
+| 🇰🇷 **K-ETS (CCS)** | 격리량 (**gross**) | ✅ 정확 | 「온실가스 배출권법」 Art.14 |
+| 🇰🇷 **K-ETS CCU 차감** | 출하량 (**gross**) | ✅ **사이드바 toggle 추가됨** | 환경부 고시 |
+| 🇳🇱 NL SDE++ / 🇬🇧 UK CfD | 격리량 (gross) | ✅ 정확 | RVO/BEIS CfD strike |
+| 🇺🇸 **CA LCFS** | Pathway 기반 (full lifecycle) | ⚠️ 사용자가 net 입력 권장 | CA-GREET 모델 |
+| 🟢 **Voluntary credits (Stripe Frontier 등)** | **Net removed** | ⚠️ Gross로 과대 추정 | ICVCM CCP |
+| 🟢 **EU CRCF (2024)** | **Net removed** | ⚠️ 동일 | EU CRCF Reg. Art.4 |
+""")
+    st.warning(
+        "**컴플라이언스 시장 (45Q, K-ETS, EU ETS, NL SDE++, UK CfD)** 는 모두 gross 기준 → 본 모델 매출 계산 OK.\n\n"
+        "**Voluntary 시장 / EU CRCF (2024)** 는 net removed 기준. 예: gross 1 Mt 신청해도 net 70%면 "
+        "**700 ktCO₂ × 단가만 인정**. 사이드바 '추가 매출 [$/t]'에 입력 시 net 기준 단가로 직접 입력 권장."
+    )
+
+    # ── 5. 출처 표시 ──
+    with st.expander("📚 LCA 계산 근거 (출처)"):
+        st.markdown("""
+**열원 배출계수 (kgCO₂/GJ)**:
+- 천연가스 보일러 55, 석탄 100, 폐열 5, 재생E 8 — IPCC AR6 WG3 Annex II
+
+**Grid 배출계수 (gCO₂/kWh, 2024)**:
+- US 380, 한국 470, EU 230, 노르웨이 30 — IEA Electricity Maps 2024
+
+**흡수제 배출계수 (kgCO₂/kg solvent)**:
+- MEA 1.4 (Singh et al. 2011, Energy Procedia)
+- Hindered amine 2.2 (Pour et al. 2018, Applied Energy)
+- NH₃ 2.2 (ecoinvent 3.x DB)
+- MOF/zeolite 3.5 (Strazza et al. 2020)
+
+**Embodied CAPEX**: 0.20 kgCO₂/$ industrial CAPEX (NETL 2021 LCA)
+
+**기준 framework**:
+- EU Carbon Removal Certification Framework (CRCF) Regulation 2024
+- ICVCM Core Carbon Principles (2023)
+- ISO 14064 / 14067
+- IEAGHG 2010-09 LCA Guidelines for CCS
+""")
+
+
 # ======================================================================
 # 푸터 — 작성자 정보 풀 버전 (스크롤 다운 시 강한 인상)
 # ======================================================================
@@ -3227,7 +3767,7 @@ st.markdown(
         </div>
         <div style='font-size:0.78rem; color:#8b95a7; margin-bottom:14px;'>
             Advanced Amine (KS-21 · DC-103 · Aker S26) + 비아민계 (K₂CO₃ · CAP · DMX · TSA · CaL)
-            · 9종 통합 비교 · 51개 출처 audit trail
+            · 9종 통합 비교 · LCA/Net CO₂ (CRCF·ICVCM) · 71개 출처 audit trail
         </div>
         <div style='font-size:0.85rem; color:#B0BEC5; margin-bottom:4px;'>
             👤 Built by
