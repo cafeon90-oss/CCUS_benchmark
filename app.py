@@ -110,11 +110,19 @@ st.markdown(
         div[data-testid="stMetricLabel"] { font-size: 0.65rem !important; }
     }
 
-    /* 모바일 터치 시 그래프 줌/팬 방지 — 페이지 세로 스크롤만 허용 */
-    @media (pointer: coarse) {
-        .js-plotly-plot, .plotly, .plot-container, .main-svg {
-            touch-action: pan-y !important;
-        }
+    /* 그래프 완전 정적화 — 모든 디바이스에서 줌·팬·터치 인터랙션 차단 */
+    .js-plotly-plot, .plotly, .plot-container, .main-svg {
+        touch-action: pan-y !important;  /* 페이지 세로 스크롤만 허용 */
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    /* 모드바·hover 효과 완전 제거 */
+    .js-plotly-plot .plotly .modebar,
+    .js-plotly-plot .plotly .modebar-container {
+        display: none !important;
+    }
+    .js-plotly-plot * {
+        cursor: default !important;
     }
 
     /* 사이드바 multiselect 칩 — 글자 잘림만 방지 (단순) */
@@ -1355,16 +1363,18 @@ def fmt_krw_per_t(krw_per_t: float, sign: bool = False) -> str:
 CHART_MARGIN = dict(l=10, r=10, t=50, b=80)
 CHART_MARGIN_STACK = dict(l=10, r=10, t=50, b=120)
 
-# 모바일 친화: 드래그/줌/더블클릭 모두 비활성화 (호버는 유지)
+# 그래프 완전 정적화: 줌·팬·더블클릭·호버·툴바 모두 비활성
+# (모바일에서 터치 시 의도치 않은 줌/팬 방지 — 정적 이미지처럼 동작)
 PLOTLY_CONFIG = {
     "displayModeBar": False,
     "scrollZoom": False,
     "doubleClick": False,
     "showTips": False,
     "displaylogo": False,
-    "staticPlot": False,
+    "staticPlot": True,           # 완전 정적 — 모든 인터랙션 차단
     "showAxisDragHandles": False,
     "showAxisRangeEntryBoxes": False,
+    "responsive": True,            # 화면 크기 따라 반응 (정적 + 반응형)
 }
 
 # ======================================================================
@@ -3724,28 +3734,49 @@ with tab9:
     if facility_mode == "CCU" and apply_kets_ccu:
         st.markdown("---")
         st.markdown("### 🇰🇷 한국 K-ETS CCU 차감 효과 (할당대상업체 보고용)")
-        st.caption(
-            "본 섹션은 **K-ETS 배출량 보고 시 차감 가능 톤수** 계산. "
-            "**금전적 매출 아님** — 회사의 배출권 수급 상황에 따라 조건부 경제 가치."
+        st.warning(
+            "⚠️ **K-ETS 차감 기준 = Gross 출하량** (물리적 MRV 측정량). "
+            "Net (LCA 반영)이 아닙니다. 환경부는 lifecycle 배출은 차감 산정에서 묻지 않음. "
+            "Net 감축량은 환경 효과 참고용 (실제 정책 차감 기준 아님)."
         )
 
-        # 기술별 K-ETS 차감 톤수 + 조건부 가치
-        kets_rows = []
+        # ── PRIMARY: Gross 기준 (실제 K-ETS 차감) ──
+        st.markdown("##### 🎯 K-ETS 보고 차감 (Gross 출하량 기준)")
+        kets_primary_rows = []
         for r in results:
-            sold = r['sold_lco2_t']                  # 보고 차감 (gross 출하량)
-            net_t = r['net_removed_t_yr']            # LCA 반영 net 감축
-            net_pct = (net_t / sold * 100) if sold > 0 else 0
+            sold = r['sold_lco2_t']  # gross 출하량 = 실제 차감 톤수
             implicit_usd = sold * kets_ccu_price_info
-            implicit_krw = implicit_usd * fx_krw_per_usd
-            kets_rows.append({
+            kets_primary_rows.append({
                 "기술": r['name'],
-                "Gross 출하량 (보고 차감)": f"{sold/1000:,.1f} kt/yr",
-                "Net 감축량 (LCA 반영)":   f"{net_t/1000:,.1f} kt/yr",
-                "실제 감축 효율 [%]":       f"{net_pct:.1f}",
-                f"조건부 가치 (×${kets_ccu_price_info:.1f}/t)":
-                                            fmt_money(implicit_usd, fx_krw_per_usd, display_currency),
+                "Gross 출하량 [kt/yr]":     f"{sold/1000:,.1f}",
+                "K-ETS 차감 보고량 [kt/yr]": f"{sold/1000:,.1f}",  # 동일 (gross = 차감 기준)
+                f"조건부 가치 (× ${kets_ccu_price_info:.1f}/t)":
+                                              fmt_money(implicit_usd, fx_krw_per_usd, display_currency),
             })
-        st.dataframe(pd.DataFrame(kets_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(kets_primary_rows), use_container_width=True, hide_index=True)
+        st.caption(
+            "→ K-ETS 차감 톤수 = **MRV로 측정한 실제 출하 CO₂ 톤수** "
+            "(환경부 배출량 보고·검증 지침)"
+        )
+
+        # ── SECONDARY: Net (LCA) — 환경 효과 참고용 ──
+        st.markdown("##### 🌱 환경 효과 참고 — LCA 반영 Net 감축 (정책 차감 기준 아님)")
+        kets_secondary_rows = []
+        for r in results:
+            sold = r['sold_lco2_t']
+            net_t = r['net_removed_t_yr']
+            net_pct = (net_t / sold * 100) if sold > 0 else 0
+            kets_secondary_rows.append({
+                "기술": r['name'],
+                "Gross 출하 [kt/yr]":      f"{sold/1000:,.1f}",
+                "Net 감축 (LCA) [kt/yr]":  f"{net_t/1000:,.1f}",
+                "실제 환경 효율 [%]":       f"{net_pct:.1f}",
+            })
+        st.dataframe(pd.DataFrame(kets_secondary_rows), use_container_width=True, hide_index=True)
+        st.caption(
+            "ℹ️ Net 감축량은 voluntary credit·EU CRCF 등 **lifecycle 평가 시장**에서 의미. "
+            "K-ETS 차감과는 별개."
+        )
 
         # 조건부 시나리오 안내
         st.info(f"""
