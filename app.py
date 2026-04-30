@@ -1876,7 +1876,42 @@ with st.sidebar:
     st.markdown("---")
     st.caption(
         "**†** = 파일럿/실증 데이터.<br>"
-        "데이터: NETL Rev4a, IEAGHG, DOE, KIER",
+        "데이터: NETL/IEAGHG/DOE/KIER/IRS 45Q",
+        unsafe_allow_html=True,
+    )
+
+    # ──────────────────────────────────────────────
+    # 👤 작성자 정보 (항상 사이드바 하단에 표시)
+    # ──────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown(
+        """
+        <div style='background:#1E2128; border-left:3px solid #4FC3F7;
+                    border-radius:6px; padding:10px 12px; margin-top:8px;'>
+            <div style='font-size:0.78rem; color:#8b95a7; margin-bottom:3px;'>
+                👤 Built by
+            </div>
+            <div style='font-size:0.95rem; font-weight:700; color:#E8EAED;'>
+                송봉관 / Song BK
+            </div>
+            <div style='font-size:0.72rem; color:#B0BEC5; margin:2px 0 6px 0;'>
+                DAC & CCUS 기술사업화 전문가
+            </div>
+            <div style='font-size:0.72rem; line-height:1.7;'>
+                🐙 <a href='https://github.com/cafeon90-oss' target='_blank'
+                       style='color:#81C784; text-decoration:none;'>GitHub</a> &nbsp;
+                💼 <a href='https://www.linkedin.com/in/bongkwan-song-95a0213ba/' target='_blank'
+                       style='color:#81C784; text-decoration:none;'>LinkedIn</a><br>
+                📝 <a href='https://cdrmaster.tistory.com/' target='_blank'
+                       style='color:#81C784; text-decoration:none;'>Blog (Tistory)</a> &nbsp;
+                📧 <a href='mailto:cafeon90@gmail.com'
+                       style='color:#81C784; text-decoration:none;'>Email</a>
+            </div>
+            <div style='font-size:0.65rem; color:#6e7888; margin-top:6px;'>
+                © 2026 Song BK · MIT License
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
@@ -3179,12 +3214,47 @@ floor 0.3 (부분 압축 시에도 최소 손실)
     )
 
 # ======================================================================
-# 푸터
+# 푸터 — 작성자 정보 풀 버전 (스크롤 다운 시 강한 인상)
 # ======================================================================
 st.markdown("---")
-st.caption(
-    "🌫️ CO₂ 포집·CCUS 벤치마크 v1.3 | "
-    "Advanced Amine (KS-21·DC-103·Aker S26) + 비아민계 (K₂CO₃·CAP·DMX·TSA·CaL) | "
-    "NETL Rev4a/2022 · IEAGHG · MHI · Shell Cansolv · Aker CC · IRS 45Q · KRX | "
-    "방법론 출처: 50개"
+st.markdown(
+    """
+    <div style='text-align:center; padding:20px 0;
+                background:linear-gradient(135deg, #1E2128 0%, #2A2F3A 100%);
+                border-radius:8px; margin-top:20px;'>
+        <div style='font-size:1.0rem; color:#E8EAED; font-weight:700; margin-bottom:6px;'>
+            🌫️ CO₂ 포집·CCUS 기술·경제성 벤치마크 v1.3
+        </div>
+        <div style='font-size:0.78rem; color:#8b95a7; margin-bottom:14px;'>
+            Advanced Amine (KS-21 · DC-103 · Aker S26) + 비아민계 (K₂CO₃ · CAP · DMX · TSA · CaL)
+            · 9종 통합 비교 · 51개 출처 audit trail
+        </div>
+        <div style='font-size:0.85rem; color:#B0BEC5; margin-bottom:4px;'>
+            👤 Built by
+            <b style='color:#4FC3F7; font-size:1.0rem;'>송봉관 / Song BK</b>
+        </div>
+        <div style='font-size:0.78rem; color:#8b95a7; margin-bottom:10px;'>
+            DAC & CCUS 기술사업화 전문가
+        </div>
+        <div style='font-size:0.85rem; margin-bottom:10px;'>
+            🐙 <a href='https://github.com/cafeon90-oss' target='_blank'
+                  style='color:#81C784; text-decoration:none; font-weight:600;'>GitHub</a>
+            &nbsp;·&nbsp;
+            💼 <a href='https://www.linkedin.com/in/bongkwan-song-95a0213ba/' target='_blank'
+                  style='color:#81C784; text-decoration:none; font-weight:600;'>LinkedIn</a>
+            &nbsp;·&nbsp;
+            📝 <a href='https://cdrmaster.tistory.com/' target='_blank'
+                  style='color:#81C784; text-decoration:none; font-weight:600;'>Blog</a>
+            &nbsp;·&nbsp;
+            📧 <a href='mailto:cafeon90@gmail.com'
+                  style='color:#81C784; text-decoration:none; font-weight:600;'>cafeon90@gmail.com</a>
+        </div>
+        <div style='font-size:0.7rem; color:#6e7888; margin-top:10px;
+                    border-top:1px solid #3a3f4a; padding-top:8px;'>
+            © 2026 Song BK · MIT License · 자유롭게 사용/배포 가능 (저작자 표기 필수)<br>
+            Data: NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER · MHI · Shell Cansolv · Aker CC · KRX
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
