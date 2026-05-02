@@ -1,135 +1,212 @@
-# 🌫️ CO₂ 포집·CCUS 기술·경제성 벤치마크
+# 🌍 EU CBAM 영향 계산기 / EU CBAM Impact Calculator
 
-NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER 등 공식 자료 기반의 9종 CCUS 기술 통합 비교 시뮬레이터.
-규모의 경제·포집율·프로젝트 시나리오·다중 인센티브 stacking을 모두 반영해 **사업 의사결정 수준**의 분석 가능.
+**한국 기업의 EU 탄소국경조정제도(CBAM) 부담을 시뮬레이션하는 Streamlit 도구**
+*A Streamlit tool to simulate EU CBAM cost exposure for Korean exporters.*
+
+[![Built by](https://img.shields.io/badge/Built%20by-Song%20BK-4FC3F7)](https://github.com/cafeon90-oss)
+[![License: MIT](https://img.shields.io/badge/License-MIT-81C784.svg)](LICENSE)
+[![Sister Tool](https://img.shields.io/badge/Sister-CCUS%20Benchmark-B388FF)](https://ccusamineanalysis-9z3cxdmxmd3muuepqlhaqb.streamlit.app/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.32+-FF4B4B)](https://streamlit.io/)
 
 ---
 
-## 👤 작성자
+## 🇰🇷 한국어
 
-**송봉관 / Song BK** — DAC & CCUS 기술사업화 전문가
+### 목적
 
-| 항목 | 링크 |
+EU CBAM (Carbon Border Adjustment Mechanism, 탄소국경조정제도)이 **2026년 1월 1일 본격 시행**됨에 따라, 한국 주요 수출기업(POSCO, 현대제철, 시멘트, 알루미늄, 비료, 수소)이 부담할 CBAM 비용을 시뮬레이션하고, **탄소감축 수단(CCS, DRI-H₂, EAF, RE100, Bio-CCS)** 적용 시 회피 가능액을 계산합니다.
+
+### 핵심 수식
+
+```
+CBAM cost = (SEE − Free EU benchmark) × Phase-in factor × EUA × import volume
+```
+
+- **SEE** (Specific Embedded Emissions): 단위 제품당 내재 탄소배출량 [tCO₂/t]
+- **Phase-in factor**: 2026 2.5% → 2034 100% (선형 ramp)
+- **EUA**: EU ETS 탄소배출권 가격 (€/tCO₂)
+- **Free benchmark**: EU 무상할당 벤치마크 (sector·공정별)
+
+### 10개 탭 구성
+
+| # | 탭 | 내용 |
+|---|---|---|
+| ① | 종합 영향 | 9개 sector × 한국 평균 SEE × EU benchmark 비교 |
+| ② | Sector별 분석 | 선택 sector deep-dive (default vs 한국 vs benchmark) |
+| ③ | 한국 기업 영향 | 9개 프리셋 기업 비교 (POSCO, 현대제철 BF/EAF, 시멘트 등) |
+| ④ | 감축 시뮬레이터 | "CBAM=0 만들려면 얼마 감축?" 역산 + 9개 CCUS BEP 분석 |
+| ⑤ | CCUS 연계 | 자매 도구(CCUS Benchmark) 9개 기술 비교 — Phase 2에서 live fetch |
+| ⑥ | 시간 흐름 | 2023~2034 phase-in 시각화 + 회사별 trajectory |
+| ⑦ | Custom 입력 | Multi-year 비교 + EUA 가격 민감도 |
+| ⑧ | 방법론 | 계산식, 가정, 한계 |
+| ⑨ | 참고문헌 | 30+ 출처 카탈로그 (regulation, report, paper, market) |
+| ⑩ | 📰 EU CBAM 뉴스 | EU 위원회 + Eur-Lex의 주요 공지 — **GitHub Actions가 매월 1일 자동 갱신** |
+
+### 시나리오 프리셋 (9개 + Custom)
+
+1. 🇰🇷 POSCO (BF-BOF, ~75 Mt/yr)
+2. 🇰🇷 현대제철 (BF + EAF mix)
+3. 🇰🇷 현대제철 (Pure Scrap-EAF)
+4. 🇰🇷 쌍용·한일시멘트
+5. 🇰🇷 노벨리스 코리아 (Aluminum)
+6. 🇰🇷 한화솔루션 (NH₃·비료)
+7. 🇰🇷 SK E&S (Gray H₂)
+8. 🇰🇷 SK E&S + CCS (Blue H₂) — *CCS 효과 데모*
+9. 🌍 EU 베스트 (DRI-H₂ 철강) — 참조용
+10. ✏️ Custom (사용자 직접 입력)
+
+### 자동 데이터 갱신
+
+- **EUA 가격** *(주 1회)*: GitHub Actions가 매주 월요일 09:00 KST에 Sandbag/TradingEconomics에서 fetch → `data/eua_price.json` commit. Streamlit `@st.cache_data(ttl=86400)`.
+- **EU CBAM 뉴스** *(월 1회 · 완전 자동화)*: GitHub Actions가 매월 1일 09:00 KST에 EU Taxation & Customs CBAM 페이지 스크래핑 → 카테고리 자동 분류 + 한글 제목 자동 생성 → `data/cbam_news.json` commit. **사용자 개입 0**. 12개월 누적 자동 보존.
+- **POSCO SEE**: 정적값 + 출처 link + 사용자 슬라이더 override (POSCO ESG 보고서는 연 1회 갱신).
+- **CCUS COCA**: Phase 2에서 자매 도구 `data/ccus_metrics.json` 연결 예정 (현재는 9개 기술 stub mirror).
+
+### 설치 및 실행
+
+```bash
+# 1. clone
+git clone https://github.com/cafeon90-oss/CBAM_calculator.git
+cd CBAM_calculator
+
+# 2. (권장) 가상환경
+python -m venv venv
+source venv/bin/activate          # macOS/Linux
+# venv\Scripts\activate          # Windows
+
+# 3. 의존성 설치
+pip install -r requirements.txt
+
+# 4. 실행
+streamlit run app.py
+```
+
+### 디렉토리 구조
+
+```
+CBAM_calculator/
+├── app.py                          # 메인 Streamlit 앱
+├── requirements.txt
+├── README.md                       # 이 파일
+├── LICENSE                         # MIT
+├── .streamlit/
+│   └── config.toml                 # 다크모드 + 서버 설정
+├── data/
+│   ├── eua_price.json              # EUA 가격 (주 1회 자동 갱신)
+│   └── cbam_news.json              # EU CBAM 주요 공지 (월 1회 자동 갱신)
+└── .github/
+    └── workflows/
+        ├── eua_fetch.yml           # 주 1회 EUA 가격 fetch cron
+        └── cbam_news_fetch.yml     # 월 1회 EU CBAM 뉴스 fetch cron
+```
+
+### 자매 도구
+
+🌫️ **[CCUS 기술 벤치마크 — 라이브 앱 ↗](https://ccusamineanalysis-9z3cxdmxmd3muuepqlhaqb.streamlit.app/)** ([GitHub repo](https://github.com/cafeon90-oss/CCUS_benchmark)) — 한국·미국·EU의 9개 CCUS 흡수제 기술의 COCA·SPECCA·CAPEX 비교. CBAM 회피를 위한 CCS 도입 시 BEP 분석 시 본 도구와 데이터 연계.
+
+### 핵심 출처
+
+- **Regulation**: EU Regulation 2023/956, EU IR 2025/2621
+- **Korea Reports**: 대한상의 SGI Brief 22 (2024), KOTRA 공급망 인사이트, 한국무역협회
+- **Industry**: POSCO Climate Risk 2025, InfluenceMap 2024
+- **Market**: EEX, Sandbag, ICE EUA Futures
+- **Standards**: IEA, IEAGHG, NETL, World Steel Association
+
+전체 30+ 출처는 앱 내 탭 ⑨ 참고문헌 또는 [REFS 섹션](app.py#L600) 참조.
+
+### 기여·문의
+
+- 🐙 GitHub: [cafeon90-oss](https://github.com/cafeon90-oss)
+- 💼 LinkedIn: [Bongkwan Song](https://www.linkedin.com/in/bongkwan-song-95a0213ba/)
+- 📝 Blog: [CDR Master](https://cdrmaster.tistory.com/)
+- 📧 Email: cafeon90@gmail.com
+
+### License
+
+MIT License © 2026 송봉관 / Song BK. 자세한 내용은 [LICENSE](LICENSE) 참조.
+
+---
+
+## 🇬🇧 English
+
+### Purpose
+
+The **EU CBAM (Carbon Border Adjustment Mechanism)** entered its definitive phase on **1 January 2026**. This Streamlit tool helps Korean exporters in the six covered sectors (steel, cement, aluminum, fertilizer, hydrogen, electricity) **simulate annual CBAM exposure** and **evaluate avoidance scenarios** through carbon abatement options including CCS, DRI-H₂, EAF conversion, RE100, and Bio-CCS.
+
+### Core Formula
+
+```
+CBAM cost = (SEE − Free EU benchmark) × Phase-in factor × EUA × import volume
+```
+
+- **SEE** (Specific Embedded Emissions) — tCO₂ per ton of product
+- **Phase-in factor** — ramps from 2.5% in 2026 to 100% in 2034
+- **EUA** — EU ETS allowance price (€/tCO₂)
+- **Free benchmark** — EU free allocation benchmark per sector/process
+
+### 9 Tabs
+
+| # | Tab | Description |
+|---|---|---|
+| ① | Overview | 6-sector comparison (Korea avg vs EU benchmark) |
+| ② | Sector Deep-dive | Selected sector: default vs Korea vs benchmark |
+| ③ | Korean Companies | 9 preset comparison (POSCO, Hyundai Steel, etc.) |
+| ④ | Abatement Sim | "How much reduction needed for CBAM=0?" + BEP |
+| ⑤ | CCUS Linkage | Sister tool integration — Phase 2 |
+| ⑥ | Timeline | 2023~2034 phase-in viz + per-company trajectory |
+| ⑦ | Custom Input | Multi-year compare + EUA sensitivity |
+| ⑧ | Methodology | Formulas, assumptions, limitations |
+| ⑨ | References | 30+ source catalog (regulation/report/paper/market) |
+
+### Auto Data Refresh
+
+- **EUA price**: GitHub Actions cron weekly (Mon 09:00 KST) → fetches from Sandbag/TradingEconomics → commits to `data/eua_price.json`. Streamlit caches via `@st.cache_data(ttl=86400)`.
+- **POSCO SEE**: Static value + source link + user slider override (POSCO ESG report annual).
+- **CCUS COCA**: Phase 2 will fetch live from sister tool's `data/ccus_metrics.json`. Currently uses stub mirror.
+
+### Quick Start
+
+```bash
+git clone https://github.com/cafeon90-oss/CBAM_calculator.git
+cd CBAM_calculator
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+### Sister Tool
+
+🌫️ **[CCUS Technology Benchmark — Live App ↗](https://ccusamineanalysis-9z3cxdmxmd3muuepqlhaqb.streamlit.app/)** ([GitHub repo](https://github.com/cafeon90-oss/CCUS_benchmark)) — Compares 9 CCUS solvent/process technologies (COCA, SPECCA, CAPEX) for Korea/US/EU contexts. The CBAM calculator integrates this data for CCS-based abatement BEP analysis.
+
+### Key Data Sources
+
+- **Regulation**: EU Regulation 2023/956, EU IR 2025/2621
+- **Korea**: KCCI SGI Brief 22 (2024), KOTRA Supply Chain Insight, KITA
+- **Industry**: POSCO Climate Risk 2025, InfluenceMap 2024
+- **Market**: EEX, Sandbag, ICE EUA Futures
+- **Standards**: IEA, IEAGHG, NETL, World Steel Association
+
+Full reference catalog (30+ entries) inside the app at Tab ⑨ References.
+
+### License
+
+MIT © 2026 Song BK (송봉관). See [LICENSE](LICENSE).
+
+### Author
+
+| | |
 |---|---|
-| 🐙 GitHub | https://github.com/cafeon90-oss |
-| 💼 LinkedIn | https://www.linkedin.com/in/bongkwan-song-95a0213ba/ |
-| 📝 Blog | https://cdrmaster.tistory.com/ |
+| 👤 Name | 송봉관 / Song BK (Bongkwan Song) |
+| 🎯 Specialty | DAC & CCUS Technology Commercialization |
+| 🐙 GitHub | [cafeon90-oss](https://github.com/cafeon90-oss) |
+| 💼 LinkedIn | [Bongkwan Song](https://www.linkedin.com/in/bongkwan-song-95a0213ba/) |
+| 📝 Blog | [CDR Master](https://cdrmaster.tistory.com/) |
 | 📧 Email | cafeon90@gmail.com |
 
 ---
 
-## 🧪 비교 기술 (9종)
+## 📋 Limitations & Disclaimer
 
-### Advanced Amine (4종, Tier A)
-| 기술 | 흡수제 | SRD [GJ/tCO₂] | 대표 사례 |
-|---|---|---|---|
-| MEA 30 wt% (참고) | MEA + reclaimer | 3.60 | NETL B12B baseline |
-| MHI KS-21™ | Hindered amine | 2.80 | Petra Nova, 일본 다수 |
-| Cansolv DC-103 | Shell 2세대 amine | 2.50 | Boundary Dam, NETL 2022 |
-| Aker S26 | Aker 솔벤트 | 2.80 | Norcem Brevik, Twence |
+This tool is for **educational and analytical purposes only**. All numbers are estimates based on publicly available information. Users should validate with their own verified data before making business decisions. This is not financial, legal, or regulatory advice.
 
-### 비아민계 (5종)
-| 기술 | 흡수제/소재 | SRD | 단계 |
-|---|---|---|---|
-| K₂CO₃ / KIERSOL † | K₂CO₃ + 활성화제 | 2.95 | Pilot (Tier C) |
-| Chilled Ammonia (CAP) | NH₃ 28 wt% | 2.40 | Demo (Tier A) |
-| Biphasic DMX™ † | 3차 아민 (상분리) | 2.30 | Pilot (Tier C) |
-| Solid Sorbent TSA | 고체 흡착제 | 2.20 | Demo (Tier B) |
-| Calcium Looping (CaL) | CaO ⇌ CaCO₃ | 3.20 | Demo (Tier B) |
-
-`†` = 파일럿/실증 데이터 (±25% 불확실성)
-
----
-
-## ✨ 주요 기능
-
-- **8개 탭**: 종합 비교 / 에너지 분해 / 경제성 / 손실 / 트렌드 / Custom 입력 / 참고문헌 / 방법론
-- **시나리오 프리셋 6종**: 미국 발전소·한국 시멘트·EU 블루수소·DAC+LCFS·식품급 LCO₂·반도체 LCO₂
-- **자동 인사이트 박스** + 추천 메시지
-- **5대 KPI**: 연 손익 (메인) + SRD · We · SPECCA · COCA
-- **CCS 특화 스케일링** (Lang n=0.65, IEAGHG 기반)
-- **포집율 효과** (90% baseline, 99%→+18% SRD)
-- **프로젝트 시나리오** (Retrofit/Greenfield/산업 5종)
-- **CCU 정제 등급별** 수율·CAPEX adder (식품/고순도/초고순도)
-- **다중 인센티브 stacking** (45Q + 시장 + LCFS)
-- **지역 색상 코딩** (🟦🟨🟪🟧 — stack 호환성 즉각 식별)
-- **호버 툴팁** (계산식 + 출처 포함)
-- **통화 toggle** (USD ↔ KRW ↔ Both)
-- **51개 출처 audit trail** (NETL/IEAGHG/45Q/SDE++/UK CfD/K-CCUS/MHI/Shell/Aker)
-
----
-
-## 🚀 실행 방법
-
-### 로컬 실행
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
-브라우저에서 `http://localhost:8501` 접속.
-
-### Streamlit Cloud 배포
-1. 본 repo를 GitHub에 push
-2. https://share.streamlit.io 접속, GitHub 연동
-3. New app → repo 선택 → Main file path: `app.py`
-4. Deploy
-
----
-
-## 📐 지표 정의
-
-```
-We     [GJe/tCO₂] = We_thermal(Carnot×0.55) + 펌프 + 압축 + 냉동기 + 보조
-SPECCA [MJ/tCO₂]  = (SRD × 500 + We_elec × 2,500) / capture_rate
-COCA   [USD/tCO₂] = (연환산 CAPEX + OPEX) / 연 포집량
-
-CAPEX 적용 순서:
-  LIT base × project type × 포집율 × 규모(0.65) × CCU adder
-
-Carnot η = (T_regen − T_cool) / T_regen × 0.55  (second-law factor, Bejan/Kotas)
-CRF      = i(1+i)ⁿ / [(1+i)ⁿ − 1]                (NETL QGESS)
-```
-
----
-
-## 📚 데이터 출처 (요약)
-
-- **NETL** Rev4a Case B12C, 2022 Baseline B11B/B12B/B31B, QGESS Methodology
-- **IEAGHG** 2007 Post-Comb, 2011 Retrofit, 2013 Solvent R&D, 2013 Cement, 2014 Solvents, 2019 Beyond 90%
-- **IRS** Section 45Q (IRA 2022): $85/t CCS, $60/t EOR, $180/t DAC
-- **KRX** K-ETS 거래 데이터 / **ICE** EU ETS Futures
-- **NL RVO** SDE++ / **UK BEIS** CCUS CfD
-- **KIER** KIERSOL Pilot / **TotalEnergies** 3D Project DMX
-- **MHI** KS-21 / **Shell** Cansolv DC-103 / **Aker CC** S26
-- **POSCO/한국** 산업 CCS / **Norcem Brevik** 시멘트 CCS
-- **IPCC** SR CCS 2005, AR6 WG3 / **Global CCS Institute** Status 2023
-- 학술 논문 (Rochelle, Bui, Darde, Raynal, Cullinane, Yoo, Abanades, Grasa, Romeo, Lepaumier, Manzolini, Cousins, Sjostrom & Krutka, Hanak, Rubin/CMU)
-- 방법론 (Bejan, Kotas, ASHRAE, GPSA, Peters & Timmerhaus, EIA AEO, CGA G-6.2, SEMI C3)
-
-전체 51개 출처는 앱 내 **탭 ⑦ 참고문헌**에서 카테고리별로 확인 가능.
-
----
-
-## ⚠️ 주의사항
-
-- 본 툴의 수치는 공개 보고서 기반 *representative values*. 실제 프로젝트는 EPC 견적·실증 데이터로 보정 필요.
-- Tier C(†) 데이터는 상용 스케일에서 ±25% 이상 변동 가능.
-- 정책/시장 단가는 변동성 高. 의사결정 시 최신 데이터로 갱신 필수.
-
----
-
-## 📜 License
-
-MIT License — 자유롭게 사용·수정·배포 가능, 단 **저작자 표기 필수**.
-인용 시: `Song, B. K. (2026). CO₂ 포집·CCUS 기술·경제성 벤치마크. https://github.com/cafeon90-oss`
-
-자세한 내용: [LICENSE](./LICENSE) 파일 참조.
-
----
-
-## 🔗 Related Links
-
-- 작성자 블로그 (CDR/CCUS 분석): https://cdrmaster.tistory.com/
-- 작성자 LinkedIn: https://www.linkedin.com/in/bongkwan-song-95a0213ba/
-
-작성자에게 직접 문의·협업 제안: cafeon90@gmail.com
+본 도구는 **교육·분석 목적**입니다. 모든 수치는 공개된 정보 기반의 추정값이며, 비즈니스 의사결정 전 자체 검증된 데이터로 확인이 필요합니다. 재무·법률·규제 자문이 아닙니다.
