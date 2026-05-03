@@ -3569,9 +3569,12 @@ with tab_econ:
     # 📈 NPV / IRR / Payback (사업성 지표)
     # ───────────────────────────────────────
     st.markdown("---")
-    st.markdown(f"### 📈 사업성 지표 — {tip('NPV', 'NPV')} · "
-                 f"IRR · Payback Period · Profitability Index",
-                 unsafe_allow_html=True)
+    st.markdown(
+        f"<h3 style='margin-top:8px;'>📈 사업성 지표 — "
+        f"{tip('NPV', 'NPV')} · {tip('IRR', 'IRR')} · "
+        f"Payback Period · Profitability Index</h3>",
+        unsafe_allow_html=True,
+    )
     st.caption(
         f"수명 {lifetime}년 · 할인율 {discount*100:.1f}% · 초기 CAPEX = 실효 CAPEX × 연 포집량 · "
         f"연 cash flow = 연 손익 (보조금·매출 stack 반영)"
