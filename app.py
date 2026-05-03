@@ -3076,6 +3076,24 @@ with tab_overall:
                 unsafe_allow_html=True,
             )
 
+    # ── Section Conclusion ──
+    _best_p = sorted_profit[0]
+    _worst_p = sorted_profit[-1]
+    _gap = _best_p['annual_profit_usd'] - _worst_p['annual_profit_usd']
+    st.markdown(
+        f"<div style='font-size:0.8rem; color:#B0BEC5; padding:8px 12px; "
+        f"background:#1E2128; border-left:3px solid #FFC107; border-radius:4px; "
+        f"margin-top:8px;'>"
+        f"📌 <b>결론</b>: 최고 <b style='color:#81C784;'>{SHORT_NAMES.get(_best_p['key'], _best_p['name'])}</b> "
+        f"({fmt_money(_best_p['annual_profit_usd'], fx_krw_per_usd, display_currency)}/yr) vs "
+        f"최악 <b style='color:#E57373;'>{SHORT_NAMES.get(_worst_p['key'], _worst_p['name'])}</b> "
+        f"({fmt_money(_worst_p['annual_profit_usd'], fx_krw_per_usd, display_currency)}/yr) — "
+        f"기술별 격차 {fmt_money(_gap, fx_krw_per_usd, display_currency)}. "
+        f"인센티브 stack·시설 모드 변경으로 흑자 기술 수 변동 가능."
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
     st.markdown("---")
 
     with st.expander("📖 **KPI 지표 정의** — 클릭해서 펼치기/접기", expanded=False):
@@ -3207,6 +3225,32 @@ with tab_overall:
     render_kpi_chart(kpi_specs[2], row2[0])
     render_kpi_chart(kpi_specs[3], row2[1])
 
+    # ── Section Conclusion (Pareto frontier 분석) ──
+    _winners = {k: min(results, key=lambda r: r[k]) for k in ["SRD", "We_total", "SPECCA", "COCA"]}
+    _winner_keys = [r["key"] for r in _winners.values()]
+    _all_winner = (len(set(_winner_keys)) == 1)
+    if _all_winner:
+        _w_name = SHORT_NAMES.get(_winner_keys[0], _winners["SRD"]["name"])
+        _conclusion_kpi = (
+            f"📌 <b>결론</b>: <b style='color:#81C784;'>{_w_name}</b>이(가) "
+            f"4대 지표 모두 최고 (Pareto dominant). 종합 효율 best."
+        )
+    else:
+        _winner_summary = " · ".join([
+            f"{k} <b style='color:#81C784;'>{SHORT_NAMES.get(_winners[k]['key'], _winners[k]['name'])}</b>"
+            for k in ["SRD", "We_total", "SPECCA", "COCA"]
+        ])
+        _conclusion_kpi = (
+            f"📌 <b>결론</b>: 지표별 최고 — {_winner_summary}. "
+            f"단일 winner 없음 → 우선 지표(SRD vs COCA)에 따라 선택."
+        )
+    st.markdown(
+        f"<div style='font-size:0.8rem; color:#B0BEC5; padding:8px 12px; "
+        f"background:#1E2128; border-left:3px solid #FFC107; border-radius:4px; "
+        f"margin-top:8px;'>{_conclusion_kpi}</div>",
+        unsafe_allow_html=True,
+    )
+
     st.markdown("---")
     st.markdown("### 데이터 테이블")
     df["material"] = df["key"].map(MATERIALS)
@@ -3220,6 +3264,26 @@ with tab_overall:
     show_df["SPECCA"] = show_df["SPECCA"].map(lambda x: f"{x:,.0f}")
     show_df["COCA"] = show_df["COCA"].map(lambda x: f"{x:,.1f}")
     st.dataframe(show_df, use_container_width=True, hide_index=True)
+
+    # ── Section Conclusion (TRL · 기술 분포) ──
+    _trl_a = sum(1 for r in results if r['TRL'] >= 9)
+    _trl_b = sum(1 for r in results if 7 <= r['TRL'] < 9)
+    _trl_c = sum(1 for r in results if r['TRL'] < 7)
+    _avg_srd = sum(r['SRD'] for r in results) / len(results)
+    _avg_coca = sum(r['COCA'] for r in results) / len(results)
+    st.markdown(
+        f"<div style='font-size:0.8rem; color:#B0BEC5; padding:8px 12px; "
+        f"background:#1E2128; border-left:3px solid #FFC107; border-radius:4px; "
+        f"margin-top:8px;'>"
+        f"📌 <b>결론</b>: 선택된 {len(results)}개 기술 — "
+        f"TRL 9 (상용) <b style='color:#81C784;'>{_trl_a}</b> · "
+        f"TRL 7-8 (Demo) <b style='color:#FFB74D;'>{_trl_b}</b> · "
+        f"TRL ≤6 (Pilot) <b style='color:#E57373;'>{_trl_c}</b>. "
+        f"평균 SRD <b>{_avg_srd:.2f}</b> GJ/t · 평균 COCA <b>${_avg_coca:.1f}</b>/t. "
+        f"파일럿 데이터(†)는 ±25% 불확실성 — 의사결정 시 보정 필수."
+        f"</div>",
+        unsafe_allow_html=True,
+    )
 
 # ---------- ④ 에너지 페널티 ----------
 with tab_energy:
