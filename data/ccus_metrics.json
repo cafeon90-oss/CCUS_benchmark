@@ -1,0 +1,487 @@
+{
+  "schema_version": "1.0",
+  "last_updated": "2026-04-30",
+  "source_tool": "CCUS Benchmark v1.4",
+  "source_url": "https://github.com/cafeon90-oss/ccus_benchmark",
+  "live_demo": "https://ccusbenchmark-rcuf9appppppppykmyeca8nwgk.streamlit.app/",
+  "author": "송봉관 / Song BK (cafeon90@gmail.com)",
+  "license": "MIT © 2026 Song BK",
+
+  "metadata": {
+    "reference_capture_mt_yr": 3.7,
+    "reference_capture_eff": 0.90,
+    "lit_base_year": 2018,
+    "currency": "USD",
+    "ref_plant": "NETL B12C / B12B — 555 MWe net Subcritical PC + post-combustion capture, Illinois #6 coal, 90% capture",
+    "trl_definitions": {
+      "9": "상용 (Commercial — 다수 운영 사례)",
+      "7-8": "Demo (대규모 실증)",
+      "5-6": "Pilot (파일럿 실증)",
+      "3-4": "R&D (연구·소형 실증)"
+    }
+  },
+
+  "technologies": {
+    "MEA_baseline": {
+      "name": "MEA 30 wt% (참고)",
+      "short_name": "MEA",
+      "category": "Amine (ref)",
+      "material": "MEA 30 wt% 수용액 (HOCH₂CH₂NH₂)",
+      "source": "NETL B12B / IEAGHG 2014",
+      "status": "commercial",
+      "TRL": 9,
+      "is_pilot": false,
+
+      "performance": {
+        "SRD_GJ_per_tCO2": 3.60,
+        "T_regen_C": 120,
+        "T_abs_C": 40,
+        "p_regen_bar": 1.8,
+        "capture_rate_default": 0.90
+      },
+
+      "energy_components_GJe_per_tCO2": {
+        "We_pump": 0.012,
+        "We_comp": 0.40,
+        "We_chill": 0.0,
+        "We_aux": 0.05
+      },
+
+      "economics": {
+        "CAPEX_USD_per_tCO2_yr": 950,
+        "OPEX_solvent_USD_per_tCO2": 1.5,
+        "OPEX_other_USD_per_tCO2": 12.0
+      },
+
+      "operations": {
+        "capacity_range_mt_yr": [0.1, 10.0],
+        "loss_kg_per_tCO2": 1.5,
+        "loss_mechanism": "산화·열분해 (degradation)"
+      },
+
+      "lca": {
+        "solvent_emission_factor_kgCO2_per_kg": 1.4
+      },
+
+      "references": [
+        "NETL_Rev4a", "NETL_2022_Baseline", "Rochelle2009",
+        "IEAGHG_Solvents_2014", "Lepaumier2009", "Bui2018", "Cousins_2011"
+      ],
+
+      "notes": "30 wt% MEA + reclaimer. 1세대 표준, 비교 기준선."
+    },
+
+    "MHI_KS21": {
+      "name": "MHI KS-21™",
+      "short_name": "KS-21",
+      "category": "Advanced Amine",
+      "material": "Hindered amine 혼합물 (KS-21™, MHI 2세대)",
+      "source": "Mitsubishi Heavy Industries (Petra Nova KS-1 → KS-21)",
+      "status": "commercial",
+      "TRL": 9,
+      "is_pilot": false,
+
+      "performance": {
+        "SRD_GJ_per_tCO2": 2.80,
+        "T_regen_C": 120,
+        "T_abs_C": 40,
+        "p_regen_bar": 1.8,
+        "capture_rate_default": 0.90
+      },
+
+      "energy_components_GJe_per_tCO2": {
+        "We_pump": 0.011,
+        "We_comp": 0.40,
+        "We_chill": 0.0,
+        "We_aux": 0.04
+      },
+
+      "economics": {
+        "CAPEX_USD_per_tCO2_yr": 920,
+        "OPEX_solvent_USD_per_tCO2": 1.8,
+        "OPEX_other_USD_per_tCO2": 12.0
+      },
+
+      "operations": {
+        "capacity_range_mt_yr": [0.5, 10.0],
+        "loss_kg_per_tCO2": 0.6,
+        "loss_mechanism": "Hindered amine 구조 → 산화 분해 ↓"
+      },
+
+      "lca": {
+        "solvent_emission_factor_kgCO2_per_kg": 2.2
+      },
+
+      "references": [
+        "MHI_KS21_2020", "GCCSI_Boundary_Petra", "Cousins_2011"
+      ],
+
+      "notes": "MHI 2세대 hindered amine. Petra Nova(KS-1)에서 KS-21로 진화 (2020+). 일본·동남아 적용."
+    },
+
+    "Cansolv_DC103": {
+      "name": "Cansolv DC-103",
+      "short_name": "DC-103",
+      "category": "Advanced Amine",
+      "material": "2세대 amine 혼합물 (Shell Cansolv proprietary)",
+      "source": "Shell Cansolv (NETL 2022 Baseline)",
+      "status": "commercial",
+      "TRL": 9,
+      "is_pilot": false,
+
+      "performance": {
+        "SRD_GJ_per_tCO2": 2.50,
+        "T_regen_C": 110,
+        "T_abs_C": 40,
+        "p_regen_bar": 1.8,
+        "capture_rate_default": 0.90
+      },
+
+      "energy_components_GJe_per_tCO2": {
+        "We_pump": 0.012,
+        "We_comp": 0.40,
+        "We_chill": 0.0,
+        "We_aux": 0.04
+      },
+
+      "economics": {
+        "CAPEX_USD_per_tCO2_yr": 880,
+        "OPEX_solvent_USD_per_tCO2": 1.6,
+        "OPEX_other_USD_per_tCO2": 11.5
+      },
+
+      "operations": {
+        "capacity_range_mt_yr": [0.5, 10.0],
+        "loss_kg_per_tCO2": 0.7,
+        "loss_mechanism": "낮은 휘발성, 산화 안정성 ↑"
+      },
+
+      "lca": {
+        "solvent_emission_factor_kgCO2_per_kg": 2.0
+      },
+
+      "references": [
+        "NETL_2022_Baseline", "Cansolv_DC103_Tech", "GCCSI_Boundary_Petra"
+      ],
+
+      "notes": "Shell 상용 솔벤트. Boundary Dam (1 Mt/yr 운영). NETL 2022 B11B/B12B/B31B 공식 reference."
+    },
+
+    "Aker_S26": {
+      "name": "Aker S26",
+      "short_name": "Aker S26",
+      "category": "Advanced Amine",
+      "material": "Aker S26 솔벤트 (proprietary blend)",
+      "source": "Aker Carbon Capture (Norcem Brevik, Twence)",
+      "status": "commercial",
+      "TRL": 9,
+      "is_pilot": false,
+
+      "performance": {
+        "SRD_GJ_per_tCO2": 2.80,
+        "T_regen_C": 120,
+        "T_abs_C": 40,
+        "p_regen_bar": 1.8,
+        "capture_rate_default": 0.90
+      },
+
+      "energy_components_GJe_per_tCO2": {
+        "We_pump": 0.012,
+        "We_comp": 0.40,
+        "We_chill": 0.0,
+        "We_aux": 0.045
+      },
+
+      "economics": {
+        "CAPEX_USD_per_tCO2_yr": 1000,
+        "OPEX_solvent_USD_per_tCO2": 1.7,
+        "OPEX_other_USD_per_tCO2": 12.5
+      },
+
+      "operations": {
+        "capacity_range_mt_yr": [0.1, 5.0],
+        "loss_kg_per_tCO2": 0.8,
+        "loss_mechanism": "낮은 emission, 안정성 ↑"
+      },
+
+      "lca": {
+        "solvent_emission_factor_kgCO2_per_kg": 2.2
+      },
+
+      "references": [
+        "Aker_S26_2023", "Norcem_Brevik_2024"
+      ],
+
+      "notes": "Norcem Brevik (시멘트, 0.4 Mt/yr, 2024 가동), Twence WtE. 유럽 대표 상용 솔벤트."
+    },
+
+    "K2CO3_KIERSOL": {
+      "name": "KIERSOL (KIER 한국) †",
+      "short_name": "KIERSOL†",
+      "category": "Hot Carbonate",
+      "material": "KIERSOL™ — K₂CO₃ 25~30wt% + Piperazine 계열 활성화제",
+      "source": "KIER KIERSOL 파일럿 (Korea Institute of Energy Research)",
+      "status": "pilot",
+      "TRL": 6,
+      "is_pilot": true,
+
+      "performance": {
+        "SRD_GJ_per_tCO2": 2.95,
+        "T_regen_C": 105,
+        "T_abs_C": 70,
+        "p_regen_bar": 1.5,
+        "capture_rate_default": 0.90
+      },
+
+      "energy_components_GJe_per_tCO2": {
+        "We_pump": 0.025,
+        "We_comp": 0.38,
+        "We_chill": 0.0,
+        "We_aux": 0.06
+      },
+
+      "economics": {
+        "CAPEX_USD_per_tCO2_yr": 1050,
+        "OPEX_solvent_USD_per_tCO2": 0.8,
+        "OPEX_other_USD_per_tCO2": 11.0
+      },
+
+      "operations": {
+        "capacity_range_mt_yr": [0.05, 1.0],
+        "loss_kg_per_tCO2": 0.5,
+        "loss_mechanism": "촉진제 열화·미량 분해"
+      },
+
+      "lca": {
+        "solvent_emission_factor_kgCO2_per_kg": 1.2
+      },
+
+      "references": [
+        "KIER_KIERSOL_2013", "Yoo2013", "Cullinane2004"
+      ],
+
+      "notes": "한국에너지기술연구원(KIER) 자체 개발 솔벤트. K₂CO₃ 25-30 wt% + 활성화제 (Piperazine 계열 amine). 0.5 MWe 파일럿 실증. 70°C warm absorber로 reaction kinetics 보완."
+    },
+
+    "CAP_B12C": {
+      "name": "Chilled Ammonia (CAP)",
+      "short_name": "CAP",
+      "category": "Chilled NH₃",
+      "material": "NH₃ 28 wt% 수용액 (0~10 °C 냉각)",
+      "source": "NETL Rev4a Case B12C",
+      "status": "demo",
+      "TRL": 7,
+      "is_pilot": false,
+
+      "performance": {
+        "SRD_GJ_per_tCO2": 2.40,
+        "T_regen_C": 150,
+        "T_abs_C": 5,
+        "p_regen_bar": 24.0,
+        "capture_rate_default": 0.90
+      },
+
+      "energy_components_GJe_per_tCO2": {
+        "We_pump": 0.018,
+        "We_comp": 0.18,
+        "We_chill": 0.18,
+        "We_aux": 0.05
+      },
+
+      "economics": {
+        "CAPEX_USD_per_tCO2_yr": 1200,
+        "OPEX_solvent_USD_per_tCO2": 0.6,
+        "OPEX_other_USD_per_tCO2": 13.0
+      },
+
+      "operations": {
+        "capacity_range_mt_yr": [1.0, 5.0],
+        "loss_kg_per_tCO2": 0.3,
+        "loss_mechanism": "NH₃ slip (water wash 회수)"
+      },
+
+      "lca": {
+        "solvent_emission_factor_kgCO2_per_kg": 2.2
+      },
+
+      "references": [
+        "NETL_Rev4a", "Darde2010", "Telikapalli2011"
+      ],
+
+      "notes": "흡수탑 0~10 °C 냉각. 가압 재생 → CO₂ 압축 부하 절감. NETL B12C 공식 케이스."
+    },
+
+    "Biphasic_DMX": {
+      "name": "Biphasic DMX™ †",
+      "short_name": "DMX†",
+      "category": "Biphasic",
+      "material": "3차 아민 혼합액 (DMX™, 상분리형)",
+      "source": "TotalEnergies / IFP-EN / 3D Project",
+      "status": "pilot",
+      "TRL": 6,
+      "is_pilot": true,
+
+      "performance": {
+        "SRD_GJ_per_tCO2": 2.30,
+        "T_regen_C": 155,
+        "T_abs_C": 40,
+        "p_regen_bar": 1.8,
+        "capture_rate_default": 0.90
+      },
+
+      "energy_components_GJe_per_tCO2": {
+        "We_pump": 0.020,
+        "We_comp": 0.36,
+        "We_chill": 0.0,
+        "We_aux": 0.05
+      },
+
+      "economics": {
+        "CAPEX_USD_per_tCO2_yr": 1100,
+        "OPEX_solvent_USD_per_tCO2": 1.8,
+        "OPEX_other_USD_per_tCO2": 12.0
+      },
+
+      "operations": {
+        "capacity_range_mt_yr": [0.05, 2.0],
+        "loss_kg_per_tCO2": 1.0,
+        "loss_mechanism": "용매 분해·휘발"
+      },
+
+      "lca": {
+        "solvent_emission_factor_kgCO2_per_kg": 2.5
+      },
+
+      "references": [
+        "TotalEnergies_3D", "Raynal2011"
+      ],
+
+      "notes": "상분리 후 CO₂ 농후상만 재생 → 재생 유량 ½. SRD 보정계수 ≈ 0.7 적용."
+    },
+
+    "TSA_Solid": {
+      "name": "Solid Sorbent TSA",
+      "short_name": "TSA",
+      "category": "Solid Sorbent",
+      "material": "고체 흡착제 (아민 함침/제올라이트/MOF)",
+      "source": "DOE NETL R&D / SRI / RTI",
+      "status": "demo",
+      "TRL": 7,
+      "is_pilot": false,
+
+      "performance": {
+        "SRD_GJ_per_tCO2": 2.20,
+        "T_regen_C": 110,
+        "T_abs_C": 40,
+        "p_regen_bar": 1.2,
+        "capture_rate_default": 0.90
+      },
+
+      "energy_components_GJe_per_tCO2": {
+        "We_pump": 0.005,
+        "We_comp": 0.40,
+        "We_chill": 0.0,
+        "We_aux": 0.10
+      },
+
+      "economics": {
+        "CAPEX_USD_per_tCO2_yr": 1300,
+        "OPEX_solvent_USD_per_tCO2": 2.5,
+        "OPEX_other_USD_per_tCO2": 10.0
+      },
+
+      "operations": {
+        "capacity_range_mt_yr": [0.01, 1.0],
+        "loss_kg_per_tCO2": 2.0,
+        "loss_mechanism": "사이클 열화·마모 (attrition)"
+      },
+
+      "lca": {
+        "solvent_emission_factor_kgCO2_per_kg": 3.5
+      },
+
+      "references": [
+        "DOE_NETL_Sorbent_Program", "Sjostrom_Krutka_2010", "Bui2018"
+      ],
+
+      "notes": "고체 흡착제, 무수계, 사이클 시간 변수 영향 大. 분산형 소규모에 유리."
+    },
+
+    "CaL": {
+      "name": "Calcium Looping (CaL)",
+      "short_name": "CaL",
+      "category": "CaO/CaCO₃",
+      "material": "CaO ⇌ CaCO₃ (석회석 기원, 고체)",
+      "source": "IEAGHG 2013/14 CaL Report",
+      "status": "demo",
+      "TRL": 7,
+      "is_pilot": false,
+
+      "performance": {
+        "SRD_GJ_per_tCO2": 3.20,
+        "T_regen_C": 900,
+        "T_abs_C": 650,
+        "p_regen_bar": 1.0,
+        "capture_rate_default": 0.90
+      },
+
+      "energy_components_GJe_per_tCO2": {
+        "We_pump": 0.0,
+        "We_comp": 0.36,
+        "We_chill": 0.0,
+        "We_aux": 0.15
+      },
+
+      "economics": {
+        "CAPEX_USD_per_tCO2_yr": 850,
+        "OPEX_solvent_USD_per_tCO2": 1.5,
+        "OPEX_other_USD_per_tCO2": 14.0
+      },
+
+      "operations": {
+        "capacity_range_mt_yr": [0.5, 5.0],
+        "loss_kg_per_tCO2": 30.0,
+        "loss_mechanism": "다회 사이클 비활성화 (CaO sintering)"
+      },
+
+      "lca": {
+        "solvent_emission_factor_kgCO2_per_kg": 0.10
+      },
+
+      "references": [
+        "IEAGHG_CaL_2013", "Abanades2002", "Grasa2006", "Romeo2008", "Hanak_2015"
+      ],
+
+      "notes": "650/900 °C 고온 순환. 시멘트 산업 통합 가능. ASU 포함 oxy-calcination."
+    }
+  },
+
+  "references_used": {
+    "NETL_Rev4a": "DOE/NETL (2019). Cost and Performance Baseline for Fossil Energy Plants Vol. 1, Rev. 4a. DOE/NETL-2015/1723.",
+    "NETL_2022_Baseline": "DOE/NETL (2022). Cases B11B/B12B/B31B with Cansolv DC-103. DOE/NETL-2023/4320.",
+    "Rochelle2009": "Rochelle, G. T. (2009). Amine Scrubbing for CO₂ Capture. Science, 325(5948), 1652-1654.",
+    "IEAGHG_Solvents_2014": "IEAGHG (2014). Evaluation of Reclaimer Sludge Disposal from Post-Combustion CO₂ Capture. Report 2014/02.",
+    "Lepaumier2009": "Lepaumier, H. et al. (2009). New amines for CO₂ capture. II. Oxidative degradation mechanisms. Ind. Eng. Chem. Res., 48(20), 9068-9075.",
+    "Bui2018": "Bui, M. et al. (2018). Carbon capture and storage (CCS): the way forward. Energy Environ. Sci., 11(5), 1062-1176.",
+    "Cousins_2011": "Cousins, A. et al. (2011). A survey of process flow sheet modifications for energy efficient CO₂ capture from flue gases. IJGGC, 5(4), 605-619.",
+    "MHI_KS21_2020": "Mitsubishi Heavy Industries (2020). KS-21™ Advanced Amine Solvent. KS-1 후속 (Petra Nova).",
+    "GCCSI_Boundary_Petra": "Global CCS Institute. Boundary Dam (1.0 Mt/yr) + Petra Nova (1.4 Mt/yr) actual data.",
+    "Cansolv_DC103_Tech": "Shell Cansolv (2018-2022). DC-103 Solvent Technical Specs. NETL 2022 Baseline reference solvent.",
+    "Aker_S26_2023": "Aker Carbon Capture (2023). Just Catch™ S26 Solvent — Performance Reports. Norcem Brevik + Twence.",
+    "Norcem_Brevik_2024": "Heidelberg Materials / Norcem Brevik CCS Project (2024). 0.4 Mt/yr cement CCS.",
+    "KIER_KIERSOL_2013": "KIER 한국에너지기술연구원 (2013-2018). KIERSOL 흡수제 파일럿 실증 보고서.",
+    "Yoo2013": "Yoo, M. et al. (KIER) (2013). Development of CO₂ absorbents for power plant flue gas. Korean J. Chem. Eng., 30(7), 1497-1503.",
+    "Cullinane2004": "Cullinane, J. T., Rochelle, G. T. (2004). Carbon dioxide absorption with aqueous K₂CO₃ promoted by piperazine. Chem. Eng. Sci., 59(17), 3619-3630.",
+    "Darde2010": "Darde, V. et al. (2010). Chilled ammonia process for CO₂ capture. IJGGC, 4(2), 131-136.",
+    "Telikapalli2011": "Telikapalli, V. et al. (2011). CCS with the Alstom Chilled Ammonia Process — Field Pilot Results. Energy Procedia, 4, 273-281.",
+    "TotalEnergies_3D": "3D Project Consortium (2017-2023). DMX™ Demonstration in Dunkirk. H2020 Grant 838031.",
+    "Raynal2011": "Raynal, L. et al. (2011). From MEA to demixing solvents and future steps. Chem. Eng. J., 171(3), 742-752.",
+    "DOE_NETL_Sorbent_Program": "DOE/NETL Carbon Capture Program (2018). Solid Sorbent Process Designs.",
+    "Sjostrom_Krutka_2010": "Sjostrom, S., Krutka, H. (2010). Evaluation of solid sorbents as a retrofit technology for CO₂ capture. Fuel, 89(6), 1298-1306.",
+    "IEAGHG_CaL_2013": "IEAGHG (2013). Deployment of CCS in the Cement Industry. Calcium Looping Report 2013/19.",
+    "Abanades2002": "Abanades, J. C. (2002). Maximum capture efficiency of CO₂ using CaO/CaCO₃ cycle. Chem. Eng. J., 90(3), 303-306.",
+    "Grasa2006": "Grasa, G. S., Abanades, J. C. (2006). CO₂ capture capacity of CaO in long carbonation/calcination cycles. Ind. Eng. Chem. Res., 45(26), 8846-8851.",
+    "Romeo2008": "Romeo, L. M. et al. (2008). Oxyfuel carbonation/calcination cycle for low cost CO₂ capture. Energy Conv. Mgmt., 49(10), 2809-2814.",
+    "Hanak_2015": "Hanak, D. P. et al. (2015). A review of pilot-plant testing and modelling of calcium looping. Energy Environ. Sci., 8(8), 2199-2249."
+  }
+}
