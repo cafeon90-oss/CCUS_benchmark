@@ -298,30 +298,107 @@ GRID_FACTORS = {
     "custom_grid":{"label": "✏️ Custom",                    "gCO2_kWh": 380},
 }
 
-# 흡수제·소재별 생산 시 배출계수 (kgCO2eq / kg solvent or sorbent produced)
-# 출처: Singh 2011, Pour 2018, Strazza 2020, ecoinvent 3.x DB
-SOLVENT_EMISSION_FACTORS = {
-    "MEA_baseline":   1.4,   # Haber-Bosch NH3 + EO synthesis
-    "MHI_KS21":       2.2,   # Hindered amine (복잡 합성)
-    "Cansolv_DC103":  2.0,   # 2세대 amine 혼합물
-    "Aker_S26":       2.2,   # Proprietary amine blend
-    "K2CO3_KIERSOL":  1.2,   # K2CO3 + PZ activator (가중평균)
-    "CAP_B12C":       2.2,   # NH3 Haber-Bosch
-    "Biphasic_DMX":   2.5,   # 3차 amine 혼합물
-    "TSA_Solid":      3.5,   # 아민 함침 MOF/zeolite
-    "CaL":            0.10,  # 석회석 caO 자체는 calcination 시 process CO2 별도
-                              # Makeup limestone CO2 = 30 kg × 0.65 = 19.5 (이건 LIT loss 자체에 포함됨)
-                              # 여기서는 채굴/가공 CF만
-}
+# ══════════════════════════════════════════════════════════════════════
+# 🎯 Single Source of Truth — data/ccus_metrics.json 에서 로드
+# 9개 기술의 LIT, SHORT_NAMES, MATERIALS, LIT_REFS, CAPACITY_RANGE,
+# SOLVENT_EMISSION_FACTORS 모두 한 JSON 파일에서 자동 추출
+# 자매 도구 (CBAM Calculator)도 동일 JSON을 GitHub raw URL로 fetch
+# ══════════════════════════════════════════════════════════════════════
+import json as _json
+
+
+@st.cache_data(ttl=3600)
+def load_ccus_metrics_local(path: str = "data/ccus_metrics.json") -> dict:
+    """
+    data/ccus_metrics.json에서 9개 기술 데이터 로드.
+    Returns: LIT, SHORT_NAMES, MATERIALS, LIT_REFS, CAPACITY_RANGE,
+             SOLVENT_EMISSION_FACTORS dicts + metadata
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = _json.load(f)
+    except FileNotFoundError:
+        st.error(
+            f"⚠️ CCUS metrics JSON 파일 없음: {path}\n\n"
+            "GitHub repo의 data/ 폴더에 ccus_metrics.json 업로드 필요."
+        )
+        st.stop()
+    except _json.JSONDecodeError as e:
+        st.error(f"⚠️ JSON 파싱 오류: {e}")
+        st.stop()
+
+    techs = data.get("technologies", {})
+    lit, short_names, materials, lit_refs = {}, {}, {}, {}
+    capacity_range, solvent_ef = {}, {}
+
+    for k, v in techs.items():
+        perf   = v.get("performance", {})
+        energy = v.get("energy_components_GJe_per_tCO2", {})
+        econ   = v.get("economics", {})
+        ops    = v.get("operations", {})
+        lca    = v.get("lca", {})
+
+        lit[k] = {
+            "name":             v.get("name"),
+            "category":         v.get("category"),
+            "source":           v.get("source"),
+            "status":           v.get("status"),
+            "TRL":              v.get("TRL", 7),
+            "is_pilot":         v.get("is_pilot", False),
+            "SRD":              perf.get("SRD_GJ_per_tCO2"),
+            "T_regen":          perf.get("T_regen_C"),
+            "T_abs":            perf.get("T_abs_C"),
+            "p_regen_bar":      perf.get("p_regen_bar"),
+            "We_pump":          energy.get("We_pump", 0),
+            "We_comp":          energy.get("We_comp", 0),
+            "We_chill":         energy.get("We_chill", 0),
+            "We_aux":           energy.get("We_aux", 0),
+            "CAPEX_per_t":      econ.get("CAPEX_USD_per_tCO2_yr"),
+            "OPEX_solvent":     econ.get("OPEX_solvent_USD_per_tCO2"),
+            "OPEX_other":       econ.get("OPEX_other_USD_per_tCO2"),
+            "loss_kg_per_tCO2": ops.get("loss_kg_per_tCO2"),
+            "loss_mech":        ops.get("loss_mechanism"),
+            "notes":            v.get("notes"),
+        }
+        short_names[k]    = v.get("short_name", k)
+        materials[k]      = v.get("material", "")
+        lit_refs[k]       = v.get("references", [])
+        capacity_range[k] = tuple(ops.get("capacity_range_mt_yr", [0.01, 100]))
+        solvent_ef[k]     = lca.get("solvent_emission_factor_kgCO2_per_kg", 1.5)
+
+    return {
+        "LIT":                       lit,
+        "SHORT_NAMES":               short_names,
+        "MATERIALS":                 materials,
+        "LIT_REFS":                  lit_refs,
+        "CAPACITY_RANGE":            capacity_range,
+        "SOLVENT_EMISSION_FACTORS":  solvent_ef,
+        "metadata":                  data.get("metadata", {}),
+        "schema_version":            data.get("schema_version", "1.0"),
+        "source_tool":               data.get("source_tool", ""),
+    }
+
+
+# Single Source of Truth 데이터 로드
+_ccus_data = load_ccus_metrics_local()
+LIT                       = _ccus_data["LIT"]
+TECH_KEYS                 = list(LIT.keys())
+SHORT_NAMES               = _ccus_data["SHORT_NAMES"]
+MATERIALS                 = _ccus_data["MATERIALS"]
+LIT_REFS                  = _ccus_data["LIT_REFS"]
+CAPACITY_RANGE            = _ccus_data["CAPACITY_RANGE"]
+SOLVENT_EMISSION_FACTORS  = _ccus_data["SOLVENT_EMISSION_FACTORS"]
 
 # Embodied CAPEX 배출계수 (kgCO2 / USD CAPEX 투자, lifetime amortized)
 # 출처: NETL 2021 LCA, IPCC AR6 WG3 Annex II
 EMBODIED_CO2_PER_USD_CAPEX = 0.20  # 평균: 0.15~0.25 kgCO2/$ for industrial CAPEX
 
-# ======================================================================
-# 기술 라이브러리 (LIT) — NETL Rev4a / IEAGHG / DOE / KIER 기반
-# ======================================================================
-LIT = {
+# ──────────────────────────────────────────────────────────────────────
+# LIT (기술 라이브러리) — data/ccus_metrics.json 에서 자동 로드 (위 참조)
+# 이전에 hardcoded 되어 있던 9개 기술 데이터는 모두 JSON 으로 이동됨
+# 수정은 data/ccus_metrics.json 한 곳에서만 (자매 도구 CBAM도 동일 fetch)
+# ──────────────────────────────────────────────────────────────────────
+_LEGACY_LIT_PLACEHOLDER = {
     "MEA_baseline": {
         "name": "MEA 30 wt% (참고)",
         "category": "Amine (ref)",
@@ -524,7 +601,7 @@ LIT = {
     },
 }
 
-TECH_KEYS = list(LIT.keys())
+_LEGACY_TECH_KEYS = list(_LEGACY_LIT_PLACEHOLDER.keys())  # 미사용 (JSON loader가 TECH_KEYS 정의)
 
 # ======================================================================
 # 레퍼런스 통합 라이브러리 (REFS)
@@ -1078,7 +1155,8 @@ def ref_link(ref_id: str, label: str = None) -> str:
     return text
 
 
-LIT_REFS = {
+# LIT_REFS — JSON에서 자동 로드됨 (위 loader 참조). 아래 placeholder는 미사용.
+_LEGACY_LIT_REFS_PLACEHOLDER = {
     "MEA_baseline":    ["NETL_Rev4a", "NETL_2022_Baseline", "Rochelle2009",
                          "IEAGHG_Solvents_2014", "Lepaumier2009", "Bui2018", "Cousins_2011"],
     "MHI_KS21":        ["MHI_KS21_2020", "GCCSI_Boundary_Petra", "Cousins_2011"],
@@ -1129,7 +1207,8 @@ FORMULA_REFS = {
     "TRL (Technology Readiness Level): 1~9 (NASA·EU·IEA 표준)":                              ["IPCC_AR6_WG3_2022"],
 }
 
-SHORT_NAMES = {
+# SHORT_NAMES — JSON에서 자동 로드됨. 아래 placeholder는 미사용.
+_LEGACY_SHORT_NAMES_PLACEHOLDER = {
     "MEA_baseline":   "MEA",
     "MHI_KS21":       "KS-21",
     "Cansolv_DC103":  "DC-103",
@@ -1141,7 +1220,8 @@ SHORT_NAMES = {
     "CaL":            "CaL",
 }
 
-MATERIALS = {
+# MATERIALS — JSON에서 자동 로드됨. 아래 placeholder는 미사용.
+_LEGACY_MATERIALS_PLACEHOLDER = {
     "MEA_baseline":   "MEA 30 wt% 수용액 (HOCH₂CH₂NH₂)",
     "MHI_KS21":       "Hindered amine 혼합물 (KS-21™, MHI 2세대)",
     "Cansolv_DC103":  "2세대 amine 혼합물 (Shell Cansolv proprietary)",
@@ -1437,7 +1517,8 @@ def region_icon(key: str) -> str:
 
 # ────────────── 기술별 실용적 capacity 범위 (Mt/yr) ──────────────
 # 출처: GCCSI 2023, IEAGHG 2014, NETL Rev4a, 각 기술 운영 사례
-CAPACITY_RANGE = {
+# CAPACITY_RANGE — JSON에서 자동 로드됨. 아래 placeholder는 미사용.
+_LEGACY_CAPACITY_RANGE_PLACEHOLDER = {
     "MEA_baseline":   (0.1,  10.0),    # 광범위, 검증된 상용
     "MHI_KS21":       (0.5,  10.0),    # 대형 발전소 retrofit
     "Cansolv_DC103":  (0.5,  10.0),    # Boundary Dam 1 Mt 입증
@@ -2630,6 +2711,17 @@ st.caption(
     "Advanced Amine (KS-21·DC-103·Aker S26) + 🇰🇷 **KIERSOL (KIER)** + "
     "비아민계 (CAP·DMX·TSA·CaL) 통합 비교 · "
     "NETL 2022 / IEAGHG / IRS 45Q / KIER 기반"
+)
+
+# Single Source of Truth 표시 (작은 인디케이터)
+_meta = _ccus_data.get("metadata", {})
+_schema = _ccus_data.get("schema_version", "1.0")
+st.markdown(
+    f"<div style='font-size:0.7rem; color:#6e7888; margin-top:-8px; margin-bottom:6px;'>"
+    f"📦 LIT data: <code style='color:#81C784;'>data/ccus_metrics.json</code> "
+    f"v{_schema} · 9 technologies · 자매 도구도 동일 JSON fetch (Single Source of Truth)"
+    f"</div>",
+    unsafe_allow_html=True,
 )
 
 # ──────────────────────────────────────────────
