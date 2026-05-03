@@ -31,6 +31,14 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 
+# PDF 리포트 (선택적 — reportlab 미설치 시에도 앱은 정상 작동)
+try:
+    from pdf_report import build_pdf_report, fig_to_png_bytes
+    _PDF_AVAILABLE = True
+except Exception as _pdf_err:
+    _PDF_AVAILABLE = False
+    _pdf_import_error = _pdf_err
+
 # ======================================================================
 # 페이지 설정 & 다크모드 / 모바일 CSS
 # ======================================================================
@@ -1328,6 +1336,73 @@ def apply_preset():
         st.session_state[k] = v
     # 선택 기술 적용
     st.session_state["selected_techs"] = preset["techs"]
+
+
+# ============================================================================
+# 🆚 비교 모드 (Phase 2.5) — 시나리오 A vs B 스냅샷 저장/로드
+# ============================================================================
+COMPARE_KPI_FIELDS = [
+    "key", "name", "TRL",
+    "SRD", "We_elec",
+    "COCA", "Net_COCA",
+    "annual_cost_usd", "annual_revenue_usd", "annual_profit_usd",
+    "npv", "irr", "payback_yr",
+    "crcf_efficiency_pct", "net_removed_per_t",
+    "lca_e_total",
+]
+
+
+def _slim_results_for_compare(results_list):
+    """results의 dict list에서 비교용 핵심 KPI 필드만 추출 (메모리 절약)."""
+    slim = []
+    for r in results_list or []:
+        slim.append({f: r.get(f) for f in COMPARE_KPI_FIELDS})
+    return slim
+
+
+def save_scenario_snapshot(slot_label: str, results_list, meta: dict):
+    """
+    현재 시나리오를 session_state['compare_slots'][slot_label]에 저장.
+    slot_label: 'A' or 'B'
+    meta: dict with capture_mt_yr, facility_mode, project_scenario, preset_label, ...
+    """
+    slots = st.session_state.setdefault("compare_slots", {})
+    slots[slot_label] = {
+        "results": _slim_results_for_compare(results_list),
+        "meta": dict(meta),  # shallow copy
+        "saved_at": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
+    }
+
+
+def clear_scenario_snapshot(slot_label: str | None = None):
+    """slot_label이 None이면 전체 삭제. 아니면 해당 슬롯만 삭제."""
+    slots = st.session_state.get("compare_slots", {})
+    if slot_label is None:
+        st.session_state["compare_slots"] = {}
+    else:
+        slots.pop(slot_label, None)
+
+
+def get_scenario_meta_dict(preset_select_value, capture_mt_yr_v, facility_mode_v,
+                            project_scenario_v, ccu_grade_v, fx_v,
+                            cm_select_v, sub_select_v):
+    """현재 사이드바 입력값으로 비교용 메타데이터 dict 생성."""
+    if preset_select_value and preset_select_value != "custom":
+        preset_label = PRESETS.get(preset_select_value, {}).get("label",
+                                                                 preset_select_value)
+    else:
+        preset_label = "✏️ Custom"
+    return {
+        "preset_key": preset_select_value or "custom",
+        "preset_label": preset_label,
+        "capture_mt_yr": capture_mt_yr_v,
+        "facility_mode": facility_mode_v,
+        "project_scenario": project_scenario_v,
+        "ccu_grade": ccu_grade_v,
+        "fx": fx_v,
+        "cm_select": cm_select_v,
+        "sub_select": sub_select_v,
+    }
 
 
 # ────────────── 통화 표시 헬퍼 ──────────────
@@ -2670,6 +2745,35 @@ with st.sidebar:
     )
 
     # ──────────────────────────────────────────────
+    # 🆚 비교 모드 슬롯 인디케이터 (사이드바 하단)
+    # ──────────────────────────────────────────────
+    _slots = st.session_state.get("compare_slots", {})
+    _slot_a = _slots.get("A")
+    _slot_b = _slots.get("B")
+    _a_label = (_slot_a["meta"].get("preset_label", "—") if _slot_a else "비어있음")
+    _b_label = (_slot_b["meta"].get("preset_label", "—") if _slot_b else "비어있음")
+    _a_color = "#81C784" if _slot_a else "#5e6878"
+    _b_color = "#FFB74D" if _slot_b else "#5e6878"
+    st.markdown(
+        f"""
+        <div style='background:#1E2128; border-left:3px solid #B388FF;
+                    border-radius:6px; padding:10px 12px; margin-top:8px;'>
+            <div style='font-size:0.78rem; color:#B388FF; font-weight:600; margin-bottom:4px;'>
+                🆚 비교 모드 슬롯
+            </div>
+            <div style='font-size:0.7rem; line-height:1.55; color:#B0BEC5;'>
+                <span style='color:{_a_color}; font-weight:600;'>A:</span> {_a_label}<br>
+                <span style='color:{_b_color}; font-weight:600;'>B:</span> {_b_label}
+            </div>
+            <div style='font-size:0.62rem; color:#6e7888; margin-top:4px;'>
+                탭 🆚 에서 저장·비교 가능
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # ──────────────────────────────────────────────
     # 👤 작성자 정보 (항상 사이드바 하단에 표시)
     # ──────────────────────────────────────────────
     st.markdown(
@@ -3029,7 +3133,7 @@ df = pd.DataFrame(results)
 # 탭
 # ======================================================================
 (tab_overall, tab_econ, tab_lca, tab_energy, tab_loss,
- tab_trend, tab_custom, tab_method, tab_refs) = st.tabs([
+ tab_trend, tab_custom, tab_compare, tab_method, tab_refs) = st.tabs([
     "① 종합 비교",
     "② 경제성",
     "③ Lifecycle / Net CO₂",
@@ -3037,6 +3141,7 @@ df = pd.DataFrame(results)
     "⑤ 흡수제/흡착제 손실",
     "⑥ 트렌드",
     "⑦ Custom 입력",
+    "🆚 시나리오 비교",
     "⑧ 방법론",
     "⑨ 참고문헌",
 ])
@@ -3376,6 +3481,204 @@ with tab_overall:
         f"</div>",
         unsafe_allow_html=True,
     )
+
+    # ──────────────────────────────────────────────
+    # 📥 PDF 리포트 내보내기
+    # ──────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### 📥 PDF 리포트 내보내기")
+    if not _PDF_AVAILABLE:
+        st.info(
+            "📌 PDF 모듈이 로드되지 않았습니다. 로컬 환경에서 "
+            "`pip install reportlab kaleido==0.2.1` 후 재시작해 주세요."
+        )
+    else:
+        pdf_col1, pdf_col2 = st.columns([2, 1])
+        with pdf_col1:
+            include_charts_pdf = st.checkbox(
+                "📊 차트 이미지 포함 (kaleido 필요, 생성 ~5초)",
+                value=False,
+                help="체크하면 연 손익·COCA·Net COCA·에너지 차트를 PNG로 PDF에 임베드합니다. "
+                      "kaleido 미설치 시 자동으로 차트 없이 생성됩니다.",
+                key="pdf_include_charts",
+            )
+        with pdf_col2:
+            generate_pdf_btn = st.button(
+                "📄 PDF 생성",
+                use_container_width=True,
+                key="btn_generate_pdf",
+                type="primary",
+            )
+
+        if generate_pdf_btn:
+            with st.spinner("PDF 생성 중..."):
+                # 메타 정보 수집
+                _pdf_meta = {
+                    "facility_mode": facility_mode,
+                    "project_scenario": project_scenario_key,
+                    "capture_mt_yr": capture_mt_yr,
+                    "cm_select": st.session_state.get("cm_select", "None"),
+                    "sub_select": st.session_state.get("sub_select", "None"),
+                    "fx": fx_krw_per_usd,
+                    "ccu_grade": st.session_state.get("ccu_grade", "—"),
+                    "preset_label": (
+                        PRESETS.get(st.session_state.get("preset_select", "custom"),
+                                     {}).get("label", "Custom")
+                        if st.session_state.get("preset_select", "custom") != "custom"
+                        else "Custom"
+                    ),
+                }
+
+                # 인사이트 (영문 변환)
+                _pdf_insights = []
+                if results:
+                    _best = max(results, key=lambda r: r.get("annual_profit_usd", 0))
+                    _worst = min(results, key=lambda r: r.get("annual_profit_usd", 0))
+                    _pdf_insights.append(
+                        f"Best technology: {_best['name']} -> "
+                        f"${_best['annual_profit_usd']/1e6:+.1f}M/yr profit, "
+                        f"NPV ${_best.get('npv', 0)/1e6:+.1f}M."
+                    )
+                    if _worst['annual_profit_usd'] < 0:
+                        _pdf_insights.append(
+                            f"Worst technology: {_worst['name']} -> "
+                            f"${_worst['annual_profit_usd']/1e6:+.1f}M/yr loss; "
+                            f"reconsider scenario or stack additional incentives."
+                        )
+                    _profit_count = sum(1 for r in results
+                                          if r.get('annual_profit_usd', 0) > 0)
+                    _pdf_insights.append(
+                        f"Profitability: {_profit_count}/{len(results)} technologies "
+                        f"break even with current incentive stack."
+                    )
+                    _avg_crcf = sum(r.get('crcf_efficiency_pct', 0)
+                                     for r in results) / len(results)
+                    _pdf_insights.append(
+                        f"Average CRCF efficiency: {_avg_crcf:.1f}% "
+                        f"(higher = better Scope 1/2/3 footprint)."
+                    )
+
+                # 차트 PNG (선택)
+                _chart_pngs = {}
+                if include_charts_pdf:
+                    try:
+                        # Annual profit bar
+                        _names = [r["name"][:25] for r in results]
+                        _profits = [r["annual_profit_usd"] / 1e6 for r in results]
+                        _colors = ["#2E7D32" if p >= 0 else "#C62828" for p in _profits]
+                        fig_p = go.Figure(go.Bar(
+                            x=_names, y=_profits, marker_color=_colors,
+                            text=[f"{p:+.1f}" for p in _profits],
+                            textposition="outside",
+                        ))
+                        fig_p.update_layout(
+                            title="Annual Profit by Technology [M USD/yr]",
+                            height=400, paper_bgcolor="white", plot_bgcolor="white",
+                            font=dict(color="#263238", size=11),
+                            yaxis=dict(title="M USD/yr", gridcolor="#CFD8DC"),
+                            xaxis=dict(gridcolor="#CFD8DC"),
+                            margin=dict(l=50, r=20, t=60, b=80),
+                        )
+                        _chart_pngs["profit_bars"] = fig_to_png_bytes(fig_p)
+
+                        # COCA bar
+                        _cocas = [r["COCA"] for r in results]
+                        fig_c = go.Figure(go.Bar(
+                            x=_names, y=_cocas, marker_color="#1565C0",
+                            text=[f"{v:.1f}" for v in _cocas], textposition="outside",
+                        ))
+                        fig_c.update_layout(
+                            title="COCA — Cost of CO2 Avoided [USD/tCO2]",
+                            height=380, paper_bgcolor="white", plot_bgcolor="white",
+                            font=dict(color="#263238", size=11),
+                            yaxis=dict(title="USD/tCO2", gridcolor="#CFD8DC"),
+                            margin=dict(l=50, r=20, t=60, b=80),
+                        )
+                        _chart_pngs["coca_bars"] = fig_to_png_bytes(fig_c)
+
+                        # Net COCA
+                        _net_cocas = [r["Net_COCA"] for r in results]
+                        _ncolors = ["#2E7D32" if n < 0 else "#EF6C00" for n in _net_cocas]
+                        fig_n = go.Figure(go.Bar(
+                            x=_names, y=_net_cocas, marker_color=_ncolors,
+                            text=[f"{v:+.1f}" for v in _net_cocas],
+                            textposition="outside",
+                        ))
+                        fig_n.update_layout(
+                            title="Net COCA — Incentive-adjusted [USD/tCO2]",
+                            height=380, paper_bgcolor="white", plot_bgcolor="white",
+                            font=dict(color="#263238", size=11),
+                            yaxis=dict(title="USD/tCO2", gridcolor="#CFD8DC"),
+                            margin=dict(l=50, r=20, t=60, b=80),
+                        )
+                        _chart_pngs["net_coca_bars"] = fig_to_png_bytes(fig_n)
+
+                        # Energy stack (SRD + We_elec)
+                        _srds = [r["SRD"] for r in results]
+                        _wes = [r.get("We_elec", 0) * 3.6 for r in results]  # GJ/t scale
+                        fig_e = go.Figure()
+                        fig_e.add_trace(go.Bar(
+                            name="SRD (thermal) [GJ/tCO2]", x=_names, y=_srds,
+                            marker_color="#EF6C00",
+                        ))
+                        fig_e.add_trace(go.Bar(
+                            name="We_elec * 3.6 [GJ/tCO2 equiv]", x=_names, y=_wes,
+                            marker_color="#1565C0",
+                        ))
+                        fig_e.update_layout(
+                            title="Energy Penalty Breakdown",
+                            barmode="stack", height=380,
+                            paper_bgcolor="white", plot_bgcolor="white",
+                            font=dict(color="#263238", size=11),
+                            yaxis=dict(title="GJ/tCO2", gridcolor="#CFD8DC"),
+                            margin=dict(l=50, r=20, t=60, b=80),
+                        )
+                        _chart_pngs["energy_bars"] = fig_to_png_bytes(fig_e)
+
+                        # 모든 차트가 None이면 (kaleido 미설치) 메시지
+                        if all(v is None for v in _chart_pngs.values()):
+                            st.warning(
+                                "⚠️ kaleido 미설치 — 차트 없이 텍스트/표만 PDF 생성됩니다. "
+                                "차트 포함하려면: `pip install kaleido==0.2.1`"
+                            )
+                            _chart_pngs = {}
+                    except Exception as _e:
+                        st.warning(f"⚠️ 차트 PNG 생성 중 오류: {_e}. 차트 없이 PDF 생성합니다.")
+                        _chart_pngs = {}
+
+                # PDF 생성
+                try:
+                    _pdf_bytes = build_pdf_report(
+                        results=results,
+                        meta=_pdf_meta,
+                        fx_krw_per_usd=fx_krw_per_usd,
+                        chart_pngs=_chart_pngs or None,
+                        insights=_pdf_insights,
+                        schema_version=_schema,
+                    )
+                    _ts = pd.Timestamp.now().strftime("%Y%m%d_%H%M")
+                    _filename = f"ccus_benchmark_report_{_ts}.pdf"
+                    st.session_state["_pdf_payload"] = {
+                        "bytes": _pdf_bytes, "filename": _filename,
+                    }
+                    st.success(
+                        f"✅ PDF 생성 완료 ({len(_pdf_bytes)/1024:.0f} KB) — "
+                        f"아래 다운로드 버튼 클릭"
+                    )
+                except Exception as _e:
+                    st.error(f"❌ PDF 생성 실패: {_e}")
+
+        # 생성된 PDF 다운로드 (세션 동안 유지)
+        _payload = st.session_state.get("_pdf_payload")
+        if _payload:
+            st.download_button(
+                label=f"📥 다운로드: {_payload['filename']}",
+                data=_payload["bytes"],
+                file_name=_payload["filename"],
+                mime="application/pdf",
+                use_container_width=True,
+                key="dl_pdf_report",
+            )
 
 # ---------- ④ 에너지 페널티 ----------
 with tab_energy:
@@ -4256,6 +4559,306 @@ with tab_custom:
         comp_df["COCA"] = comp_df["COCA"].map(lambda x: f"{x:,.1f}")
         st.dataframe(comp_df, use_container_width=True, hide_index=True)
 
+# ---------- 🆚 시나리오 비교 ----------
+with tab_compare:
+    st.markdown("### 🆚 시나리오 A vs B 비교")
+    st.caption(
+        "사이드바에서 다른 프리셋·입력으로 시나리오를 만들고, 아래 버튼으로 A/B 슬롯에 저장하면 "
+        "두 시나리오의 핵심 KPI를 한 화면에서 비교할 수 있습니다."
+    )
+
+    # 현재 시나리오 메타데이터 캡처
+    _cur_meta = get_scenario_meta_dict(
+        preset_select_value=st.session_state.get("preset_select", "custom"),
+        capture_mt_yr_v=capture_mt_yr,
+        facility_mode_v=facility_mode,
+        project_scenario_v=project_scenario_key,
+        ccu_grade_v=st.session_state.get("ccu_grade", "—"),
+        fx_v=fx_krw_per_usd,
+        cm_select_v=st.session_state.get("cm_select", "None"),
+        sub_select_v=st.session_state.get("sub_select", "None"),
+    )
+
+    # ─── 저장 버튼 영역 ───
+    st.markdown("#### 📌 현재 시나리오를 슬롯에 저장")
+    btn_col_a, btn_col_b, btn_col_c, btn_col_d = st.columns([1, 1, 1, 1.2])
+    with btn_col_a:
+        if st.button("📌 시나리오 **A**로 저장",
+                      use_container_width=True, key="btn_save_a"):
+            save_scenario_snapshot("A", results, _cur_meta)
+            st.success(f"✅ A 저장: {_cur_meta['preset_label']}")
+            st.rerun()
+    with btn_col_b:
+        if st.button("📌 시나리오 **B**로 저장",
+                      use_container_width=True, key="btn_save_b"):
+            save_scenario_snapshot("B", results, _cur_meta)
+            st.success(f"✅ B 저장: {_cur_meta['preset_label']}")
+            st.rerun()
+    with btn_col_c:
+        if st.button("🔄 A↔B 스왑", use_container_width=True, key="btn_swap_ab"):
+            slots = st.session_state.get("compare_slots", {})
+            slots["A"], slots["B"] = slots.get("B"), slots.get("A")
+            # None 정리
+            slots = {k: v for k, v in slots.items() if v is not None}
+            st.session_state["compare_slots"] = slots
+            st.rerun()
+    with btn_col_d:
+        if st.button("🗑️ 전체 초기화", use_container_width=True, key="btn_clear_all"):
+            clear_scenario_snapshot(None)
+            st.rerun()
+
+    st.markdown("---")
+
+    # ─── 슬롯 상태 확인 ───
+    slots = st.session_state.get("compare_slots", {})
+    slot_a = slots.get("A")
+    slot_b = slots.get("B")
+
+    if not slot_a and not slot_b:
+        st.info(
+            "💡 **사용법**\n"
+            "1. 사이드바에서 **시나리오 A** 입력값 설정 (예: 🇺🇸 미국 발전소 retrofit)\n"
+            "2. 위의 **📌 시나리오 A로 저장** 클릭\n"
+            "3. 사이드바에서 **시나리오 B** 입력값 변경 (예: 🇰🇷 한국 시멘트)\n"
+            "4. **📌 시나리오 B로 저장** 클릭 → 자동으로 비교 차트·표 표시"
+        )
+    elif not (slot_a and slot_b):
+        only_label = "A" if slot_a else "B"
+        only_data = slot_a if slot_a else slot_b
+        st.warning(
+            f"⏳ **슬롯 {only_label}**만 저장됨 — `{only_data['meta'].get('preset_label')}` "
+            f"({only_data['saved_at']}). 나머지 슬롯에도 시나리오를 저장하면 비교가 시작됩니다."
+        )
+    else:
+        # ────────── 양쪽 모두 채워짐 → 비교 시작 ──────────
+        meta_a = slot_a["meta"]
+        meta_b = slot_b["meta"]
+        results_a = slot_a["results"]
+        results_b = slot_b["results"]
+
+        # ─── 메타 정보 비교 카드 ───
+        st.markdown("#### 📋 시나리오 메타 정보")
+        meta_col_a, meta_col_b = st.columns(2)
+        for slot_label, meta_d, col_, accent in [
+            ("A", meta_a, meta_col_a, "#81C784"),
+            ("B", meta_b, meta_col_b, "#FFB74D"),
+        ]:
+            with col_:
+                st.markdown(
+                    f"""
+                    <div style='background:#1A1D24; border-left:4px solid {accent};
+                                border-radius:8px; padding:12px 14px;'>
+                        <div style='font-size:0.78rem; color:{accent}; font-weight:700;
+                                    margin-bottom:6px;'>
+                            🅰️ 시나리오 {slot_label}
+                        </div>
+                        <div style='font-size:0.95rem; font-weight:600; color:#E8EAED;
+                                    margin-bottom:8px;'>
+                            {meta_d.get('preset_label', '—')}
+                        </div>
+                        <div style='font-size:0.72rem; line-height:1.7; color:#B0BEC5;'>
+                            <b>모드</b>: {meta_d.get('facility_mode', '—')}
+                            ({meta_d.get('project_scenario', '—')})<br>
+                            <b>포집량</b>: {meta_d.get('capture_mt_yr', 0):,.2f} Mt/yr<br>
+                            <b>탄소 시장</b>: {meta_d.get('cm_select', 'None')} ·
+                            <b>보조금</b>: {meta_d.get('sub_select', 'None')}<br>
+                            <b>저장 시각</b>:
+                            <span style='color:#6e7888;'>{slot_a["saved_at"] if slot_label=="A" else slot_b["saved_at"]}</span>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+        # ─── 공통 기술만 추출 ───
+        keys_a = {r["key"] for r in results_a}
+        keys_b = {r["key"] for r in results_b}
+        common_keys = sorted(keys_a & keys_b)
+        only_a = sorted(keys_a - keys_b)
+        only_b = sorted(keys_b - keys_a)
+
+        if not common_keys:
+            st.error(
+                "⚠️ A와 B 시나리오에 **공통 기술이 없습니다**. "
+                "사이드바 '비교할 기술 선택'에서 두 시나리오에 같은 기술을 1개 이상 포함시켜주세요."
+            )
+        else:
+            if only_a or only_b:
+                _msgs = []
+                if only_a:
+                    _msgs.append(f"A에만: `{', '.join(only_a)}`")
+                if only_b:
+                    _msgs.append(f"B에만: `{', '.join(only_b)}`")
+                st.caption(
+                    f"💡 비교 가능 공통 기술 {len(common_keys)}개 · {' / '.join(_msgs)} (비교 제외)"
+                )
+
+            # ─── KPI 비교 차트 (공통 기술만) ───
+            st.markdown("#### 📊 핵심 KPI 비교 (공통 기술)")
+
+            # KPI 선택
+            kpi_options = {
+                "annual_profit_usd": ("💰 연 손익 [M USD/yr]", lambda x: x / 1e6),
+                "COCA": ("💵 COCA [USD/tCO₂]", lambda x: x),
+                "Net_COCA": ("🌱 Net COCA [USD/tCO₂]", lambda x: x),
+                "SRD": ("🔥 SRD [GJ/tCO₂]", lambda x: x),
+                "We_elec": ("⚡ We_elec [GJe/tCO₂]", lambda x: x),
+                "npv": ("📈 NPV [M USD]", lambda x: x / 1e6),
+                "irr": ("📊 IRR [%]", lambda x: (x or 0) * 100),
+                "payback_yr": ("⏱️ Payback [yr]", lambda x: x or 0),
+                "crcf_efficiency_pct": ("🌳 CRCF 효율 [%]", lambda x: x or 0),
+                "lca_e_total": ("🌍 LCA 총배출 [tCO₂e/tCO₂]", lambda x: x or 0),
+            }
+            kpi_key = st.selectbox(
+                "비교할 KPI",
+                options=list(kpi_options.keys()),
+                format_func=lambda k: kpi_options[k][0],
+                index=0,
+                key="compare_kpi_select",
+            )
+            kpi_label, kpi_transform = kpi_options[kpi_key]
+
+            # A, B 데이터를 같은 순서로 정렬
+            results_a_dict = {r["key"]: r for r in results_a}
+            results_b_dict = {r["key"]: r for r in results_b}
+
+            tech_names = []
+            vals_a, vals_b = [], []
+            for k in common_keys:
+                ra = results_a_dict[k]
+                rb = results_b_dict[k]
+                tech_names.append(SHORT_NAMES.get(k, k))
+                vals_a.append(kpi_transform(ra.get(kpi_key) or 0))
+                vals_b.append(kpi_transform(rb.get(kpi_key) or 0))
+
+            fig_cmp = go.Figure()
+            fig_cmp.add_trace(go.Bar(
+                name=f"A: {meta_a.get('preset_label', 'A')[:30]}",
+                x=tech_names, y=vals_a,
+                marker_color="#81C784",
+                text=[f"{v:,.1f}" for v in vals_a], textposition="outside",
+            ))
+            fig_cmp.add_trace(go.Bar(
+                name=f"B: {meta_b.get('preset_label', 'B')[:30]}",
+                x=tech_names, y=vals_b,
+                marker_color="#FFB74D",
+                text=[f"{v:,.1f}" for v in vals_b], textposition="outside",
+            ))
+            fig_cmp.update_layout(
+                barmode="group",
+                title=dict(text=f"{kpi_label} — A vs B", font=dict(size=14)),
+                height=420,
+                plot_bgcolor="#0E1117", paper_bgcolor="#0E1117",
+                font=dict(color="#E8EAED", size=11),
+                xaxis=dict(title="기술", gridcolor="#2A2D34"),
+                yaxis=dict(title=kpi_label, gridcolor="#2A2D34"),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02,
+                             xanchor="right", x=1),
+                margin=dict(l=50, r=20, t=70, b=60),
+            )
+            st.plotly_chart(fig_cmp, use_container_width=True, config=PLOTLY_CONFIG)
+
+            # ─── 차이(Δ) 테이블 ───
+            st.markdown("#### 📋 차이 (Δ = B − A) 표")
+            delta_rows = []
+            for k in common_keys:
+                ra = results_a_dict[k]
+                rb = results_b_dict[k]
+                row = {"기술": SHORT_NAMES.get(k, k)}
+                for fld, label in [
+                    ("annual_profit_usd", "연 손익 [M USD/yr]"),
+                    ("COCA", "COCA [USD/t]"),
+                    ("Net_COCA", "Net COCA [USD/t]"),
+                    ("npv", "NPV [M USD]"),
+                    ("crcf_efficiency_pct", "CRCF 효율 [%]"),
+                ]:
+                    va = ra.get(fld) or 0
+                    vb = rb.get(fld) or 0
+                    if "M USD" in label:
+                        va, vb = va / 1e6, vb / 1e6
+                    row[f"A · {label}"] = round(va, 2)
+                    row[f"B · {label}"] = round(vb, 2)
+                    row[f"Δ · {label}"] = round(vb - va, 2)
+                delta_rows.append(row)
+            delta_df = pd.DataFrame(delta_rows)
+
+            # 핵심 컬럼만 단순 표시 (가독성)
+            simple_cols = ["기술",
+                            "A · 연 손익 [M USD/yr]", "B · 연 손익 [M USD/yr]",
+                            "Δ · 연 손익 [M USD/yr]",
+                            "A · COCA [USD/t]", "B · COCA [USD/t]", "Δ · COCA [USD/t]",
+                            "A · CRCF 효율 [%]", "B · CRCF 효율 [%]",
+                            "Δ · CRCF 효율 [%]"]
+            simple_cols = [c for c in simple_cols if c in delta_df.columns]
+            st.dataframe(
+                delta_df[simple_cols],
+                use_container_width=True, hide_index=True,
+            )
+
+            # ─── 자동 인사이트 ───
+            st.markdown("#### 💡 자동 인사이트")
+            insights = []
+            # 가장 큰 손익 차이를 만드는 기술
+            if delta_rows:
+                max_delta_row = max(delta_rows,
+                                     key=lambda r: abs(r.get("Δ · 연 손익 [M USD/yr]", 0)))
+                _delta_profit = max_delta_row.get("Δ · 연 손익 [M USD/yr]", 0)
+                if abs(_delta_profit) > 0.1:
+                    direction = "B 우위" if _delta_profit > 0 else "A 우위"
+                    insights.append(
+                        f"💰 **연 손익 격차 최대 기술**: {max_delta_row['기술']} — "
+                        f"Δ {_delta_profit:+,.1f} M USD/yr ({direction})"
+                    )
+            # 평균 차이
+            avg_delta_profit = sum(r.get("Δ · 연 손익 [M USD/yr]", 0)
+                                     for r in delta_rows) / max(len(delta_rows), 1)
+            if abs(avg_delta_profit) > 0.05:
+                direction = "B" if avg_delta_profit > 0 else "A"
+                insights.append(
+                    f"📊 **평균 연 손익**: B − A = {avg_delta_profit:+,.1f} M USD/yr "
+                    f"→ 평균적으로 **{direction} 시나리오 우위**"
+                )
+            avg_delta_crcf = sum(r.get("Δ · CRCF 효율 [%]", 0)
+                                  for r in delta_rows) / max(len(delta_rows), 1)
+            if abs(avg_delta_crcf) > 1:
+                direction = "B" if avg_delta_crcf > 0 else "A"
+                insights.append(
+                    f"🌱 **평균 CRCF 효율**: B − A = {avg_delta_crcf:+.1f}%p "
+                    f"→ Net 탄소 회피 측면에서 **{direction} 시나리오 우위**"
+                )
+            # 포집량/규모 차이
+            cap_a = meta_a.get("capture_mt_yr", 0)
+            cap_b = meta_b.get("capture_mt_yr", 0)
+            if cap_a and cap_b and abs(cap_a - cap_b) / max(cap_a, cap_b) > 0.2:
+                insights.append(
+                    f"📏 **포집 규모 차이**: A {cap_a:.2f} vs B {cap_b:.2f} Mt/yr "
+                    f"— 규모의 경제(Lang n=0.65) 효과로 절대치 비교 시 주의"
+                )
+            # 모드 차이
+            if meta_a.get("facility_mode") != meta_b.get("facility_mode"):
+                insights.append(
+                    f"⚠️ **CCS vs CCU 모드 비교**: A={meta_a.get('facility_mode')} / "
+                    f"B={meta_b.get('facility_mode')} — 매출 구조가 본질적으로 달라 "
+                    f"손익 직접 비교는 신중히 해석"
+                )
+
+            if insights:
+                for ins in insights:
+                    st.markdown(f"- {ins}")
+            else:
+                st.caption("💤 두 시나리오 차이가 미미함 — 입력값을 더 다르게 설정해 비교해보세요.")
+
+            # ─── 다운로드 (CSV) ───
+            csv_buf = delta_df.to_csv(index=False).encode("utf-8-sig")
+            st.download_button(
+                "📥 비교 표 CSV 다운로드",
+                data=csv_buf,
+                file_name=f"compare_A_vs_B_{pd.Timestamp.now().strftime('%Y%m%d_%H%M')}.csv",
+                mime="text/csv",
+                key="dl_compare_csv",
+            )
+
+
 # ---------- ⑨ 참고문헌 ----------
 with tab_refs:
     st.markdown("### 📚 참고문헌 및 계산 근거 (Full Audit Trail)")
@@ -4944,16 +5547,25 @@ with tab_lca:
     tier_rows = []
     for r in results:
         pct = r["crcf_efficiency_pct"]
+        gross_str = f"{r['gross_per_t']*100:.1f}"
+        heat_str = f"{r['lca_e_heat']*100:.2f}"
+        elec_str = f"{r['lca_e_elec']*100:.2f}"
+        solvent_str = f"{r['lca_e_solvent']*100:.3f}"
+        embodied_str = (f"{r['lca_e_embodied']*100:.3f}"
+                         if include_embodied else "—")
+        net_str = f"{pct:.1f}"
+        _net_kt_value = r['net_removed_t_yr'] / 1000
+        net_kt_str = f"{_net_kt_value:,.1f}"
         tier_rows.append({
             "기술": r["name"],
-            "Gross [%]":          f"{r['gross_per_t']*100:.1f}",
-            "− 열":               f"{r['lca_e_heat']*100:.2f}",
-            "− 전력":             f"{r['lca_e_elec']*100:.2f}",
-            "− 흡수제":           f"{r['lca_e_solvent']*100:.3f}",
-            "− Embodied":         f"{r['lca_e_embodied']*100:.3f}" if include_embodied else "—",
-            "Net Removed [%]":    f"{pct:.1f}",
-            "연 Net 감축 [kt/yr]": f"{r['net_removed_t_yr']/1000:,.1f}",
-            "CRCF 등급":          crcf_tier(pct),
+            "Gross [%]": gross_str,
+            "− 열": heat_str,
+            "− 전력": elec_str,
+            "− 흡수제": solvent_str,
+            "− Embodied": embodied_str,
+            "Net Removed [%]": net_str,
+            "연 Net 감축 [kt/yr]": net_kt_str,
+            "CRCF 등급": crcf_tier(pct),
         })
     st.dataframe(pd.DataFrame(tier_rows), use_container_width=True, hide_index=True)
 
