@@ -172,6 +172,73 @@ USD_PER_MWH_GRID = 80   # 보조전력의 가치 (kWh 가격 환산용)
 # 자매 도구 (CBAM 계산기)
 CBAM_TOOL_URL = "https://ccusbenchmark-rcuf9appppppppykmyeca8nwgk.streamlit.app/"
 
+# ──────────────────────────────────────────────
+# 인플레이션 — US CPI (2018=100 기준)
+# 출처: BLS CPI-U (Consumer Price Index for All Urban Consumers)
+# LIT의 CAPEX는 NETL Rev4a (2018 USD basis)로 가정
+# ──────────────────────────────────────────────
+LIT_BASE_YEAR = 2018
+US_CPI = {
+    2018: 100.0, 2019: 101.8, 2020: 102.7, 2021: 107.6, 2022: 116.3,
+    2023: 121.1, 2024: 124.4, 2025: 127.5, 2026: 130.5,  # 2025-26 추정
+}
+
+# ──────────────────────────────────────────────
+# 탄소가격 시나리오 (시간 흐름)
+# 출처: IEA NZE Roadmap 2023, IETA 시장 전망, K-ETS Phase 4
+# ──────────────────────────────────────────────
+PRICE_SCENARIOS = {
+    "constant":     {"label": "📊 고정 (현재 가격 유지)",          "growth": 0.00,
+                     "note": "현재 인센티브가 lifetime 동안 변하지 않음"},
+    "conservative": {"label": "🟡 보수 (2%/yr 상승)",              "growth": 0.02,
+                     "note": "EU ETS 평균 인플레+소폭 상승 가정"},
+    "k_ets_phase4": {"label": "🇰🇷 K-ETS Phase 4 (3%/yr)",        "growth": 0.03,
+                     "note": "한국 K-ETS 4기 (2026~) 점진 상승"},
+    "iea_nze":      {"label": "🌍 IEA NZE (5%/yr → 2050 net-zero)", "growth": 0.05,
+                     "note": "IEA Net-Zero 2050 시나리오 가격 경로"},
+    "stranded":     {"label": "🔴 Stranded (-1%/yr 하락)",          "growth": -0.01,
+                     "note": "정책 후퇴 시나리오 (carbon price collapse)"},
+}
+
+# ──────────────────────────────────────────────
+# Source Sector — 배출원별 특성 (CO₂ 농도, SRD/CAPEX 보정)
+# 출처: IEAGHG 산업별 보고서, NETL B12B/NGCC, GCCSI Cement/Steel
+# ──────────────────────────────────────────────
+SOURCE_SECTORS = {
+    "power_subc":  {"label": "🏭 SC PC 발전소 (CO₂ 12%, default)",
+                    "co2_conc": 0.12, "srd_mult": 1.00, "capex_mult": 1.00,
+                    "default_capture": 90, "note": "NETL B12B baseline"},
+    "ngcc":        {"label": "🔥 NGCC (CO₂ 4%)",
+                    "co2_conc": 0.04, "srd_mult": 1.15, "capex_mult": 1.15,
+                    "default_capture": 90, "note": "낮은 CO₂ 농도 → 큰 흡수탑 필요"},
+    "cement":      {"label": "🧱 시멘트 kiln (CO₂ 20%)",
+                    "co2_conc": 0.20, "srd_mult": 0.95, "capex_mult": 1.20,
+                    "default_capture": 90, "note": "process CO₂ 60% + 분진 pretreat"},
+    "steel_bf":    {"label": "🔨 철강 BF (CO₂ 25%)",
+                    "co2_conc": 0.25, "srd_mult": 0.90, "capex_mult": 1.25,
+                    "default_capture": 85, "note": "고농도 but NOx/SOx pretreat 필요"},
+    "h2_smr":      {"label": "💨 H₂ SMR (CO₂ 40%)",
+                    "co2_conc": 0.40, "srd_mult": 0.80, "capex_mult": 0.90,
+                    "default_capture": 95, "note": "고농도 + 깨끗한 stream → 유리"},
+    "refinery":    {"label": "⛽ 정유 (CO₂ 8~15%)",
+                    "co2_conc": 0.10, "srd_mult": 1.05, "capex_mult": 1.10,
+                    "default_capture": 90, "note": "다중 source, 통합 어려움"},
+}
+
+# ──────────────────────────────────────────────
+# T&S (Transport & Storage) 비용
+# 출처: IEAGHG 2014 T&S, GCCSI 2023 운영 사례, Northern Lights tariff
+# ──────────────────────────────────────────────
+TS_COSTS = {
+    "pipeline_per_km":     0.05,   # USD/(t·km) — onshore pipeline
+    "pipeline_offshore":   0.15,   # USD/(t·km) — offshore pipeline (Northern Lights형)
+    "shipping_long":       20.0,   # USD/t — long-distance ship (>500 km)
+    "storage_saline":      10.0,   # USD/t — saline aquifer (default)
+    "storage_depleted_og": 6.0,    # USD/t — depleted oil&gas reservoir
+    "storage_basalt":      15.0,   # USD/t — mineralization (CarbFix 등)
+    "cluster_discount":    0.70,   # multiplier — cluster 공유 시 70% 비용
+}
+
 # ──────────────────────────────────────────────────────────
 # CCS 특화 스케일링 (IEAGHG / NETL 벤치마크 기반)
 # 일반 화공의 Lang's rule이 아니라 CCS plant-specific 데이터
@@ -1734,6 +1801,60 @@ def calc_financial_metrics(annual_cf_usd: float, capex_total_usd: float,
     }
 
 
+def calc_npv_with_growth(annual_revenue: float, annual_cost: float,
+                          capex_total: float, lifetime_yr: int,
+                          discount: float, rev_growth: float = 0.0) -> dict:
+    """
+    NPV with revenue growth (시간 흐름 시나리오).
+    - revenue grows at `rev_growth` per year (탄소가격 시나리오 반영)
+    - cost is constant (대부분 OPEX 인플레이션 무시)
+    """
+    cfs = [-capex_total]
+    cumulative_cf = [-capex_total]
+    annual_cfs = []
+    for t in range(1, lifetime_yr + 1):
+        rev_t = annual_revenue * (1 + rev_growth) ** (t - 1)
+        cf_t = rev_t - annual_cost
+        cfs.append(cf_t)
+        annual_cfs.append(cf_t)
+        cumulative_cf.append(cumulative_cf[-1] + cf_t)
+    npv = sum(cf / (1 + discount) ** t for t, cf in enumerate(cfs))
+
+    # IRR (bisection)
+    irr = None
+    if any(cf > 0 for cf in cfs[1:]) and capex_total > 0:
+        low, high = -0.50, 5.0
+        for _ in range(80):
+            mid = (low + high) / 2
+            try:
+                npv_mid = sum(cf / (1 + mid) ** t for t, cf in enumerate(cfs))
+            except (ValueError, ZeroDivisionError, OverflowError):
+                break
+            if abs(npv_mid) < capex_total * 1e-5:
+                irr = mid
+                break
+            if npv_mid > 0:
+                low = mid
+            else:
+                high = mid
+        else:
+            irr = mid if abs(npv_mid) < capex_total * 0.1 else None
+
+    # Payback (with growing revenue)
+    cum = -capex_total
+    payback_yr = None
+    for t in range(1, lifetime_yr + 1):
+        cum += annual_cfs[t - 1]
+        if cum >= 0:
+            payback_yr = t
+            break
+
+    return {
+        "npv": npv, "irr": irr, "payback_yr": payback_yr,
+        "cumulative_cf": cumulative_cf, "annual_cfs": annual_cfs,
+    }
+
+
 def calc_lca_emissions(srd_GJ_t, we_elec_GJe_t, loss_kg_t,
                         heat_factor_kgCO2_GJ, grid_factor_gCO2_kWh,
                         solvent_factor_kgCO2_kg,
@@ -2030,7 +2151,106 @@ with st.sidebar:
         format="%.0f",
         help="default: 1,400 (2026.4 기준)",
     )
+
+    # ─── 비용 기준 연도 (인플레이션 조정) ───
+    cost_basis_year = st.selectbox(
+        "📅 비용 기준 연도 (인플레이션)",
+        options=list(US_CPI.keys()),
+        index=list(US_CPI.keys()).index(2026),
+        help=(
+            f"LIT CAPEX는 {LIT_BASE_YEAR}년 USD basis (NETL Rev4a era).\n"
+            "선택 연도 기준으로 US CPI 자동 조정.\n"
+            "출처: BLS CPI-U (Consumer Price Index)"
+        ),
+        key="cost_basis_year",
+    )
+    cpi_factor = US_CPI[cost_basis_year] / US_CPI[LIT_BASE_YEAR]
+    if abs(cpi_factor - 1.0) > 0.01:
+        _direction = "↑" if cpi_factor > 1 else "↓"
+        st.caption(
+            f"→ {LIT_BASE_YEAR} → {cost_basis_year} CPI 조정: "
+            f"**{_direction}{abs(cpi_factor-1)*100:.1f}%** (배수 {cpi_factor:.3f})"
+        )
+
+    # ─── 탄소가격 시나리오 (시간 흐름) ───
+    price_scenario_key = st.selectbox(
+        "📈 탄소가격 시나리오 (시간 흐름)",
+        options=list(PRICE_SCENARIOS.keys()),
+        index=0,  # constant default
+        format_func=lambda k: PRICE_SCENARIOS[k]["label"],
+        help="lifetime 동안 carbon market·subsidy 가격 변동률. NPV/IRR에 직접 영향.",
+        key="price_scenario",
+    )
+    rev_growth_rate = PRICE_SCENARIOS[price_scenario_key]["growth"]
+    st.caption(
+        f"→ 연 매출 성장률 **{rev_growth_rate*100:+.1f}%/yr** · "
+        f"{PRICE_SCENARIOS[price_scenario_key]['note']}"
+    )
     st.caption(f"→ 현재 환율: **{fx_krw_per_usd:,.0f} KRW/USD**")
+
+    st.markdown("---")
+    st.markdown("### 🏭 배출원 Sector")
+    st.caption("CO₂ 농도·flue gas 특성에 따라 SRD/CAPEX 추가 보정 (IEAGHG 산업별)")
+    source_sector_key = st.selectbox(
+        "Sector 선택",
+        options=list(SOURCE_SECTORS.keys()),
+        format_func=lambda k: SOURCE_SECTORS[k]["label"],
+        index=0,  # power_subc default
+        key="source_sector",
+        help="배출원 sector별 CO₂ 농도와 pretreat 요구가 다름",
+    )
+    sector = SOURCE_SECTORS[source_sector_key]
+    st.caption(
+        f"→ CO₂ 농도 **{sector['co2_conc']*100:.0f}%** · "
+        f"SRD ×**{sector['srd_mult']:.2f}** · CAPEX ×**{sector['capex_mult']:.2f}** · "
+        f"{sector['note']}"
+    )
+
+    st.markdown("---")
+    st.markdown("### 🚢 T&S (Transport & Storage) 옵션")
+    st.caption("CCS 모드에만 적용 — 격리량 기준 추가 OPEX")
+    ts_enabled = st.checkbox(
+        "T&S 비용 별도 계산",
+        value=False,
+        help="default OPEX_other에 포함된 일반 T&S 비용 외에 별도 정밀 산정",
+        key="ts_enabled",
+    )
+    if ts_enabled:
+        ts_pipeline_km = st.number_input(
+            "파이프라인 거리 [km]",
+            min_value=0, max_value=2000, value=100, step=10,
+            help="default: 100 km (mid-range onshore)",
+            key="ts_pipeline_km",
+        )
+        ts_storage_type = st.selectbox(
+            "저장소 유형",
+            options=["storage_saline", "storage_depleted_og", "storage_basalt"],
+            format_func=lambda k: {
+                "storage_saline": "🌊 Saline aquifer ($10/t default)",
+                "storage_depleted_og": "🛢️ 폐 oil&gas reservoir ($6/t)",
+                "storage_basalt": "🗿 Basalt mineralization ($15/t, CarbFix)",
+            }[k],
+            index=0,
+            key="ts_storage_type",
+        )
+        ts_cluster = st.checkbox(
+            "🤝 Cluster 공유 (T&S 비용 -30%)",
+            value=False,
+            help="다수 capture 시설이 T&S 인프라 공유 (Northern Lights, Porthos 모델)",
+            key="ts_cluster",
+        )
+        # T&S 비용 계산
+        _ts_pipe_cost = ts_pipeline_km * TS_COSTS["pipeline_per_km"]
+        _ts_storage_cost = TS_COSTS[ts_storage_type]
+        ts_cost_per_t = _ts_pipe_cost + _ts_storage_cost
+        if ts_cluster:
+            ts_cost_per_t *= TS_COSTS["cluster_discount"]
+        st.caption(
+            f"→ 파이프라인 ${_ts_pipe_cost:.1f} + 저장 ${_ts_storage_cost:.0f} = "
+            f"**${ts_cost_per_t:.1f}/t** (cluster: ×{TS_COSTS['cluster_discount']:.2f})"
+        )
+    else:
+        ts_cost_per_t = 0.0
 
     st.markdown("---")
     st.markdown("### ♻️ CCUS 시설 모드")
@@ -2560,17 +2780,37 @@ if pilot_techs:
 results = []
 for k in selected:
     t = LIT[k]
+    # Sector 보정을 SRD/CAPEX에 반영
+    sector_srd_mult = sector["srd_mult"]
+    sector_capex_mult = sector["capex_mult"]
+
     we = calc_We(t, T_cool_C, p_final_bar,
                   capture_t_yr=capture_t_yr, capture_eff=capture_eff)
-    # 규모·포집율 보정된 SRD를 SPECCA에 사용
+    # Sector SRD 보정 추가 적용
+    we["SRD_scaled"] = we["SRD_scaled"] * sector_srd_mult
+    we["We_thermal_eq"] = we["We_thermal_eq"] * sector_srd_mult
+    we["We_total"] = we["We_thermal_eq"] + we["We_elec"]
+
     specca = calc_SPECCA(we["SRD_scaled"], we["We_elec"], capture_eff)
+
+    # CAPEX에 CPI(인플레이션) + Sector 보정 동시 적용
+    capex_adjusted = t["CAPEX_per_t"] * cpi_factor * sector_capex_mult
     cost = calc_COCA(
-        t["CAPEX_per_t"], t["OPEX_solvent"], t["OPEX_other"],
+        capex_adjusted, t["OPEX_solvent"], t["OPEX_other"],
         we["We_elec"], capture_t_yr, lifetime, discount, elec_price,
         capex_mult=ccu["capex_mult"], ccu_share=ccu_share,
         project_multiplier=project_multiplier,
         capture_eff=capture_eff,
     )
+    # T&S 비용 별도 추가 (CCS 모드만)
+    if ts_cost_per_t > 0 and facility_mode == "CCS":
+        # 격리량 기준 → capture 톤당 환산
+        cost["ts_cost"] = ts_cost_per_t * ccs_yield
+        cost["COCA"] = cost["COCA"] + cost["ts_cost"]
+        cost["opex_total"] = cost["opex_total"] + cost["ts_cost"]
+        cost["annual_total_usd"] = cost["COCA"] * capture_t_yr
+    else:
+        cost["ts_cost"] = 0.0
     rev = calc_revenue(
         capture_t_yr, ccs_share, ccs_yield,
         ccu_share, ccu["yield"], ccu_price_krw,
@@ -2579,14 +2819,51 @@ for k in selected:
     )
     net_coca = cost["COCA"] - rev["rev_per_capture"]
 
-    # 금융 지표 (NPV / IRR / Payback)
+    # 연간 수익·비용·손익 (financial metrics 호출 전에 미리 계산)
+    annual_cost_usd    = cost["annual_total_usd"]              # = COCA × capture_t_yr
+    annual_revenue_usd = rev["total_revenue"]
+    annual_profit_usd  = annual_revenue_usd - annual_cost_usd  # 양수 = 흑자
+    annual_profit_krw  = annual_profit_usd * fx_krw_per_usd
+
+    # 금융 지표 (NPV / IRR / Payback) — 탄소가격 시나리오 반영
     capex_total_usd = cost["eff_capex_per_t"] * capture_t_yr
-    fin = calc_financial_metrics(
-        annual_cf_usd=annual_profit_usd,
-        capex_total_usd=capex_total_usd,
-        lifetime_yr=lifetime,
-        discount=discount,
-    )
+    if abs(rev_growth_rate) > 1e-6:
+        # 시간 흐름 시나리오 적용 (revenue가 매년 성장)
+        fin_g = calc_npv_with_growth(
+            annual_revenue=annual_revenue_usd,
+            annual_cost=annual_cost_usd,
+            capex_total=capex_total_usd,
+            lifetime_yr=lifetime,
+            discount=discount,
+            rev_growth=rev_growth_rate,
+        )
+        fin = {
+            "npv": fin_g["npv"], "irr": fin_g["irr"],
+            "payback_yr": fin_g["payback_yr"],
+            "payback_disc_yr": fin_g["payback_yr"],  # 근사
+            "profitability_index": (
+                sum(cf / (1 + discount) ** (t+1) for t, cf in enumerate(fin_g["annual_cfs"]))
+                / capex_total_usd if capex_total_usd > 0 else 0
+            ),
+            "annual_cf": annual_profit_usd,
+            "capex_total": capex_total_usd,
+            "cumulative_cf": fin_g["cumulative_cf"],
+            "annual_cfs": fin_g["annual_cfs"],
+        }
+    else:
+        # 고정 가격 시나리오 (기존 함수 사용)
+        fin = calc_financial_metrics(
+            annual_cf_usd=annual_profit_usd,
+            capex_total_usd=capex_total_usd,
+            lifetime_yr=lifetime,
+            discount=discount,
+        )
+        # cumulative cash flow 추가 (시각화용)
+        cum_list = [-capex_total_usd]
+        for tt in range(lifetime):
+            cum_list.append(cum_list[-1] + annual_profit_usd)
+        fin["cumulative_cf"] = cum_list
+        fin["annual_cfs"] = [annual_profit_usd] * lifetime
 
     # LCA / Scope 1+2+3 계산
     solvent_factor = SOLVENT_EMISSION_FACTORS.get(k, 1.5)
@@ -2611,11 +2888,7 @@ for k in selected:
     net_removed_t_yr = net_removed_per_t * capture_t_yr
     crcf_efficiency_pct = (net_removed_per_t / 1.0) * 100  # 1톤 captured → net removed의 %
 
-    # 연간 손익 (annual profit)
-    annual_cost_usd = cost["annual_total_usd"]                 # = COCA × capture_t_yr
-    annual_revenue_usd = rev["total_revenue"]
-    annual_profit_usd = annual_revenue_usd - annual_cost_usd   # 양수 = 흑자
-    annual_profit_krw = annual_profit_usd * fx_krw_per_usd
+    # (annual_profit_usd 등은 위에서 이미 계산됨 — 중복 제거)
 
     results.append({
         "key": k,
@@ -2639,7 +2912,10 @@ for k in selected:
         "payback_disc_yr":  fin["payback_disc_yr"],
         "profitability_idx": fin["profitability_index"],
         "capex_total":      fin["capex_total"],
+        "cumulative_cf":    fin.get("cumulative_cf", []),
+        "annual_cfs":       fin.get("annual_cfs", []),
         "TRL":              t.get("TRL", 7),
+        "ts_cost":          cost.get("ts_cost", 0.0),
         # LCA / Net CO2 (CRCF/ICVCM)
         **{f"lca_{k_}": v_ for k_, v_ in lca.items()},
         "gross_per_t":         gross_per_t,
@@ -3076,6 +3352,7 @@ with tab_econ:
         "  └ 용매": f"{r['opex_solvent']:,.1f}",
         "  └ 기타": f"{r['opex_other']:,.1f}",
         "  └ 전력": f"{r['elec_cost']:,.1f}",
+        "  └ T&S": f"{r.get('ts_cost', 0):,.1f}" if r.get('ts_cost', 0) > 0 else "—",
         "COCA": f"{r['COCA']:,.1f}",
         "연간 총비용 [M$]": f"{r['annual_total_usd']/1e6:,.1f}",
     } for r in results])
@@ -3358,6 +3635,37 @@ with tab_econ:
         f"PI > 1.5 → 매우 양호 (CCUS 평균 0.7~1.3 수준)"
     )
 
+    # ── 시간 흐름 누적 cash flow 차트 ──
+    st.markdown(f"##### 📈 25년 누적 Cash Flow — 탄소가격 시나리오: **{PRICE_SCENARIOS[price_scenario_key]['label']}**")
+    if rev_growth_rate != 0:
+        st.caption(f"매출 연 {rev_growth_rate*100:+.1f}% 성장 가정 — t=0: -CAPEX, 이후 매년 손익 누적")
+    else:
+        st.caption("매출 고정 가정 — 시간 흐름 적용하려면 사이드바에서 시나리오 변경")
+
+    f_cf = go.Figure()
+    for r in results:
+        if r.get("cumulative_cf"):
+            f_cf.add_trace(go.Scatter(
+                x=list(range(len(r["cumulative_cf"]))),
+                y=[v / 1e6 for v in r["cumulative_cf"]],   # M$
+                mode="lines+markers",
+                name=SHORT_NAMES.get(r["key"], r["name"]),
+                line=dict(width=2),
+                marker=dict(size=4),
+            ))
+    f_cf.add_hline(y=0, line_color="white", line_width=1, line_dash="dot",
+                    annotation_text="Break-even")
+    f_cf.update_layout(
+        title=f"누적 Cash Flow [M$/yr] · 수명 {lifetime}년 · "
+              f"성장률 {rev_growth_rate*100:+.1f}%/yr",
+        template="plotly_dark", height=400,
+        margin=dict(l=10, r=10, t=60, b=40),
+        xaxis_title="연도 (t=0 → CAPEX 투자)",
+        yaxis_title="누적 Cash Flow [M$]",
+        legend=dict(orientation="h", y=-0.18),
+    )
+    st.plotly_chart(f_cf, use_container_width=True, config=PLOTLY_CONFIG)
+
     # ───────────────────────────────────────
     # 🌪️ Tornado Sensitivity (어떤 변수가 가장 영향?)
     # ───────────────────────────────────────
@@ -3509,6 +3817,125 @@ with tab_econ:
         f"**참고**: 45Q-CCS $85/t = 미국 IRA 한도. NL SDE++ €110 ≈ $120, UK CfD £150 ≈ $180 — "
         f"이 수준 이상의 보조금이 있어야 mid-scale CCS 흑자 가능."
     )
+
+    # ───────────────────────────────────────
+    # 🎲 Monte Carlo 시뮬레이션 (불확실성 정량화)
+    # ───────────────────────────────────────
+    st.markdown("---")
+    st.markdown("### 🎲 Monte Carlo 분석 — 불확실성 정량화")
+    st.caption(
+        "Tier별 불확실성(±5% A / ±15% B / ±25% C)을 정규분포로 가정해 1,000회 시뮬. "
+        "NPV·Net COCA 분포로 사업성 confidence interval 산출."
+    )
+
+    mc_run = st.checkbox(
+        "🎲 Monte Carlo 실행 (1,000 iterations · ~3초)",
+        value=False,
+        help="불확실성 분포 분석. 첫 번째 선택 기술 기준.",
+    )
+
+    if mc_run and results:
+        import random as _random
+        _random.seed(42)
+        r0 = results[0]
+        # Tier에 따른 ±% 불확실성
+        tier_unc = {"A": 0.05, "B": 0.15, "C": 0.25}
+        # MEA·KS-21·DC-103·Aker S26 = A, CAP·TSA·CaL = B, KIERSOL·DMX = C
+        if r0["key"] in ("MEA_baseline", "MHI_KS21", "Cansolv_DC103", "Aker_S26"):
+            unc = tier_unc["A"]
+        elif r0["key"] in ("CAP_B12C", "TSA_Solid", "CaL"):
+            unc = tier_unc["B"]
+        else:
+            unc = tier_unc["C"]
+
+        # 1000 iterations: 핵심 변수들 ±unc 정규분포
+        n_iter = 1000
+        mc_npvs = []
+        mc_net_cocas = []
+        for _ in range(n_iter):
+            # ±unc 정규분포 (3-sigma rule)
+            srd_var      = _random.gauss(1.0, unc / 3)
+            capex_var    = _random.gauss(1.0, unc / 3)
+            opex_var     = _random.gauss(1.0, unc / 2)  # OPEX는 절반 변동성
+            elec_var     = _random.gauss(1.0, 0.10 / 3) # 전기 가격 ±10%
+            # 변동된 값으로 빠르게 계산 (선형 근사)
+            mc_capex_t = r0["eff_capex_per_t"] * capex_var
+            mc_annual_capex = mc_capex_t * (discount * (1 + discount) ** lifetime) / ((1 + discount) ** lifetime - 1)
+            mc_elec = r0["elec_cost"] * elec_var
+            mc_opex = (r0["opex_solvent"] + r0["opex_other"]) * opex_var
+            mc_coca = mc_annual_capex + mc_opex + mc_elec
+            mc_net_coca = mc_coca - r0["rev_per_capture"]
+            mc_npv = -mc_capex_t * capture_t_yr + sum(
+                (r0["rev_per_capture"] - mc_coca) * capture_t_yr / (1 + discount) ** t
+                for t in range(1, lifetime + 1)
+            )
+            mc_npvs.append(mc_npv)
+            mc_net_cocas.append(mc_net_coca)
+
+        # 통계
+        mc_npvs.sort()
+        mc_net_cocas.sort()
+        npv_p10, npv_p50, npv_p90 = mc_npvs[100], mc_npvs[500], mc_npvs[900]
+        nc_p10, nc_p50, nc_p90 = mc_net_cocas[100], mc_net_cocas[500], mc_net_cocas[900]
+        prob_profit = sum(1 for x in mc_npvs if x > 0) / n_iter * 100
+
+        # NPV 분포 히스토그램
+        c1, c2 = st.columns(2)
+        with c1:
+            f_npv = go.Figure()
+            f_npv.add_trace(go.Histogram(
+                x=[v / 1e6 for v in mc_npvs], nbinsx=40,
+                marker_color="#4FC3F7",
+                name="NPV 분포",
+            ))
+            f_npv.add_vline(x=0, line_color="white", line_dash="dash",
+                            annotation_text="Break-even")
+            f_npv.add_vline(x=npv_p50/1e6, line_color="#FFC107", line_dash="dot",
+                            annotation_text="P50")
+            f_npv.update_layout(
+                title=f"NPV 분포 — {SHORT_NAMES.get(r0['key'], r0['name'])} (Tier {('A' if unc==0.05 else 'B' if unc==0.15 else 'C')}, ±{unc*100:.0f}%)",
+                template="plotly_dark", height=350,
+                xaxis_title="NPV [M$]", yaxis_title="Iterations",
+                showlegend=False,
+            )
+            st.plotly_chart(f_npv, use_container_width=True, config=PLOTLY_CONFIG)
+
+        with c2:
+            f_nc = go.Figure()
+            f_nc.add_trace(go.Histogram(
+                x=mc_net_cocas, nbinsx=40,
+                marker_color="#81C784",
+                name="Net COCA 분포",
+            ))
+            f_nc.add_vline(x=0, line_color="white", line_dash="dash",
+                            annotation_text="흑자/적자 경계")
+            f_nc.add_vline(x=nc_p50, line_color="#FFC107", line_dash="dot",
+                            annotation_text="P50")
+            f_nc.update_layout(
+                title="Net COCA 분포 [USD/t]",
+                template="plotly_dark", height=350,
+                xaxis_title="Net COCA [$/t]", yaxis_title="Iterations",
+                showlegend=False,
+            )
+            st.plotly_chart(f_nc, use_container_width=True, config=PLOTLY_CONFIG)
+
+        # 통계 요약
+        st.markdown("##### 📊 Monte Carlo 통계 (P10/P50/P90)")
+        mc_df = pd.DataFrame([
+            {"지표": "NPV [M$]",
+             "P10 (보수)": f"{npv_p10/1e6:+,.1f}",
+             "P50 (median)": f"{npv_p50/1e6:+,.1f}",
+             "P90 (낙관)": f"{npv_p90/1e6:+,.1f}"},
+            {"지표": "Net COCA [$/t]",
+             "P10": f"{nc_p10:+,.1f}",
+             "P50": f"{nc_p50:+,.1f}",
+             "P90": f"{nc_p90:+,.1f}"},
+        ])
+        st.dataframe(mc_df, use_container_width=True, hide_index=True)
+        st.success(
+            f"🎯 **흑자 확률 (NPV > 0): {prob_profit:.1f}%** "
+            f"({n_iter} iterations, ±{unc*100:.0f}% Tier {('A' if unc==0.05 else 'B' if unc==0.15 else 'C')})"
+        )
 
 # ---------- ⑤ 흡수제/흡착제 손실 ----------
 with tab_loss:
