@@ -4973,10 +4973,82 @@ with tab_refs:
         "실제 프로젝트는 EPC 견적·실증 데이터로 보정 필요."
     )
 
+    # ── 데이터 출처 & 갱신 정책 (SSOT) ──
+    st.markdown("---")
+    st.markdown("### 📦 데이터 갱신 정책 (Single Source of Truth)")
+    st.markdown(
+        f"""
+<div style='background:#1A2530; border-left:3px solid #81C784;
+            border-radius:6px; padding:12px 14px; margin:8px 0;'>
+<b>📍 마스터 데이터 위치</b><br>
+<code style='color:#81C784;'>data/ccus_metrics.json</code>
+&nbsp;·&nbsp; schema <code>v{_schema}</code>
+&nbsp;·&nbsp; {len(LIT)} technologies<br>
+<span style='font-size:0.85rem; color:#B0BEC5;'>
+본 도구와 자매 도구 (<a href="{CBAM_TOOL_URL}" target="_blank"
+style="color:#FFB74D;">🛡️ CBAM 계산기</a>)가 동일 JSON 파일을 참조합니다.
+</span>
+</div>
+
+**원칙 (Single Source of Truth)**
+- LIT 수치 (SRD·CAPEX·OPEX·손실 등) 변경 시 `data/ccus_metrics.json` **한 곳만** 수정
+- CCUS 도구: 1시간 캐시 만료 후 자동 반영
+- CBAM 도구: GitHub raw URL 24시간 캐시 만료 후 자동 반영 (`ccus_metrics_loader.py` 사용)
+- 두 도구 모두 schema_version 헤더에 표시 → 동기화 상태 즉시 확인 가능
+
+**갱신 시 체크리스트**
+1. 신규 학술 논문·정부 보고서 출처를 `references_used` 배열에 추가
+2. 영향 받는 기술의 LIT 수치 수정 (예: `economics.CAPEX_USD_per_tCO2_yr`)
+3. `last_updated` 필드를 현재 날짜로 갱신
+4. `schema_version` bump (breaking change 시: 1.0 → 2.0)
+5. commit message: `data: update [TECH] [FIELD] from [REF]`
+6. 두 도구 deployment URL에서 schema 표시 확인 (24시간 내)
+
+**Schema 변경 시 (Breaking)**
+- 필드 이름 변경·삭제 → schema_version major bump
+- CBAM 측 `ccus_metrics_loader.py`도 동기 업데이트 필요
+- 공동 PR 또는 동일 commit으로 양쪽 repo 처리 권장
+
+**역사적 audit (이전 값 추적)**
+- Git history (`git log -p data/ccus_metrics.json`)로 추적
+- 주요 변경은 GitHub release notes에 기록
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
+    st.markdown("### 🔗 자매 도구 & 참고 링크")
+    st.markdown(
+        f"""
+- 🛡️ **EU CBAM 계산기** (자매 도구): [{CBAM_TOOL_URL}]({CBAM_TOOL_URL})
+- 🐙 **GitHub repo**: [github.com/cafeon90-oss](https://github.com/cafeon90-oss)
+- 📝 **저자 블로그** (CDR/CCUS 분석): [cdrmaster.tistory.com](https://cdrmaster.tistory.com/)
+- 📧 **문의**: cafeon90@gmail.com (협업·인용·데이터 보정 요청 환영)
+        """
+    )
+
 # ---------- ⑧ 방법론 ----------
 with tab_method:
     st.markdown("### 🔬 방법론 / 추정 근거 (Methodology)")
-    st.caption("본 툴의 모든 수치·수식·가정의 근거. 자료 신뢰도 검증·peer review용.")
+    st.caption(
+        "본 툴의 모든 수치·수식·가정의 근거. 자료 신뢰도 검증·peer review·PDF 리포트 동봉용. "
+        "총 19개 섹션 — KPI 계산식부터 SSOT 데이터 아키텍처·비교 모드·PDF 내보내기까지."
+    )
+
+    # 빠른 navigation
+    st.markdown(
+        "<div style='background:#1E2128; border-left:3px solid #81C784; "
+        "padding:10px 14px; border-radius:6px; margin-bottom:10px;'>"
+        "<b style='color:#81C784;'>📚 섹션 가이드</b><br>"
+        "<span style='font-size:0.85rem; line-height:1.7;'>"
+        "<b>1~6</b>: 데이터 출처·KPI 계산식·규모 효과·CCU 등급·CCS 격리·경제성 가정<br>"
+        "<b>7~10</b>: CAP 냉동기·압축 모델·손실 추정·MEA walk-through 검증<br>"
+        "<b>11~12</b>: LCA 분해·한국 K-ETS CCU 차감 (직접 매출 아님)<br>"
+        "<b>13~16</b>: NPV/IRR/Payback·Tornado·Breakeven·모델 한계<br>"
+        "<b>17~19</b>: <b>🆕 SSOT 데이터 아키텍처 · 🆚 비교 모드 · 📥 PDF 리포트</b>"
+        "</span></div>",
+        unsafe_allow_html=True,
+    )
 
     # ── 1. 기준 ──
     with st.expander("📌 **1. 기준 플랜트 & Data Base**", expanded=True):
@@ -5447,10 +5519,137 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 - 최종 투자 결정 시 site-specific EPC 견적 필수
         """)
 
+    # ── 17. 데이터 아키텍처 (SSOT) ──
+    with st.expander("📦 **17. 데이터 아키텍처 — Single Source of Truth (자매 도구 연계)**"):
+        st.markdown(
+            "**왜 SSOT인가**\n\n"
+            f"본 CCUS 도구와 자매 도구 ([🛡️ EU CBAM 계산기]({CBAM_TOOL_URL}))는 동일한 "
+            "9개 기술 LIT 데이터 (SRD·CAPEX·OPEX·손실 등)를 참조합니다. "
+            "두 도구가 각자 hardcoding하면:\n"
+            "- 한쪽 업데이트 시 다른 쪽 누락 위험\n"
+            "- 인용 일관성 깨짐\n"
+            "- audit 시 어느 값이 옳은지 추적 어려움\n\n"
+            "**Single Source of Truth 패턴**"
+        )
+        _ssot_diagram_lines = [
+            "ccus_benchmark repo (master)",
+            "  data/ccus_metrics.json   <- 9 technologies, schema v" + str(_schema),
+            "    |",
+            "    +-- ccus_benchmark/app.py     loads (1h cache)",
+            "    +-- cbam_calculator/app.py    fetches via raw GitHub URL (24h cache)",
+        ]
+        st.code("\n".join(_ssot_diagram_lines), language="text")
+        st.markdown("**스키마 v1.0 구조** (top-level keys)")
+        st.code(
+            """{
+    "schema_version": "1.0",
+    "last_updated": "YYYY-MM-DD",
+    "metadata": { "reference_capture_mt_yr": 3.7, ... },
+    "technologies": {
+        "MEA_baseline": {
+            "name": "MEA 30 wt% (참고)",
+            "TRL": 9,
+            "performance": { "SRD_GJ_per_tCO2": 3.60, ... },
+            "energy_components_GJe_per_tCO2": { ... },
+            "economics": { "CAPEX_USD_per_tCO2_yr": 950, ... },
+            "operations": { "capacity_range_mt_yr": [0.1, 10.0], ... },
+            "lca": { "solvent_emission_factor_kgCO2_per_kg": 1.4 },
+            "references": ["NETL_Rev4a", "..."]
+        }
+        // ... (8 more technologies)
+    },
+    "references_used": ["..."]
+}""",
+            language="json",
+        )
+        st.markdown(
+            "**업데이트 워크플로**\n"
+            "1. `data/ccus_metrics.json` 수정 후 commit·push (master repo)\n"
+            "2. CCUS 도구: 1시간 캐시 만료 → 재배포 시 자동 반영\n"
+            "3. CBAM 도구: 24시간 캐시 만료 → GitHub raw URL 재fetch → 자동 반영\n\n"
+            "**Fallback 안전장치**\n"
+            "- CBAM 측 `ccus_metrics_loader.py`는 fetch 실패 시 minimal stub로 동작\n"
+            "- 두 도구 모두 schema_version 표시 → 사용자가 동기화 상태 즉시 확인 가능\n\n"
+            f"**현재 schema_version**: `v{_schema}` (헤더 인디케이터에 항상 표시됨)"
+        )
+
+    # ── 18. 비교 모드 ──
+    with st.expander("🆚 **18. 시나리오 비교 모드 워크플로**"):
+        st.markdown("""
+**목적**
+사업 의사결정에서 가장 흔한 질문은 "A안과 B안 중 어느 게 낫나?" 입니다.
+시나리오 비교 모드는 두 입력 세트를 동시에 보관하고 핵심 KPI를 1:1로 보여줍니다.
+
+**예시 비교 케이스**
+- 미국 발전소 retrofit + 45Q  vs  한국 시멘트 retrofit + K-ETS
+- 같은 사이트의 retrofit  vs  greenfield
+- 1 Mt/yr 단일 라인  vs  3 Mt/yr 통합 라인 (규모의 경제)
+- 90% 포집  vs  99% 포집 (IEAGHG 2019 +18% SRD 효과)
+
+**워크플로 (4단계)**
+1. **시나리오 A 설정**: 사이드바에서 프리셋·입력값 조정
+2. **A 슬롯 저장**: 탭 🆚 → "📌 시나리오 A로 저장" 클릭 (스냅샷 캡처)
+3. **시나리오 B 설정**: 사이드바 입력 변경 (포집량·인센티브·모드 등)
+4. **B 슬롯 저장**: "📌 시나리오 B로 저장" → 자동 비교 차트·표 표시
+
+**표시 내용**
+- **메타 카드**: facility mode, project scenario, 포집량, 인센티브 stack
+- **KPI 그룹 막대**: 10개 지표 중 선택 (연 손익·COCA·Net COCA·SRD·We·NPV·IRR·Payback·CRCF·LCA)
+- **Δ 표 (B − A)**: 5대 핵심 지표 차이 + CSV 다운로드
+- **자동 인사이트**: 격차 최대 기술, 평균 우위 시나리오, 모드/규모 차이 경고
+
+**해석 주의사항**
+- **CCS vs CCU 모드 비교는 신중**: 매출 구조가 본질적으로 다름 (보조금 vs 제품 판매)
+- **규모 차이 20%+ 시**: Lang's six-tenths 효과로 절대치 비교 부적절 (단가 비교 권장)
+- **공통 기술만 비교**: 기술 선택이 다르면 자동 필터링됨 (caption으로 안내)
+
+**Stretch goal**: 3+ 시나리오 동시 비교는 향후 P3에서 (현재는 2개 슬롯)
+        """)
+
+    # ── 19. PDF 리포트 ──
+    with st.expander("📥 **19. PDF 리포트 내보내기**"):
+        st.markdown("""
+**목적**
+스크린샷 대신 보고서 형태로 분석 결과를 외부와 공유 (이사회·EPC·정부 협상 input).
+
+**리포트 구조** (2~3 페이지)
+1. **Page 1**:
+   - 제목 + 생성일시 + schema 버전
+   - 4-카드 KPI 배너 (Best Profit · Best COCA · Best Net COCA · Best CRCF)
+   - 시나리오 메타 표 (mode·scenario·포집량·인센티브·환율)
+   - 자동 인사이트 (영문, 본문에서 추출)
+   - 기술별 결과 표 (TRL·SRD·We·COCA·Net COCA·연 손익·NPV·Payback·CRCF)
+2. **Page 2** (옵션): 차트 PNG (연 손익·COCA·Net COCA·에너지 분해)
+3. **Page 3**: LCA / Net CO₂ 분해 표 + 방법론 요약 + 면책 조항
+
+**기술 스택**
+- ReportLab 4.x (Platypus/SimpleDocTemplate)
+- Plotly → kaleido로 PNG 변환 (~5초)
+- 한글: ReportLab 기본 폰트 미지원 → 표 헤더는 짧은 한글 그대로, 인사이트는 영문화
+- subscript/superscript: `<sub>` 태그 사용 (Helvetica가 Unicode 첨자 미지원)
+
+**사용법** (탭 ① 종합 비교 하단)
+1. "📊 차트 이미지 포함" 체크 (선택)
+2. "📄 PDF 생성" 클릭 → 5초 내 생성
+3. "📥 다운로드: ccus_benchmark_report_YYYYMMDD_HHMM.pdf"
+
+**Fallback 안전장치**
+- ReportLab 미설치 시: 안내 메시지만 표시, 앱은 정상 작동
+- kaleido 미설치 시: 차트 없이 텍스트/표만 PDF 생성
+
+**활용 시나리오**
+- 이사회 자료 첨부: 분석 한 페이지 요약
+- EPC 견적 input: 가정·계산식·결과를 반박 가능한 형태로 동봉
+- 정부 협상 (K-CCUS Act 단가): breakeven 분석 근거자료
+- 학술 논문 supplementary
+        """)
+
     st.markdown("---")
     st.info(
-        "📖 **References**: 모든 출처는 탭 ⑦ 참고문헌 (총 36개) 참조. "
-        "본 방법론 섹션은 자료 신뢰도 검증 (peer review) 및 sensitivity 분석 input 작성용."
+        f"📖 **References**: 모든 출처는 탭 ⑨ 참고문헌 (총 {len(REFS)}개) 참조. "
+        f"본 방법론 섹션은 자료 신뢰도 검증 (peer review), sensitivity 분석 input, "
+        f"PDF 리포트 동봉용. 시나리오 A vs B 비교는 탭 🆚 시나리오 비교 참조. "
+        f"데이터 동기화 상태는 헤더 인디케이터 `data/ccus_metrics.json v{_schema}` 확인."
     )
 
 # ---------- ③ Lifecycle / Net CO₂ ----------
