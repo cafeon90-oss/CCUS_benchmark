@@ -586,6 +586,161 @@ SOLVENT_EMISSION_FACTORS  = _ccus_data["SOLVENT_EMISSION_FACTORS"]
 # 출처: NETL 2021 LCA, IPCC AR6 WG3 Annex II
 EMBODIED_CO2_PER_USD_CAPEX = 0.20  # 평균: 0.15~0.25 kgCO2/$ for industrial CAPEX
 
+
+# ======================================================================
+# 🏭 상용 CCUS 플랜트 — 공개 CAPEX/OPEX 데이터 (audit trail)
+#
+# 본 도구의 LIT 수치(NETL/IEAGHG representative values)와 비교용 reference.
+# 실제 상용·실증 플랜트의 공개 자료를 normalize해 한 눈에 비교.
+#
+# 출처:
+#   - GCCSI Global Status of CCS 2023 (Annual Report)
+#   - IEAGHG Case Studies / SaCS Database
+#   - DOE NETL Final Project Reports (Petra Nova, ADM)
+#   - 기업 Annual Reports (Shell, Equinor, Chevron, Heidelberg, ADM, Oxy)
+#   - METI / JOGMEC Tomakomai Demo Reports
+#
+# 주의:
+#   - CAPEX는 'CCS 부분만'으로 normalize 시도. retrofit+unit refurb 통합 케이스는 비고 명시.
+#   - 환율은 운영 개시 시점 평균 환율 기준 (정확한 USD 환산 한계 있음).
+#   - design capacity vs actual operating 차이 (Gorgon은 design 4 Mt/yr, 실가동 ~1.6 Mt/yr).
+#   - capex_usd_per_t_yr = capex_usd_m * 1e6 / (capacity_mt_yr * 1e6) = capex_usd_m / capacity_mt_yr.
+# ======================================================================
+COMMERCIAL_PLANTS = [
+    {
+        "name": "Boundary Dam Unit 3", "country": "🇨🇦",
+        "industry": "Coal power (retrofit)", "industry_short": "Coal power",
+        "capacity_mt_yr": 1.0,
+        "capex_usd_m": 1100, "capex_usd_per_t_yr": 1100,
+        "opex_usd_per_t": 25,
+        "year_op": 2014,
+        "tech": "Shell Cansolv (1st gen amine)",
+        "status": "Operating",
+        "notes": "CCS+발전 unit 통합 retrofit. CCS only ~$800M USD.",
+        "source_url": "https://www.saskpower.com/our-power-future/infrastructure-projects/boundary-dam-carbon-capture-project",
+    },
+    {
+        "name": "Petra Nova", "country": "🇺🇸",
+        "industry": "Coal power (retrofit)", "industry_short": "Coal power",
+        "capacity_mt_yr": 1.4,
+        "capex_usd_m": 1040, "capex_usd_per_t_yr": 743,
+        "opex_usd_per_t": None,
+        "year_op": 2017,
+        "tech": "MHI KS-1 (2nd gen amine)",
+        "status": "Idled 2020 → Restarted 2023",
+        "notes": "DOE $190M cost share. 2020 셧다운, 2023 재가동.",
+        "source_url": "https://netl.doe.gov/sites/default/files/2020-11/Petra-Nova-Final-Report-2020.pdf",
+    },
+    {
+        "name": "Quest", "country": "🇨🇦",
+        "industry": "H₂ / oil sands", "industry_short": "H₂",
+        "capacity_mt_yr": 1.0,
+        "capex_usd_m": 1000, "capex_usd_per_t_yr": 1000,
+        "opex_usd_per_t": None,
+        "year_op": 2015,
+        "tech": "Shell ADIP-X (amine)",
+        "status": "Operating",
+        "notes": "CAD$1.35B 중 정부 보조 CAD$865M. Athabasca 오일샌드 H₂ 공정.",
+        "source_url": "https://www.shell.ca/en_ca/about-us/projects-and-sites/quest-carbon-capture-and-storage-project.html",
+    },
+    {
+        "name": "Sleipner", "country": "🇳🇴",
+        "industry": "Gas processing (inherent)", "industry_short": "Gas processing",
+        "capacity_mt_yr": 1.0,
+        "capex_usd_m": 80, "capex_usd_per_t_yr": 80,
+        "opex_usd_per_t": 17,
+        "year_op": 1996,
+        "tech": "MDEA amine (inherent in gas treatment)",
+        "status": "Operating (30+ yr)",
+        "notes": "Inherent CO₂ 분리 — 가스처리에 이미 필요한 amine. 세계 최초 상용 CCS.",
+        "source_url": "https://www.equinor.com/energy/sleipner",
+    },
+    {
+        "name": "Snøhvit", "country": "🇳🇴",
+        "industry": "LNG (inherent)", "industry_short": "LNG",
+        "capacity_mt_yr": 0.7,
+        "capex_usd_m": None, "capex_usd_per_t_yr": None,
+        "opex_usd_per_t": None,
+        "year_op": 2008,
+        "tech": "Amine (inherent in gas treatment)",
+        "status": "Operating",
+        "notes": "LNG 통합 — CCS-only CAPEX 분리 비공개.",
+        "source_url": "https://www.equinor.com/energy/snohvit",
+    },
+    {
+        "name": "Gorgon", "country": "🇦🇺",
+        "industry": "LNG (inherent)", "industry_short": "LNG",
+        "capacity_mt_yr": 4.0,
+        "capex_usd_m": 1800, "capex_usd_per_t_yr": 450,
+        "opex_usd_per_t": None,
+        "year_op": 2019,
+        "tech": "Amine (inherent in gas treatment)",
+        "status": "Operating (below design)",
+        "notes": "LNG project AUD$54B 中 CCS 부분 ~AUD$2.5B. Actual ~1.6 Mt/yr.",
+        "source_url": "https://australia.chevron.com/our-businesses/gorgon-project",
+    },
+    {
+        "name": "Norcem Brevik", "country": "🇳🇴",
+        "industry": "Cement (retrofit)", "industry_short": "Cement",
+        "capacity_mt_yr": 0.4,
+        "capex_usd_m": 430, "capex_usd_per_t_yr": 1075,
+        "opex_usd_per_t": None,
+        "year_op": 2024,
+        "tech": "Aker S26 (Just Catch™)",
+        "status": "Commissioning",
+        "notes": "~€400M. 세계 최초 시멘트 산업 CCS. 수송·저장 Northern Lights 연계.",
+        "source_url": "https://www.heidelbergmaterials.com/en/norcem-brevik-ccs",
+    },
+    {
+        "name": "Illinois ADM (IL-CCS)", "country": "🇺🇸",
+        "industry": "Ethanol (inherent)", "industry_short": "Ethanol",
+        "capacity_mt_yr": 1.0,
+        "capex_usd_m": 210, "capex_usd_per_t_yr": 210,
+        "opex_usd_per_t": 12,
+        "year_op": 2017,
+        "tech": "Compression + dehydration (no solvent)",
+        "status": "Operating",
+        "notes": "Fermentation CO₂ ~99% pure → 화학 흡수 불필요. DOE $141M cost share.",
+        "source_url": "https://netl.doe.gov/project-information?p=FE0001547",
+    },
+    {
+        "name": "Century Plant", "country": "🇺🇸",
+        "industry": "Gas processing → EOR", "industry_short": "Gas processing",
+        "capacity_mt_yr": 8.5,
+        "capex_usd_m": 1100, "capex_usd_per_t_yr": 129,
+        "opex_usd_per_t": None,
+        "year_op": 2010,
+        "tech": "Amine (gas treatment)",
+        "status": "Operating",
+        "notes": "단일 train 최대 규모. Permian basin EOR 사용. Inherent + 큰 규모로 단가 최저.",
+        "source_url": "https://www.oxy.com/operations/oil-and-gas/permian-basin/",
+    },
+    {
+        "name": "Tomakomai Demo", "country": "🇯🇵",
+        "industry": "Refinery H₂ (demo)", "industry_short": "H₂",
+        "capacity_mt_yr": 0.1,
+        "capex_usd_m": 280, "capex_usd_per_t_yr": 2800,
+        "opex_usd_per_t": None,
+        "year_op": 2016,
+        "tech": "Amine + offshore storage",
+        "status": "Completed 2019",
+        "notes": "METI 100% 정부 funded ¥30B. Demo scale → 단가 매우 높음.",
+        "source_url": "https://www.meti.go.jp/english/policy/energy_environment/global_warming/ccs.html",
+    },
+    {
+        "name": "Northern Lights P1", "country": "🇳🇴",
+        "industry": "Transport + storage hub", "industry_short": "T&S hub",
+        "capacity_mt_yr": 1.5,
+        "capex_usd_m": 2700, "capex_usd_per_t_yr": 1800,
+        "opex_usd_per_t": None,
+        "year_op": 2024,
+        "tech": "Transport + Aurora storage (no capture)",
+        "status": "Operating",
+        "notes": "Capture는 hub 외부. CAPEX는 수송·저장만. 다른 plant capture와 동일선상 비교 시 주의.",
+        "source_url": "https://norlights.com",
+    },
+]
+
 # ──────────────────────────────────────────────────────────────────────
 # LIT (기술 라이브러리) — data/ccus_metrics.json 에서 자동 로드 (위 참조)
 # 이전에 hardcoded 되어 있던 9개 기술 데이터는 모두 JSON 으로 이동됨
@@ -3703,6 +3858,145 @@ with tab_overall:
         f"</div>",
         unsafe_allow_html=True,
     )
+
+    # ──────────────────────────────────────────────
+    # 🏭 상용 CCUS 플랜트 — 공개 CAPEX/OPEX (audit trail)
+    # ──────────────────────────────────────────────
+    _ref_h = ("🏭 상용 CCUS 플랜트 — 실측 CAPEX/OPEX 참고 (공개 데이터 11개)"
+              if st.session_state.get("lang", "ko") == "ko"
+              else "🏭 Commercial CCUS Plants — Public CAPEX/OPEX Reference (11 plants)")
+    with st.expander(_ref_h, expanded=False):
+        _ref_intro = (
+            "본 도구의 LIT 수치는 NETL/IEAGHG **representative values**입니다. "
+            "실제 상용·실증 플랜트의 공개 CAPEX/OPEX와 비교하면 모델 검증·EPC 협상·이사회 보고 "
+            "신뢰도가 크게 올라갑니다. 각 행 끝의 출처 링크로 1차 자료 직행."
+            if st.session_state.get("lang", "ko") == "ko" else
+            "The tool's LIT values are NETL/IEAGHG **representative values**. "
+            "Comparing them with public CAPEX/OPEX of real plants reinforces model validation, "
+            "EPC negotiation, and boardroom credibility. Source links at row tails."
+        )
+        st.caption(_ref_intro)
+
+        # ── 표 ─────────────────────────────────────────
+        _plant_rows = []
+        for p in COMMERCIAL_PLANTS:
+            _plant_rows.append({
+                "Plant": f"{p['country']} {p['name']}",
+                "Industry": p['industry_short'],
+                "Mt/yr": f"{p['capacity_mt_yr']:.2g}",
+                "CAPEX [M$]": (f"${p['capex_usd_m']:,.0f}" if p['capex_usd_m'] is not None else "—"),
+                "CAPEX / (t/yr) [$]": (f"${p['capex_usd_per_t_yr']:,.0f}" if p['capex_usd_per_t_yr'] is not None else "—"),
+                "OPEX [$/t]": (f"${p['opex_usd_per_t']}" if p['opex_usd_per_t'] is not None else "—"),
+                "Year": p['year_op'],
+                "Tech": (p['tech'][:38] + ('…' if len(p['tech']) > 38 else '')),
+                "Status": p['status'],
+                "Source": p['source_url'],
+            })
+        plant_display_df = pd.DataFrame(_plant_rows)
+        st.dataframe(
+            plant_display_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Source": st.column_config.LinkColumn(
+                    "Source",
+                    display_text="🔗 link",
+                    help="공개 1차 자료 (annual report / NETL / GCCSI / 정부 자료)",
+                ),
+                "Mt/yr": st.column_config.TextColumn("Mt/yr", help="Annual CO₂ capture capacity (design)"),
+                "CAPEX [M$]": st.column_config.TextColumn("CAPEX [M$]", help="Total CCS CAPEX, USD millions"),
+                "CAPEX / (t/yr) [$]": st.column_config.TextColumn(
+                    "CAPEX / (t/yr) [$]",
+                    help="Normalized: capex_M$ / capacity_Mt → USD per tonne-per-year of capture capacity",
+                ),
+            },
+        )
+
+        # ── Bubble 차트 (CAPEX 공개 플랜트만) ──────────
+        _bubble = [p for p in COMMERCIAL_PLANTS
+                   if p['capex_usd_per_t_yr'] is not None and p['capacity_mt_yr']]
+        if _bubble:
+            bub_df = pd.DataFrame(_bubble)
+            _chart_title = ("규모 vs CAPEX 단가 — 9개 공개 플랜트 (Snøhvit 비공개·제외)"
+                            if st.session_state.get("lang", "ko") == "ko" else
+                            "Scale vs CAPEX intensity — 9 public-data plants (Snøhvit excluded: undisclosed)")
+            fig_bub = px.scatter(
+                bub_df,
+                x="capacity_mt_yr",
+                y="capex_usd_per_t_yr",
+                color="industry_short",
+                size="capex_usd_m",
+                hover_name="name",
+                hover_data={
+                    "country": True,
+                    "year_op": True,
+                    "tech": True,
+                    "status": True,
+                    "capacity_mt_yr": ":.2f",
+                    "capex_usd_per_t_yr": ":,.0f",
+                    "capex_usd_m": False,
+                    "industry_short": False,
+                },
+                log_x=True,
+                log_y=True,
+                labels={
+                    "capacity_mt_yr": "Annual capture [Mt CO₂/yr] · log",
+                    "capex_usd_per_t_yr": "CAPEX per (t/yr) capacity [USD] · log",
+                    "industry_short": "Industry",
+                    "country": "Country",
+                    "year_op": "Year",
+                    "tech": "Tech",
+                    "status": "Status",
+                },
+                title=_chart_title,
+                height=420,
+            )
+            fig_bub.update_layout(
+                paper_bgcolor="#1E2128", plot_bgcolor="#1E2128",
+                font=dict(color="#E8EAED"),
+                xaxis=dict(gridcolor="#3a4050", title_font_size=12),
+                yaxis=dict(gridcolor="#3a4050", title_font_size=12),
+                legend=dict(bgcolor="#2A2F3A"),
+                margin=dict(l=50, r=20, t=50, b=50),
+            )
+            st.plotly_chart(fig_bub, use_container_width=True)
+
+            # ── 자동 인사이트 ──────────────────────
+            _avg = sum(p['capex_usd_per_t_yr'] for p in _bubble) / len(_bubble)
+            _min_p = min(_bubble, key=lambda p: p['capex_usd_per_t_yr'])
+            _max_p = max(_bubble, key=lambda p: p['capex_usd_per_t_yr'])
+            _ratio = _max_p['capex_usd_per_t_yr'] / max(_min_p['capex_usd_per_t_yr'], 1)
+            _insight = (
+                f"📊 <b>공개 데이터 요약</b> · 평균 CAPEX 단가 <b>${_avg:,.0f}</b>/(t/yr) — "
+                f"최저 <b style='color:#81C784;'>{_min_p['name']}</b> "
+                f"(${_min_p['capex_usd_per_t_yr']:,.0f}, {_min_p['industry_short']}) vs "
+                f"최고 <b style='color:#E57373;'>{_max_p['name']}</b> "
+                f"(${_max_p['capex_usd_per_t_yr']:,.0f}) — <b>{_ratio:.0f}× 차이</b>. "
+                f"Inherent capture(Sleipner·ADM·Century)는 단가가 낮고 "
+                f"demo scale(Tomakomai)·hub 인프라(Northern Lights)는 +5~10×."
+                if st.session_state.get("lang", "ko") == "ko" else
+                f"📊 <b>Public-data summary</b> · Average CAPEX intensity <b>${_avg:,.0f}</b>/(t/yr) — "
+                f"lowest <b style='color:#81C784;'>{_min_p['name']}</b> "
+                f"(${_min_p['capex_usd_per_t_yr']:,.0f}, {_min_p['industry_short']}) vs "
+                f"highest <b style='color:#E57373;'>{_max_p['name']}</b> "
+                f"(${_max_p['capex_usd_per_t_yr']:,.0f}) — <b>{_ratio:.0f}× span</b>. "
+                f"Inherent capture (Sleipner/ADM/Century) drives unit cost low; "
+                f"demo scale (Tomakomai) and hub infrastructure (Northern Lights) add +5~10×."
+            )
+            st.markdown(
+                f"<div style='font-size:0.78rem; color:#B0BEC5; padding:8px 12px; "
+                f"background:#1E2128; border-left:3px solid #4FC3F7; border-radius:4px; "
+                f"margin-top:6px;'>{_insight}</div>",
+                unsafe_allow_html=True,
+            )
+
+        # ── 출처 caption ──────────────────────────
+        st.caption(
+            "Sources: GCCSI Global Status of CCS 2023 · IEAGHG Case Studies · DOE NETL Final Reports · "
+            "Equinor / Shell / Chevron / Heidelberg Materials / ADM / Occidental Annual Reports · "
+            "METI / JOGMEC (Tomakomai) · Northern Lights JV. "
+            "각 행의 🔗 link로 1차 자료 직행."
+        )
 
     # ──────────────────────────────────────────────
     # 📥 PDF 리포트 내보내기
