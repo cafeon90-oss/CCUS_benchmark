@@ -40,10 +40,195 @@ except Exception as _pdf_err:
     _pdf_import_error = _pdf_err
 
 # ======================================================================
+# 🌐 i18n — 한국어 / English 번역 사전 (Option A: 핵심 UI만)
+# 방법론·참고문헌·툴팁·KETS 섹션·작성자 정보 본문은 한글 유지.
+# 핵심 UI(탭/사이드바 헤딩·라벨/메인 헤더/인사이트/비교 모드/PDF UI)만 번역.
+# 사용법:  s = T("key")  ·  s = T("key", arg=value)  (str.format 자동 적용)
+# ======================================================================
+TRANSLATIONS = {
+    "ko": {
+        # ── meta ────────────────────────────────────────────────
+        "lang_toggle_label": "🌐 Language / 언어",
+        "lang_ko": "한국어",
+        "lang_en": "English",
+        # ── main header ─────────────────────────────────────────
+        "main_title": "🌫️ CO₂ 포집·CCUS 기술·경제성 벤치마크",
+        "main_caption": (
+            "Advanced Amine (KS-21·DC-103·Aker S26) + 🇰🇷 **KIERSOL (KIER)** + "
+            "비아민계 (CAP·DMX·TSA·CaL) 통합 비교 · "
+            "NETL 2022 / IEAGHG / IRS 45Q / KIER 기반"
+        ),
+        "ssot_indicator": (
+            "📦 LIT data: <code style='color:#81C784;'>data/ccus_metrics.json</code> "
+            "v{schema} · 9 technologies · 자매 도구도 동일 JSON fetch (Single Source of Truth)"
+        ),
+        # ── tabs ────────────────────────────────────────────────
+        "tab_overall": "① 종합 비교",
+        "tab_econ": "② 경제성",
+        "tab_lca": "③ Lifecycle / Net CO₂",
+        "tab_energy": "④ 에너지 페널티",
+        "tab_loss": "⑤ 흡수제/흡착제 손실",
+        "tab_trend": "⑥ 트렌드",
+        "tab_custom": "⑦ Custom 입력",
+        "tab_compare": "🆚 시나리오 비교",
+        "tab_method": "⑧ 방법론",
+        "tab_refs": "⑨ 참고문헌",
+        # ── sidebar section headings ────────────────────────────
+        "sb_h_quickstart": "### 🚀 빠른 시작 — 시나리오 프리셋",
+        "sb_h_currency": "### 💱 표시 통화",
+        "sb_h_inputs": "### ⚙️ 입력 파라미터",
+        # ── sidebar labels ──────────────────────────────────────
+        "sb_preset_label": "프리셋 선택 (자동 설정)",
+        "sb_preset_custom": "✏️ Custom (직접 설정)",
+        "sb_preset_help": "대표 시나리오를 선택하면 모든 입력이 자동으로 채워집니다",
+        "sb_currency_label": "통화 표시 방식",
+        "sb_currency_usd_only": "USD만",
+        "sb_currency_krw_only": "KRW만",
+        "sb_trl_label": "🏷️ TRL 필터 (기술 성숙도)",
+        "sb_trl_opt_9": "🟢 TRL 9 (상용)",
+        "sb_trl_opt_78": "🟡 TRL 7-8 (Demo)",
+        "sb_trl_opt_le6": "🟠 TRL ≤6 (Pilot/연구)",
+        "sb_select_techs": "비교할 기술 선택",
+        "sb_input_hint": "⌨️ 모든 입력은 직접 숫자 입력 가능 (미입력시 default 사용)",
+        "sb_capture_amount": "연간 CO₂ 포집량 [MtCO₂/yr]",
+        "sb_capture_rate": "포집율 [%]",
+        "sb_cool_temp": "냉각수 온도 [°C]",
+        "sb_final_pressure": "CO₂ 최종 압력 [bar]",
+        # ── insight box ─────────────────────────────────────────
+        "ins_status_all_profit": "전체 {n}/{n} 흑자",
+        "ins_status_all_loss": "전체 {n}/{n} 적자 — 인센티브 부족",
+        "ins_status_mixed": "{p}/{n} 흑자",
+        "ins_summary_title": "🎯 시뮬레이션 결과 요약",
+        "ins_label_min_coca": "최저 COCA",
+        "ins_label_best_profit": "최고 흑자 기술",
+        "ins_label_avg_profit": "평균 연 손익",
+        "ins_label_avg_net": "평균 Net 효율 (CRCF)",
+        # ── overview tab ────────────────────────────────────────
+        "ov_profit_title": "💰 {kpi} — 핵심 결과",
+        "ov_profit_caption": "매출 − 비용 = 연 손익. 녹색 = 흑자 / 빨강 = 적자 · 환율 {fx:,.0f} KRW/USD",
+        "ov_conclusion_lead": "📌 <b>결론</b>",
+        "ov_best_label": "최고",
+        "ov_worst_label": "최악",
+        "ov_gap_label": "기술별 격차",
+        "ov_concl_tail": "인센티브 stack·시설 모드 변경으로 흑자 기술 수 변동 가능.",
+        # ── compare mode tab ────────────────────────────────────
+        "cmp_h_title": "### 🆚 시나리오 A vs B 비교",
+        "cmp_btn_save_a": "📌 시나리오 **A**로 저장",
+        "cmp_btn_save_b": "📌 시나리오 **B**로 저장",
+        "cmp_btn_swap": "🔄 A ↔ B 스왑",
+        "cmp_btn_clear": "🗑️ 초기화",
+        "cmp_msg_saved_a": "✅ A 저장: {label}",
+        "cmp_msg_saved_b": "✅ B 저장: {label}",
+        # ── PDF section ─────────────────────────────────────────
+        "pdf_h_title": "#### 📥 PDF 리포트 내보내기",
+        "pdf_chart_toggle": "차트 PNG 포함 (kaleido 필요)",
+        "pdf_btn_label": "📄 PDF 다운로드",
+    },
+    "en": {
+        # ── meta ────────────────────────────────────────────────
+        "lang_toggle_label": "🌐 Language / 언어",
+        "lang_ko": "한국어",
+        "lang_en": "English",
+        # ── main header ─────────────────────────────────────────
+        "main_title": "🌫️ CO₂ Capture · CCUS Tech-Economic Benchmark",
+        "main_caption": (
+            "Advanced Amine (KS-21 · DC-103 · Aker S26) + 🇰🇷 **KIERSOL (KIER)** + "
+            "non-amine (CAP · DMX · TSA · CaL) integrated comparison · "
+            "based on NETL 2022 / IEAGHG / IRS 45Q / KIER"
+        ),
+        "ssot_indicator": (
+            "📦 LIT data: <code style='color:#81C784;'>data/ccus_metrics.json</code> "
+            "v{schema} · 9 technologies · sister tool fetches the same JSON (Single Source of Truth)"
+        ),
+        # ── tabs ────────────────────────────────────────────────
+        "tab_overall": "① Overview",
+        "tab_econ": "② Economics",
+        "tab_lca": "③ Lifecycle / Net CO₂",
+        "tab_energy": "④ Energy Penalty",
+        "tab_loss": "⑤ Solvent / Sorbent Loss",
+        "tab_trend": "⑥ Trends",
+        "tab_custom": "⑦ Custom Input",
+        "tab_compare": "🆚 Scenario Comparison",
+        "tab_method": "⑧ Methodology",
+        "tab_refs": "⑨ References",
+        # ── sidebar section headings ────────────────────────────
+        "sb_h_quickstart": "### 🚀 Quick Start — Scenario Presets",
+        "sb_h_currency": "### 💱 Display Currency",
+        "sb_h_inputs": "### ⚙️ Input Parameters",
+        # ── sidebar labels ──────────────────────────────────────
+        "sb_preset_label": "Preset (auto-fills inputs)",
+        "sb_preset_custom": "✏️ Custom (manual)",
+        "sb_preset_help": "Selecting a preset auto-fills all sidebar inputs.",
+        "sb_currency_label": "Currency display mode",
+        "sb_currency_usd_only": "USD only",
+        "sb_currency_krw_only": "KRW only",
+        "sb_trl_label": "🏷️ TRL Filter (tech readiness)",
+        "sb_trl_opt_9": "🟢 TRL 9 (commercial)",
+        "sb_trl_opt_78": "🟡 TRL 7-8 (demo)",
+        "sb_trl_opt_le6": "🟠 TRL ≤6 (pilot / R&D)",
+        "sb_select_techs": "Technologies to compare",
+        "sb_input_hint": "⌨️ All inputs accept direct numeric entry (defaults used if blank).",
+        "sb_capture_amount": "Annual CO₂ capture [Mt CO₂/yr]",
+        "sb_capture_rate": "Capture rate [%]",
+        "sb_cool_temp": "Cooling water temp [°C]",
+        "sb_final_pressure": "CO₂ final pressure [bar]",
+        # ── insight box ─────────────────────────────────────────
+        "ins_status_all_profit": "All {n}/{n} profitable",
+        "ins_status_all_loss": "All {n}/{n} loss — insufficient incentives",
+        "ins_status_mixed": "{p}/{n} profitable",
+        "ins_summary_title": "🎯 Simulation Result Summary",
+        "ins_label_min_coca": "Lowest COCA",
+        "ins_label_best_profit": "Best profit tech",
+        "ins_label_avg_profit": "Avg annual profit",
+        "ins_label_avg_net": "Avg Net efficiency (CRCF)",
+        # ── overview tab ────────────────────────────────────────
+        "ov_profit_title": "💰 {kpi} — Key Result",
+        "ov_profit_caption": "Revenue − Cost = Annual profit. Green = profit / Red = loss · FX {fx:,.0f} KRW/USD",
+        "ov_conclusion_lead": "📌 <b>Conclusion</b>",
+        "ov_best_label": "Best",
+        "ov_worst_label": "Worst",
+        "ov_gap_label": "Gap across technologies",
+        "ov_concl_tail": "Number of profitable techs can change with different incentive stacks or facility modes.",
+        # ── compare mode tab ────────────────────────────────────
+        "cmp_h_title": "### 🆚 Scenario A vs B Comparison",
+        "cmp_btn_save_a": "📌 Save as Scenario **A**",
+        "cmp_btn_save_b": "📌 Save as Scenario **B**",
+        "cmp_btn_swap": "🔄 Swap A ↔ B",
+        "cmp_btn_clear": "🗑️ Clear",
+        "cmp_msg_saved_a": "✅ Saved A: {label}",
+        "cmp_msg_saved_b": "✅ Saved B: {label}",
+        # ── PDF section ─────────────────────────────────────────
+        "pdf_h_title": "#### 📥 Export PDF Report",
+        "pdf_chart_toggle": "Embed chart PNGs (requires kaleido)",
+        "pdf_btn_label": "📄 Download PDF",
+    },
+}
+
+
+def T(key: str, **fmt) -> str:
+    """
+    Translate a key using the current LANG (st.session_state['lang']).
+    Falls back to Korean if key missing in current lang, then to the raw key.
+    Optional **fmt is applied via str.format(**fmt) when provided.
+    """
+    lang = st.session_state.get("lang", "ko")
+    table = TRANSLATIONS.get(lang, TRANSLATIONS["ko"])
+    s = table.get(key)
+    if s is None:
+        s = TRANSLATIONS["ko"].get(key, key)
+    if fmt:
+        try:
+            return s.format(**fmt)
+        except Exception:
+            return s
+    return s
+
+
+# ======================================================================
 # 페이지 설정 & 다크모드 / 모바일 CSS
 # ======================================================================
 st.set_page_config(
-    page_title="CO₂ 포집·CCUS 벤치마크",
+    page_title="CO₂ Capture · CCUS Benchmark | CCUS 벤치마크",  # bilingual (browser tab)
     page_icon="🌫️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -2105,18 +2290,41 @@ def calc_revenue(capture_t_yr, ccs_share, ccs_yield, ccu_share, ccu_yield,
 # ======================================================================
 with st.sidebar:
     # ──────────────────────────────────────────────
+    # 🌐 Language toggle (top of sidebar)
+    # ──────────────────────────────────────────────
+    _lang_label_to_code = {
+        TRANSLATIONS["ko"]["lang_ko"]: "ko",
+        TRANSLATIONS["ko"]["lang_en"]: "en",
+    }
+    _lang_options = list(_lang_label_to_code.keys())  # ["한국어", "English"]
+    _default_lang_label = (
+        TRANSLATIONS["ko"]["lang_en"]
+        if st.session_state.get("lang", "ko") == "en"
+        else TRANSLATIONS["ko"]["lang_ko"]
+    )
+    _lang_choice = st.radio(
+        TRANSLATIONS["ko"]["lang_toggle_label"],  # always bilingual label
+        options=_lang_options,
+        index=_lang_options.index(_default_lang_label),
+        horizontal=True,
+        key="lang_radio",
+    )
+    st.session_state["lang"] = _lang_label_to_code[_lang_choice]
+    st.markdown("---")
+
+    # ──────────────────────────────────────────────
     # 🚀 시나리오 프리셋 (Quick Start)
     # ──────────────────────────────────────────────
-    st.markdown("### 🚀 빠른 시작 — 시나리오 프리셋")
+    st.markdown(T("sb_h_quickstart"))
     preset_options = ["custom"] + list(PRESETS.keys())
     st.selectbox(
-        "프리셋 선택 (자동 설정)",
+        T("sb_preset_label"),
         options=preset_options,
-        format_func=lambda k: ("✏️ Custom (직접 설정)" if k == "custom"
+        format_func=lambda k: (T("sb_preset_custom") if k == "custom"
                                 else PRESETS[k]["label"]),
         on_change=apply_preset,
         key="preset_select",
-        help="대표 시나리오를 선택하면 모든 입력이 자동으로 채워집니다",
+        help=T("sb_preset_help"),
     )
     _selected_preset = st.session_state.get("preset_select", "custom")
     if _selected_preset != "custom":
@@ -2125,24 +2333,38 @@ with st.sidebar:
     # ──────────────────────────────────────────────
     # 💱 통화 표시 toggle (전역)
     # ──────────────────────────────────────────────
-    st.markdown("### 💱 표시 통화")
+    st.markdown(T("sb_h_currency"))
     display_currency = st.radio(
-        "통화 표시 방식",
+        T("sb_currency_label"),
         options=["Both", "USD", "KRW"],
-        format_func=lambda x: {"Both": "USD + KRW", "USD": "USD만", "KRW": "KRW만"}[x],
+        format_func=lambda x: {
+            "Both": "USD + KRW",
+            "USD": T("sb_currency_usd_only"),
+            "KRW": T("sb_currency_krw_only"),
+        }[x],
         horizontal=True,
         index=0,
         key="display_currency",
     )
 
     st.markdown("---")
-    st.markdown("### ⚙️ 입력 파라미터")
+    st.markdown(T("sb_h_inputs"))
 
     # TRL 필터 (낮은 TRL일수록 데이터가 idealized 경향 — 주의)
+    # NOTE: TRL option labels are also used as keys into TECH classification → keep
+    # the canonical Korean labels regardless of lang, but show the chosen language
+    # to the user via format_func. (Avoids breaking downstream `trl_group()` matches.)
+    _trl_opts_canonical = ["🟢 TRL 9 (상용)", "🟡 TRL 7-8 (Demo)", "🟠 TRL ≤6 (Pilot/연구)"]
+    _trl_opts_display = {
+        "🟢 TRL 9 (상용)":      T("sb_trl_opt_9"),
+        "🟡 TRL 7-8 (Demo)":   T("sb_trl_opt_78"),
+        "🟠 TRL ≤6 (Pilot/연구)": T("sb_trl_opt_le6"),
+    }
     trl_filter = st.multiselect(
-        "🏷️ TRL 필터 (기술 성숙도)",
-        options=["🟢 TRL 9 (상용)", "🟡 TRL 7-8 (Demo)", "🟠 TRL ≤6 (Pilot/연구)"],
-        default=["🟢 TRL 9 (상용)", "🟡 TRL 7-8 (Demo)", "🟠 TRL ≤6 (Pilot/연구)"],
+        T("sb_trl_label"),
+        options=_trl_opts_canonical,
+        default=_trl_opts_canonical,
+        format_func=lambda x: _trl_opts_display.get(x, x),
         help=(
             "TRL = Technology Readiness Level (1~9). NASA·EU·IEA 표준.\n"
             "⚠️ 낮은 TRL은 파일럿 idealized 데이터 경향 → 상용 스케일에서 +10~20% 페널티."
@@ -2154,7 +2376,7 @@ with st.sidebar:
     _filtered_keys = [k for k in TECH_KEYS if trl_group(LIT[k].get("TRL", 7)) in trl_filter]
 
     selected = st.multiselect(
-        "비교할 기술 선택",
+        T("sb_select_techs"),
         options=_filtered_keys,
         default=[k for k in ["MEA_baseline", "MHI_KS21", "Cansolv_DC103", "Aker_S26",
                               "CAP_B12C", "TSA_Solid", "CaL"] if k in _filtered_keys],
@@ -2162,10 +2384,10 @@ with st.sidebar:
         key="selected_techs",
     )
 
-    st.caption("⌨️ 모든 입력은 직접 숫자 입력 가능 (미입력시 default 사용)")
+    st.caption(T("sb_input_hint"))
 
     capture_mt_yr = st.number_input(
-        "연간 CO₂ 포집량 [MtCO₂/yr]",
+        T("sb_capture_amount"),
         min_value=0.1, max_value=20.0, value=3.7, step=0.1,
         format="%.2f",
         help=(
@@ -2215,7 +2437,7 @@ with st.sidebar:
         st.warning("⚠️ 일부 기술이 적정 capacity 범위 밖:\n\n" + "\n\n".join(_out_of_range))
 
     capture_eff_pct = st.number_input(
-        "포집율 [%]",
+        T("sb_capture_rate"),
         min_value=50, max_value=99, value=90, step=1,
         help=(
             "default: 90 (NETL baseline, 비용 최적점)\n"
@@ -2237,13 +2459,13 @@ with st.sidebar:
         )
 
     T_cool_C = st.number_input(
-        "냉각수 온도 [°C]",
+        T("sb_cool_temp"),
         min_value=0, max_value=50, value=25, step=1,
         help="default: 25",
     )
 
     p_final_bar = st.number_input(
-        "CO₂ 최종 압력 [bar]",
+        T("sb_final_pressure"),
         min_value=5, max_value=300, value=152, step=1,
         help=(
             "용도별:\n"
@@ -2810,20 +3032,16 @@ with st.sidebar:
 # ======================================================================
 # 헤더
 # ======================================================================
-st.title("🌫️ CO₂ 포집·CCUS 기술·경제성 벤치마크")
-st.caption(
-    "Advanced Amine (KS-21·DC-103·Aker S26) + 🇰🇷 **KIERSOL (KIER)** + "
-    "비아민계 (CAP·DMX·TSA·CaL) 통합 비교 · "
-    "NETL 2022 / IEAGHG / IRS 45Q / KIER 기반"
-)
+st.title(T("main_title"))
+st.caption(T("main_caption"))
 
 # Single Source of Truth 표시 (작은 인디케이터)
 _meta = _ccus_data.get("metadata", {})
 _schema = _ccus_data.get("schema_version", "1.0")
+_ssot_html = T("ssot_indicator", schema=_schema)
 st.markdown(
     f"<div style='font-size:0.7rem; color:#6e7888; margin-top:-8px; margin-bottom:6px;'>"
-    f"📦 LIT data: <code style='color:#81C784;'>data/ccus_metrics.json</code> "
-    f"v{_schema} · 9 technologies · 자매 도구도 동일 JSON fetch (Single Source of Truth)"
+    f"{_ssot_html}"
     f"</div>",
     unsafe_allow_html=True,
 )
@@ -3134,16 +3352,16 @@ df = pd.DataFrame(results)
 # ======================================================================
 (tab_overall, tab_econ, tab_lca, tab_energy, tab_loss,
  tab_trend, tab_custom, tab_compare, tab_method, tab_refs) = st.tabs([
-    "① 종합 비교",
-    "② 경제성",
-    "③ Lifecycle / Net CO₂",
-    "④ 에너지 페널티",
-    "⑤ 흡수제/흡착제 손실",
-    "⑥ 트렌드",
-    "⑦ Custom 입력",
-    "🆚 시나리오 비교",
-    "⑧ 방법론",
-    "⑨ 참고문헌",
+    T("tab_overall"),
+    T("tab_econ"),
+    T("tab_lca"),
+    T("tab_energy"),
+    T("tab_loss"),
+    T("tab_trend"),
+    T("tab_custom"),
+    T("tab_compare"),
+    T("tab_method"),
+    T("tab_refs"),
 ])
 
 # ---------- ① 종합 비교 ----------
@@ -3161,11 +3379,11 @@ with tab_overall:
 
         # 흑자/적자 판정
         if profit_count == n:
-            status_icon, status_text, status_color = "✅", f"전체 {n}/{n} 흑자", "#81C784"
+            status_icon, status_text, status_color = "✅", T("ins_status_all_profit", n=n), "#81C784"
         elif profit_count == 0:
-            status_icon, status_text, status_color = "⚠️", f"전체 {n}/{n} 적자 — 인센티브 부족", "#E57373"
+            status_icon, status_text, status_color = "⚠️", T("ins_status_all_loss", n=n), "#E57373"
         else:
-            status_icon, status_text, status_color = "⚖️", f"{profit_count}/{n} 흑자", "#FFB74D"
+            status_icon, status_text, status_color = "⚖️", T("ins_status_mixed", p=profit_count, n=n), "#FFB74D"
 
         # 평균 + 최고 손익
         avg_profit_usd = sum(r['annual_profit_usd'] for r in results) / n
@@ -3195,31 +3413,31 @@ with tab_overall:
                         border-left: 4px solid {status_color};
                         border-radius: 6px; padding: 12px 16px; margin-bottom: 12px;'>
                 <div style='font-size:0.85rem; color:#8b95a7; margin-bottom: 4px;'>
-                    🎯 시뮬레이션 결과 요약
+                    {T("ins_summary_title")}
                     <span style='color:{status_color}; font-weight:600;'>
                         · {status_icon} {status_text}
                     </span>
                 </div>
                 <div style='display:flex; flex-wrap:wrap; gap:18px; margin-top:6px;'>
                     <div>
-                        <span style='font-size:0.7rem; color:#8b95a7;'>최저 COCA</span><br>
+                        <span style='font-size:0.7rem; color:#8b95a7;'>{T("ins_label_min_coca")}</span><br>
                         <b style='color:#4FC3F7; font-size:0.95rem;'>{min_coca_r['name']}</b>
                         <span style='color:#E8EAED;'>${min_coca_r['COCA']:.1f}/t</span>
                     </div>
                     <div>
-                        <span style='font-size:0.7rem; color:#8b95a7;'>최고 흑자 기술</span><br>
+                        <span style='font-size:0.7rem; color:#8b95a7;'>{T("ins_label_best_profit")}</span><br>
                         <b style='color:#81C784; font-size:0.95rem;'>{max_profit_r['name']}</b>
                         <span style='color:#E8EAED;'>{fmt_money(best_profit_usd, fx_krw_per_usd, display_currency)}/yr</span>
                     </div>
                     <div>
-                        <span style='font-size:0.7rem; color:#8b95a7;'>평균 연 손익</span><br>
+                        <span style='font-size:0.7rem; color:#8b95a7;'>{T("ins_label_avg_profit")}</span><br>
                         <b style='color:{"#81C784" if avg_profit_usd > 0 else "#E57373"};
                                   font-size:0.95rem;'>
                             {fmt_money(avg_profit_usd, fx_krw_per_usd, display_currency)}/yr
                         </b>
                     </div>
                     <div>
-                        <span style='font-size:0.7rem; color:#8b95a7;'>평균 Net 효율 (CRCF)</span><br>
+                        <span style='font-size:0.7rem; color:#8b95a7;'>{T("ins_label_avg_net")}</span><br>
                         <b style='color:{"#81C784" if avg_net_pct >= 75 else "#FFB74D" if avg_net_pct >= 50 else "#E57373"};
                                   font-size:0.95rem;'>
                             {avg_net_pct:.0f}% (Best: {best_net_r['crcf_efficiency_pct']:.0f}% — {SHORT_NAMES.get(best_net_r['key'], best_net_r['name'])})
@@ -3237,13 +3455,15 @@ with tab_overall:
     # ──────────────────────────────────────────────
     # 💰 연 손익 — 메인 KPI (4대 KPI보다 우선 표시)
     # ──────────────────────────────────────────────
+    # KPI label is bilingual ("Net COCA / 연 손익" tooltip stays Korean)
+    _kpi_label = tip('Net COCA', '연 손익') if st.session_state.get("lang", "ko") == "ko" else tip('Net COCA', 'Annual Profit')
     st.markdown(
         f"<h3 style='margin-top:0; margin-bottom:6px;'>"
-        f"💰 {tip('Net COCA', '연 손익')} — 핵심 결과</h3>",
+        f"{T('ov_profit_title', kpi=_kpi_label)}</h3>",
         unsafe_allow_html=True,
     )
     st.caption(
-        f"매출 − 비용 = 연 손익. 녹색 = 흑자 / 빨강 = 적자 · 환율 {fx_krw_per_usd:,.0f} KRW/USD",
+        T("ov_profit_caption", fx=fx_krw_per_usd),
         unsafe_allow_html=True,
     )
     profit_cards = st.columns(min(len(results), 6))
@@ -3281,12 +3501,14 @@ with tab_overall:
         f"<div style='font-size:0.8rem; color:#B0BEC5; padding:8px 12px; "
         f"background:#1E2128; border-left:3px solid #FFC107; border-radius:4px; "
         f"margin-top:8px;'>"
-        f"📌 <b>결론</b>: 최고 <b style='color:#81C784;'>{SHORT_NAMES.get(_best_p['key'], _best_p['name'])}</b> "
+        f"{T('ov_conclusion_lead')}: {T('ov_best_label')} "
+        f"<b style='color:#81C784;'>{SHORT_NAMES.get(_best_p['key'], _best_p['name'])}</b> "
         f"({fmt_money(_best_p['annual_profit_usd'], fx_krw_per_usd, display_currency)}/yr) vs "
-        f"최악 <b style='color:#E57373;'>{SHORT_NAMES.get(_worst_p['key'], _worst_p['name'])}</b> "
+        f"{T('ov_worst_label')} "
+        f"<b style='color:#E57373;'>{SHORT_NAMES.get(_worst_p['key'], _worst_p['name'])}</b> "
         f"({fmt_money(_worst_p['annual_profit_usd'], fx_krw_per_usd, display_currency)}/yr) — "
-        f"기술별 격차 {fmt_money(_gap, fx_krw_per_usd, display_currency)}. "
-        f"인센티브 stack·시설 모드 변경으로 흑자 기술 수 변동 가능."
+        f"{T('ov_gap_label')} {fmt_money(_gap, fx_krw_per_usd, display_currency)}. "
+        f"{T('ov_concl_tail')}"
         f"</div>",
         unsafe_allow_html=True,
     )
@@ -3486,32 +3708,45 @@ with tab_overall:
     # 📥 PDF 리포트 내보내기
     # ──────────────────────────────────────────────
     st.markdown("---")
-    st.markdown("#### 📥 PDF 리포트 내보내기")
+    st.markdown(T("pdf_h_title"))
     if not _PDF_AVAILABLE:
-        st.info(
+        _pdf_unavail_msg = (
             "📌 PDF 모듈이 로드되지 않았습니다. 로컬 환경에서 "
             "`pip install reportlab kaleido==0.2.1` 후 재시작해 주세요."
+            if st.session_state.get("lang", "ko") == "ko" else
+            "📌 PDF module not loaded. Install locally with "
+            "`pip install reportlab kaleido==0.2.1` and restart."
         )
+        st.info(_pdf_unavail_msg)
     else:
         pdf_col1, pdf_col2 = st.columns([2, 1])
         with pdf_col1:
+            _pdf_chart_help = (
+                "체크하면 연 손익·COCA·Net COCA·에너지 차트를 PNG로 PDF에 임베드합니다. "
+                "kaleido 미설치 시 자동으로 차트 없이 생성됩니다."
+                if st.session_state.get("lang", "ko") == "ko" else
+                "If checked, profit / COCA / Net COCA / energy charts are embedded as PNGs. "
+                "If kaleido is missing, the PDF is generated without charts."
+            )
             include_charts_pdf = st.checkbox(
-                "📊 차트 이미지 포함 (kaleido 필요, 생성 ~5초)",
+                T("pdf_chart_toggle"),
                 value=False,
-                help="체크하면 연 손익·COCA·Net COCA·에너지 차트를 PNG로 PDF에 임베드합니다. "
-                      "kaleido 미설치 시 자동으로 차트 없이 생성됩니다.",
+                help=_pdf_chart_help,
                 key="pdf_include_charts",
             )
         with pdf_col2:
             generate_pdf_btn = st.button(
-                "📄 PDF 생성",
+                T("pdf_btn_label"),
                 use_container_width=True,
                 key="btn_generate_pdf",
                 type="primary",
             )
 
         if generate_pdf_btn:
-            with st.spinner("PDF 생성 중..."):
+            _pdf_spinner_msg = ("PDF 생성 중..."
+                                if st.session_state.get("lang", "ko") == "ko"
+                                else "Generating PDF...")
+            with st.spinner(_pdf_spinner_msg):
                 # 메타 정보 수집
                 _pdf_meta = {
                     "facility_mode": facility_mode,
@@ -3661,18 +3896,28 @@ with tab_overall:
                     st.session_state["_pdf_payload"] = {
                         "bytes": _pdf_bytes, "filename": _filename,
                     }
-                    st.success(
+                    _pdf_done_msg = (
                         f"✅ PDF 생성 완료 ({len(_pdf_bytes)/1024:.0f} KB) — "
                         f"아래 다운로드 버튼 클릭"
+                        if st.session_state.get("lang", "ko") == "ko"
+                        else f"✅ PDF ready ({len(_pdf_bytes)/1024:.0f} KB) — "
+                             f"click the download button below"
                     )
+                    st.success(_pdf_done_msg)
                 except Exception as _e:
-                    st.error(f"❌ PDF 생성 실패: {_e}")
+                    _pdf_fail_prefix = ("❌ PDF 생성 실패: "
+                                        if st.session_state.get("lang", "ko") == "ko"
+                                        else "❌ PDF generation failed: ")
+                    st.error(f"{_pdf_fail_prefix}{_e}")
 
         # 생성된 PDF 다운로드 (세션 동안 유지)
         _payload = st.session_state.get("_pdf_payload")
         if _payload:
+            _dl_prefix = ("📥 다운로드: "
+                          if st.session_state.get("lang", "ko") == "ko"
+                          else "📥 Download: ")
             st.download_button(
-                label=f"📥 다운로드: {_payload['filename']}",
+                label=f"{_dl_prefix}{_payload['filename']}",
                 data=_payload["bytes"],
                 file_name=_payload["filename"],
                 mime="application/pdf",
@@ -4561,11 +4806,15 @@ with tab_custom:
 
 # ---------- 🆚 시나리오 비교 ----------
 with tab_compare:
-    st.markdown("### 🆚 시나리오 A vs B 비교")
-    st.caption(
+    st.markdown(T("cmp_h_title"))
+    _cmp_caption = (
         "사이드바에서 다른 프리셋·입력으로 시나리오를 만들고, 아래 버튼으로 A/B 슬롯에 저장하면 "
         "두 시나리오의 핵심 KPI를 한 화면에서 비교할 수 있습니다."
+        if st.session_state.get("lang", "ko") == "ko" else
+        "Configure a scenario in the sidebar, then save it to slot A or B below. "
+        "Once both slots are filled, key KPIs are compared side-by-side."
     )
+    st.caption(_cmp_caption)
 
     # 현재 시나리오 메타데이터 캡처
     _cur_meta = get_scenario_meta_dict(
@@ -4580,22 +4829,25 @@ with tab_compare:
     )
 
     # ─── 저장 버튼 영역 ───
-    st.markdown("#### 📌 현재 시나리오를 슬롯에 저장")
+    _cmp_save_section_h = ("#### 📌 현재 시나리오를 슬롯에 저장"
+                           if st.session_state.get("lang", "ko") == "ko"
+                           else "#### 📌 Save current scenario to a slot")
+    st.markdown(_cmp_save_section_h)
     btn_col_a, btn_col_b, btn_col_c, btn_col_d = st.columns([1, 1, 1, 1.2])
     with btn_col_a:
-        if st.button("📌 시나리오 **A**로 저장",
+        if st.button(T("cmp_btn_save_a"),
                       use_container_width=True, key="btn_save_a"):
             save_scenario_snapshot("A", results, _cur_meta)
-            st.success(f"✅ A 저장: {_cur_meta['preset_label']}")
+            st.success(T("cmp_msg_saved_a", label=_cur_meta['preset_label']))
             st.rerun()
     with btn_col_b:
-        if st.button("📌 시나리오 **B**로 저장",
+        if st.button(T("cmp_btn_save_b"),
                       use_container_width=True, key="btn_save_b"):
             save_scenario_snapshot("B", results, _cur_meta)
-            st.success(f"✅ B 저장: {_cur_meta['preset_label']}")
+            st.success(T("cmp_msg_saved_b", label=_cur_meta['preset_label']))
             st.rerun()
     with btn_col_c:
-        if st.button("🔄 A↔B 스왑", use_container_width=True, key="btn_swap_ab"):
+        if st.button(T("cmp_btn_swap"), use_container_width=True, key="btn_swap_ab"):
             slots = st.session_state.get("compare_slots", {})
             slots["A"], slots["B"] = slots.get("B"), slots.get("A")
             # None 정리
@@ -4603,7 +4855,7 @@ with tab_compare:
             st.session_state["compare_slots"] = slots
             st.rerun()
     with btn_col_d:
-        if st.button("🗑️ 전체 초기화", use_container_width=True, key="btn_clear_all"):
+        if st.button(T("cmp_btn_clear"), use_container_width=True, key="btn_clear_all"):
             clear_scenario_snapshot(None)
             st.rerun()
 

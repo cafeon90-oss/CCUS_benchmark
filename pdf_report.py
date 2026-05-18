@@ -132,12 +132,12 @@ def _fmt_money_usd(usd: float) -> str:
 
 
 def _fmt_money_krw(krw: float) -> str:
-    """억원 단위"""
-    if abs(krw) >= 1e12:  # 조
-        return f"{krw/1e12:+,.2f}조원"
-    if abs(krw) >= 1e8:  # 억
+    """KRW abbreviation. Helvetica-safe (ASCII only) — never use Korean glyphs here."""
+    if abs(krw) >= 1e12:   # 조 (trillion) — was "조원" which renders as black boxes in Helvetica
+        return f"{krw/1e12:+,.2f}T-KRW"
+    if abs(krw) >= 1e8:    # 억 (100M)
         return f"{krw/1e8:+,.1f}eok-won"
-    if abs(krw) >= 1e4:  # 만
+    if abs(krw) >= 1e4:    # 만 (10K)
         return f"{krw/1e4:+,.0f}man-won"
     return f"{krw:+,.0f}KRW"
 
