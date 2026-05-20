@@ -3533,7 +3533,7 @@ with tab_overall:
         "⚠️ <b style='color:#FFB084;'>본 도구는 1차 근사 비교 도구 (1st-order approximation)</b> · "
         "representative values 기반. <b>이 결과만으로 투자·EPC·정책 의사결정을 내리지 마세요.</b> "
         "Sector × 솔벤트 best-fit 매핑, NOx/SOx 영향 등은 향후 업데이트 예정. "
-        "<span style='color:#FFB084;'>자세히 펼치기 ↓</span>"
+        "<span style='color:#FFB084; font-style:italic;'>↓ 아래 '모델 한계 안내' 박스를 클릭해서 펼치세요</span>"
         "</div>"
         if _is_ko else
         "<div style='background:linear-gradient(135deg, #4a1f0a 0%, #6a2f15 100%); "
@@ -3543,7 +3543,7 @@ with tab_overall:
         "representative values. <b>Do NOT base investment / EPC / policy decisions solely "
         "on these results.</b> Solvent × sector best-fit mapping and NOx/SOx impurity "
         "modeling are planned for future updates. "
-        "<span style='color:#FFB084;'>Expand for details ↓</span>"
+        "<span style='color:#FFB084; font-style:italic;'>↓ Click the 'Model Limitations' box below to expand</span>"
         "</div>"
     )
     st.markdown(_disc_banner, unsafe_allow_html=True)
