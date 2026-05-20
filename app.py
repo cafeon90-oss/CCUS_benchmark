@@ -3522,6 +3522,142 @@ df = pd.DataFrame(results)
 # ---------- ① 종합 비교 ----------
 with tab_overall:
     # ──────────────────────────────────────────────
+    # ⚠️ 모델 한계 disclaimer (1차 근사 — 의사결정 참고용 only)
+    # 항상 보이는 banner + 상세 expander
+    # ──────────────────────────────────────────────
+    _is_ko = (st.session_state.get("lang", "ko") == "ko")
+    _disc_banner = (
+        "<div style='background:linear-gradient(135deg, #4a1f0a 0%, #6a2f15 100%); "
+        "border-left:4px solid #FF6B35; border-radius:6px; padding:10px 14px; "
+        "margin-bottom:10px; color:#FFD8C2; font-size:0.82rem; line-height:1.55;'>"
+        "⚠️ <b style='color:#FFB084;'>본 도구는 1차 근사 비교 도구 (1st-order approximation)</b> · "
+        "representative values 기반. <b>이 결과만으로 투자·EPC·정책 의사결정을 내리지 마세요.</b> "
+        "Sector × 솔벤트 best-fit 매핑, NOx/SOx 영향 등은 향후 업데이트 예정. "
+        "<span style='color:#FFB084;'>자세히 펼치기 ↓</span>"
+        "</div>"
+        if _is_ko else
+        "<div style='background:linear-gradient(135deg, #4a1f0a 0%, #6a2f15 100%); "
+        "border-left:4px solid #FF6B35; border-radius:6px; padding:10px 14px; "
+        "margin-bottom:10px; color:#FFD8C2; font-size:0.82rem; line-height:1.55;'>"
+        "⚠️ <b style='color:#FFB084;'>This tool is a 1st-order approximation</b> using "
+        "representative values. <b>Do NOT base investment / EPC / policy decisions solely "
+        "on these results.</b> Solvent × sector best-fit mapping and NOx/SOx impurity "
+        "modeling are planned for future updates. "
+        "<span style='color:#FFB084;'>Expand for details ↓</span>"
+        "</div>"
+    )
+    st.markdown(_disc_banner, unsafe_allow_html=True)
+
+    _disc_h = ("⚠️ **모델 한계 안내 & 향후 업데이트 Roadmap** — 클릭해서 펼치기"
+               if _is_ko else
+               "⚠️ **Model Limitations & Future Roadmap** — click to expand")
+    with st.expander(_disc_h, expanded=False):
+        if _is_ko:
+            st.markdown("""
+**본 도구는 representative values 기반의 1차 근사 (1st-order approximation) 비교 도구입니다.**
+**이 결과만으로 투자·EPC·정책 의사결정을 내리면 안 됩니다.**
+
+### 🚧 현재 모델의 단순화 (Sector multiplier 한계)
+
+| 단순화 항목 | 무엇이 빠져있는가 |
+|---|---|
+| **Sector × 솔벤트 best-fit 매핑 없음** | 시멘트·철강·NGCC 등 sector 선택해도 9개 기술 모두 동일 multiplier 적용. 실제로는 솔벤트마다 sector 적합도가 크게 다름 (예: CaL = 시멘트 강점, MEA = NGCC, KIERSOL = 저농도, KS-21 = 고황) |
+| **NOx/SOx/입자 농도 미반영** | "pretreat 필요" note만 있고 ppm 단위 입력·OPEX 반영 없음 |
+| **솔벤트별 impurity 내성 차이 없음** | MEA의 SOx 취약성, 2세대 솔벤트의 안정성 같은 본질적 차이 무시 |
+| **Pretreatment CAPEX 분리 안 됨** | sector_capex_mult에 묶여 있어 어디서 비싸지는지 별도 표시 안 됨 |
+| **솔벤트별 capture rate ceiling 없음** | TSA 95%, CaL 90%, Cansolv 99% 등 솔벤트별 한계 자동 clip 안 됨 |
+
+### 🚀 향후 업데이트 예정 (Roadmap)
+
+| Phase | 추가 기능 | 우선순위 |
+|---|---|---|
+| **P1** | 🎯 **솔벤트 × Sector 호환성 매트릭스** — 각 솔벤트의 sector별 fit-score | 高 |
+| **P1** | 🎚️ **솔벤트별 capture rate ceiling** — TSA 95%, CaL 90% 등 자동 clip | 高 |
+| **P2** | 🔬 **Impurity 슬라이더** (NOx/SOx/particulate ppm) — NETL reclaimer cost 모델 반영 | 中 |
+| **P2** | 💰 **Pretreatment CAPEX 분리 line item** — capture vs pretreat 비용 명확히 | 中 |
+| **P3** | 🌡️ **Solvent stability lifetime** — 누적 분해율 by impurity exposure | 低 |
+
+### 📚 Sector multiplier — 출처와 한계
+
+**`SOURCE_SECTORS` dict의 srd_mult / capex_mult 값:**
+
+- **IEAGHG 2007** Post-Combustion CO₂ Capture (NGCC SRD 보정 범위)
+- **IEAGHG 2013/03** Cement CCS (시멘트 분진 pretreat → CAPEX 1.15~1.30×)
+- **IEAGHG 2013/04** Iron & Steel CCS (BF NOx/SOx pretreat → CAPEX 1.20~1.30×)
+- **NETL 2022 Baseline** B11B/B12B/B31B (Coal SC PC 12% CO₂ = 1.00 baseline)
+- **GCCSI Status Reports** Cement·Steel (실제 retrofit cost)
+
+→ **단일 peer-reviewed primary source는 없음.** 위 보고서들의 range 평균·중앙값에서 추출한 **representative values** + expert judgment. Direction(저농도→SRD↑ 등)은 literature consensus이지만, 정확한 magnitude(예: NGCC ×1.15)는 **±5~10% 변동 가능**.
+
+### 📌 본 도구의 적절한 활용
+
+✅ **적합한 용도**
+- CCUS 기술 representative 성능·경제성 빠른 비교
+- 시나리오 trade-off 분석 (포집율↑ vs CAPEX↑ 등)
+- 사업개발 초기 단계 stakeholder 의사소통
+- 정책 분석·R&D 우선순위 검토
+- 포트폴리오·교육용 시연
+
+❌ **부적합한 용도 — 본 도구만으론 안 됨**
+- EPC bid·FEED study (vendor 견적·실측 필수)
+- 최종 투자 결정 (FID)
+- 정부 보조금 신청 (실측 데이터·인증 방법론 필요)
+- 규제 reporting (인증된 protocol 사용)
+""")
+        else:
+            st.markdown("""
+**This tool is a 1st-order approximation comparison tool using representative values.**
+**Do NOT base investment, EPC, or policy decisions solely on these results.**
+
+### 🚧 Current Model Simplifications
+
+| Simplification | What is missing |
+|---|---|
+| **No solvent × sector best-fit mapping** | All 9 techs receive the same sector multiplier. In reality, solvent suitability varies by sector (e.g., CaL excels in cement, MEA in NGCC, KIERSOL in low-CO₂, KS-21 tolerates high-sulfur) |
+| **No NOx / SOx / particulate impurity modeling** | "Pretreatment required" is only a note — no ppm-level input or OPEX impact |
+| **No solvent-specific impurity tolerance** | MEA's SOx vulnerability vs 2nd-gen solvents' stability is ignored |
+| **No separate pretreatment CAPEX line** | Bundled into capex_mult; not visible as a distinct cost driver |
+| **No solvent-specific capture rate ceilings** | TSA ≤ 95%, CaL ≤ 90%, Cansolv ≤ 99% not auto-clipped |
+
+### 🚀 Planned Updates (Roadmap)
+
+| Phase | Feature | Priority |
+|---|---|---|
+| **P1** | 🎯 Solvent × sector compatibility matrix with fit-scores | High |
+| **P1** | 🎚️ Solvent-specific capture rate ceilings | High |
+| **P2** | 🔬 Impurity sliders (NOx / SOx / particulate ppm) → NETL reclaimer cost model | Mid |
+| **P2** | 💰 Pretreatment CAPEX as a separate line item | Mid |
+| **P3** | 🌡️ Solvent stability lifetime by impurity exposure | Low |
+
+### 📚 Sector Multiplier — Sources & Caveats
+
+**The `SOURCE_SECTORS` dict srd_mult / capex_mult values are synthesized from:**
+
+- **IEAGHG 2007** Post-Combustion CO₂ Capture (NGCC SRD correction range)
+- **IEAGHG 2013/03** Cement CCS (dust pretreatment → CAPEX 1.15~1.30×)
+- **IEAGHG 2013/04** Iron & Steel CCS (BF NOx/SOx pretreatment → CAPEX 1.20~1.30×)
+- **NETL 2022 Baseline** B11B/B12B/B31B (Coal SC PC 12% CO₂ = 1.00 baseline)
+- **GCCSI Status Reports** for Cement / Steel (actual retrofit cost data)
+
+→ **No single peer-reviewed primary source.** Representative values extracted from the means / midpoints of these reports + expert judgment. The direction (low CO₂ → SRD↑, high CO₂ → SRD↓, complex pretreatment → CAPEX↑) is well-supported by the literature, but exact magnitudes (e.g., NGCC ×1.15) can vary by **±5~10%** depending on plant-specific conditions.
+
+### 📌 Appropriate Use
+
+✅ **Fit-for-purpose**
+- Quick representative comparison of CCUS technology performance and economics
+- Trade-off scenario analysis (capture rate ↑ vs CAPEX ↑, etc.)
+- Early-stage business development & stakeholder communication
+- Policy analysis & R&D priority screening
+- Portfolio / educational demonstration
+
+❌ **Not fit-for-purpose — do NOT use this tool alone for:**
+- EPC bid / FEED study (vendor quotes & measured data required)
+- Final Investment Decision (FID)
+- Government grant applications (measured data & certified methodology required)
+- Regulatory reporting (certified protocols required)
+""")
+
+    # ──────────────────────────────────────────────
     # 🎯 자동 인사이트 박스 (메인 상단 - 사용자가 처음 보는 것)
     # ──────────────────────────────────────────────
     if results:
