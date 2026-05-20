@@ -362,8 +362,8 @@ ETA_CARNOT_FRAC = 0.55  # second-law efficiency
 # 단위 환산
 USD_PER_MWH_GRID = 80   # 보조전력의 가치 (kWh 가격 환산용)
 
-# 자매 도구 (CBAM 계산기)
-CBAM_TOOL_URL = "https://ccusbenchmark-rcuf9appppppppykmyeca8nwgk.streamlit.app/"
+# 자매 도구 (CBAM 계산기) — 별도 Streamlit Cloud deploy
+CBAM_TOOL_URL = "https://cbamcalculator-w2nbczeiccwtj7fepeqjlj.streamlit.app/"
 
 # ──────────────────────────────────────────────
 # 인플레이션 — US CPI (2018=100 기준)
