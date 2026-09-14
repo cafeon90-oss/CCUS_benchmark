@@ -3949,7 +3949,7 @@ with tab_overall:
             showlegend=False,
             uniformtext=dict(minsize=12, mode="show"),
         )
-        container.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
+        container.plotly_chart(f, width="stretch", config=PLOTLY_CONFIG)
 
     row1 = st.columns(2)
     render_kpi_chart(kpi_specs[0], row1[0])
@@ -3996,7 +3996,7 @@ with tab_overall:
     show_df["We_elec"] = show_df["We_elec"].map(lambda x: f"{x:,.2f}")
     show_df["SPECCA"] = show_df["SPECCA"].map(lambda x: f"{x:,.0f}")
     show_df["COCA"] = show_df["COCA"].map(lambda x: f"{x:,.1f}")
-    st.dataframe(show_df, use_container_width=True, hide_index=True)
+    st.dataframe(show_df, width="stretch", hide_index=True)
 
     # ── Section Conclusion (TRL · 기술 분포) ──
     _trl_a = sum(1 for r in results if r['TRL'] >= 9)
@@ -4054,7 +4054,7 @@ with tab_overall:
         plant_display_df = pd.DataFrame(_plant_rows)
         st.dataframe(
             plant_display_df,
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
             column_config={
                 "Source": st.column_config.LinkColumn(
@@ -4118,7 +4118,7 @@ with tab_overall:
                 legend=dict(bgcolor="#2A2F3A"),
                 margin=dict(l=50, r=20, t=50, b=50),
             )
-            st.plotly_chart(fig_bub, use_container_width=True)
+            st.plotly_chart(fig_bub, width="stretch")
 
             # ── 자동 인사이트 ──────────────────────
             _avg = sum(p['capex_usd_per_t_yr'] for p in _bubble) / len(_bubble)
@@ -4190,7 +4190,7 @@ with tab_overall:
         with pdf_col2:
             generate_pdf_btn = st.button(
                 T("pdf_btn_label"),
-                use_container_width=True,
+                width="stretch",
                 key="btn_generate_pdf",
                 type="primary",
             )
@@ -4374,7 +4374,7 @@ with tab_overall:
                 data=_payload["bytes"],
                 file_name=_payload["filename"],
                 mime="application/pdf",
-                use_container_width=True,
+                width="stretch",
                 key="dl_pdf_report",
             )
 
@@ -4406,7 +4406,7 @@ with tab_energy:
         xaxis_tickangle=0, margin=CHART_MARGIN_STACK,
         legend=dict(orientation="h", y=-0.18),
     )
-    st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
+    st.plotly_chart(f, width="stretch", config=PLOTLY_CONFIG)
 
     st.markdown("---")
     st.markdown("### CAP 냉동기 부하 — 냉각수 온도 민감도")
@@ -4431,7 +4431,7 @@ with tab_energy:
             template="plotly_dark", height=350,
             xaxis_title="냉각수 온도 [°C]", yaxis_title="We_chill [GJe/tCO₂]",
         )
-        st.plotly_chart(f2, use_container_width=True, config=PLOTLY_CONFIG)
+        st.plotly_chart(f2, width="stretch", config=PLOTLY_CONFIG)
     else:
         st.info("CAP을 선택하면 냉동기 민감도 그래프가 활성화됩니다.")
 
@@ -4463,7 +4463,7 @@ with tab_econ:
             template="plotly_dark", height=420,
             xaxis_tickangle=0, margin=dict(l=10, r=10, t=70, b=80),
         )
-        st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
+        st.plotly_chart(f, width="stretch", config=PLOTLY_CONFIG)
 
     with col2:
         f = go.Figure()
@@ -4482,7 +4482,7 @@ with tab_econ:
             xaxis_tickangle=0, margin=CHART_MARGIN_STACK,
             legend=dict(orientation="h", y=-0.20),
         )
-        st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
+        st.plotly_chart(f, width="stretch", config=PLOTLY_CONFIG)
 
     st.markdown("---")
     st.markdown("### COCA 요약")
@@ -4500,7 +4500,7 @@ with tab_econ:
         template="plotly_dark", height=400,
         xaxis_tickangle=0, margin=CHART_MARGIN,
     )
-    st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
+    st.plotly_chart(f, width="stretch", config=PLOTLY_CONFIG)
 
     cost_df = pd.DataFrame([{
         "기술": r["name"],
@@ -4513,7 +4513,7 @@ with tab_econ:
         "COCA": f"{r['COCA']:,.1f}",
         "연간 총비용 [M$]": f"{r['annual_total_usd']/1e6:,.1f}",
     } for r in results])
-    st.dataframe(cost_df, use_container_width=True, hide_index=True)
+    st.dataframe(cost_df, width="stretch", hide_index=True)
 
     # ── 매출/보조금/Net COCA ──
     st.markdown("---")
@@ -4590,7 +4590,7 @@ with tab_econ:
         xaxis_tickangle=0,
     )
     # Net COCA 막대 아래에 텍스트가 안잘리도록 우측 여유
-    st.plotly_chart(f_net, use_container_width=True, config=PLOTLY_CONFIG)
+    st.plotly_chart(f_net, width="stretch", config=PLOTLY_CONFIG)
 
     st.markdown("##### 매출/보조금 상세")
     rev_rows = []
@@ -4609,7 +4609,7 @@ with tab_econ:
             "COCA": f"{r['COCA']:,.1f}",
             "Net COCA": f"{r['Net_COCA']:+,.1f}",
         })
-    st.dataframe(pd.DataFrame(rev_rows), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(rev_rows), width="stretch", hide_index=True)
 
     if facility_mode == "CCU" and ccu["capex_mult"] > 1.0:
         base_capex_estimate = results[0]['eff_capex_per_t'] - results[0]['capex_adder']
@@ -4663,7 +4663,7 @@ with tab_econ:
                    zerolinewidth=2),
         showlegend=False,
     )
-    st.plotly_chart(f_profit, use_container_width=True, config=PLOTLY_CONFIG)
+    st.plotly_chart(f_profit, width="stretch", config=PLOTLY_CONFIG)
 
     # 연간 손익 카드 (선택된 모든 기술)
     st.markdown("##### 💵 연간 손익 카드")
@@ -4708,7 +4708,7 @@ with tab_econ:
         "ROI [%]":        f"{r['annual_profit_usd']/r['annual_cost_usd']*100:+,.1f}" if r['annual_cost_usd'] > 0 else "—",
         "Net COCA [USD/t]": f"{r['Net_COCA']:+,.1f}",
     } for r in results])
-    st.dataframe(profit_df, use_container_width=True, hide_index=True)
+    st.dataframe(profit_df, width="stretch", hide_index=True)
 
     st.markdown("---")
     st.markdown(f"##### 💴 단위 CO₂당 KRW 요약 (환율 {fx_krw_per_usd:,.0f} KRW/USD)")
@@ -4786,7 +4786,7 @@ with tab_econ:
         "할인 회수 [yr]": f"{r['payback_disc_yr']}" if r["payback_disc_yr"] else "N/A",
         "PI":             f"{r['profitability_idx']:.2f}",
     } for r in results])
-    st.dataframe(fin_df, use_container_width=True, hide_index=True)
+    st.dataframe(fin_df, width="stretch", hide_index=True)
 
     st.info(
         f"💡 **해석 가이드**: "
@@ -4824,7 +4824,7 @@ with tab_econ:
         yaxis_title="누적 Cash Flow [M$]",
         legend=dict(orientation="h", y=-0.18),
     )
-    st.plotly_chart(f_cf, use_container_width=True, config=PLOTLY_CONFIG)
+    st.plotly_chart(f_cf, width="stretch", config=PLOTLY_CONFIG)
 
     # ───────────────────────────────────────
     # 🌪️ Tornado Sensitivity (어떤 변수가 가장 영향?)
@@ -4888,7 +4888,7 @@ with tab_econ:
         yaxis=dict(autorange="reversed"),
         legend=dict(orientation="h", y=-0.18),
     )
-    st.plotly_chart(f_tornado, use_container_width=True, config=PLOTLY_CONFIG)
+    st.plotly_chart(f_tornado, width="stretch", config=PLOTLY_CONFIG)
 
     st.caption(
         f"💡 **{labels[0]}** 가 가장 큰 영향 (±{abs(values[0]):,.1f} $/tCO₂). "
@@ -4938,7 +4938,7 @@ with tab_econ:
             "흑자 여유 [$/t]":        f"{margin:,.1f}" if margin > 0 else "—",
         })
 
-    st.dataframe(pd.DataFrame(breakeven_rows), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(breakeven_rows), width="stretch", hide_index=True)
 
     # 시각화 — 각 기술의 breakeven gap
     short_x = [SHORT_NAMES.get(r["key"], r["name"]) for r in results]
@@ -4964,7 +4964,7 @@ with tab_econ:
         yaxis_title=f"추가 인센티브 [USD/t {yield_label}]",
         showlegend=False,
     )
-    st.plotly_chart(f_be, use_container_width=True, config=PLOTLY_CONFIG)
+    st.plotly_chart(f_be, width="stretch", config=PLOTLY_CONFIG)
 
     # 정책 시사점
     avg_gap = sum(g for g in gap_values if g > 0) / max(1, sum(1 for g in gap_values if g > 0))
@@ -5058,7 +5058,7 @@ with tab_econ:
                 xaxis_title="NPV [M$]", yaxis_title="Iterations",
                 showlegend=False,
             )
-            st.plotly_chart(f_npv, use_container_width=True, config=PLOTLY_CONFIG)
+            st.plotly_chart(f_npv, width="stretch", config=PLOTLY_CONFIG)
 
         with c2:
             f_nc = go.Figure()
@@ -5077,7 +5077,7 @@ with tab_econ:
                 xaxis_title="Net COCA [$/t]", yaxis_title="Iterations",
                 showlegend=False,
             )
-            st.plotly_chart(f_nc, use_container_width=True, config=PLOTLY_CONFIG)
+            st.plotly_chart(f_nc, width="stretch", config=PLOTLY_CONFIG)
 
         # 통계 요약
         st.markdown("##### 📊 Monte Carlo 통계 (P10/P50/P90)")
@@ -5091,7 +5091,7 @@ with tab_econ:
              "P50": f"{nc_p50:+,.1f}",
              "P90": f"{nc_p90:+,.1f}"},
         ])
-        st.dataframe(mc_df, use_container_width=True, hide_index=True)
+        st.dataframe(mc_df, width="stretch", hide_index=True)
         st.success(
             f"🎯 **흑자 확률 (NPV > 0): {prob_profit:.1f}%** "
             f"({n_iter} iterations, ±{unc*100:.0f}% Tier {('A' if unc==0.05 else 'B' if unc==0.15 else 'C')})"
@@ -5118,7 +5118,7 @@ with tab_loss:
         xaxis_tickangle=0, margin=CHART_MARGIN,
         yaxis_type="log", yaxis_title="kg/tCO₂ (log scale)",
     )
-    st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
+    st.plotly_chart(f, width="stretch", config=PLOTLY_CONFIG)
 
     loss_df = pd.DataFrame([{
         "기술": r["name"],
@@ -5128,7 +5128,7 @@ with tab_loss:
         "메커니즘": r["loss_mech"],
         "비고": LIT[r["key"]]["notes"],
     } for r in results])
-    st.dataframe(loss_df, use_container_width=True, hide_index=True)
+    st.dataframe(loss_df, width="stretch", hide_index=True)
 
     st.info(
         "📌 **CaL의 30 kg/tCO₂**는 makeup limestone 다량 투입(저비용·다소비) 특성. "
@@ -5183,7 +5183,7 @@ with tab_trend:
         template="plotly_dark", height=520,
         xaxis_title="SRD [GJ/tCO₂]", yaxis_title="We 총합 [GJe/tCO₂]",
     )
-    st.plotly_chart(f, use_container_width=True, config=PLOTLY_CONFIG)
+    st.plotly_chart(f, width="stretch", config=PLOTLY_CONFIG)
 
     st.markdown("**해석:** 회귀선 아래에 위치하면 동일 SRD 대비 보조전력이 효율적인 기술입니다.")
 
@@ -5255,7 +5255,7 @@ with tab_custom:
             comp_df[col_] = comp_df[col_].map(lambda x: f"{x:,.2f}")
         comp_df["SPECCA"] = comp_df["SPECCA"].map(lambda x: f"{x:,.0f}")
         comp_df["COCA"] = comp_df["COCA"].map(lambda x: f"{x:,.1f}")
-        st.dataframe(comp_df, use_container_width=True, hide_index=True)
+        st.dataframe(comp_df, width="stretch", hide_index=True)
 
 # ---------- 🆚 시나리오 비교 ----------
 with tab_compare:
@@ -5289,18 +5289,18 @@ with tab_compare:
     btn_col_a, btn_col_b, btn_col_c, btn_col_d = st.columns([1, 1, 1, 1.2])
     with btn_col_a:
         if st.button(T("cmp_btn_save_a"),
-                      use_container_width=True, key="btn_save_a"):
+                      width="stretch", key="btn_save_a"):
             save_scenario_snapshot("A", results, _cur_meta)
             st.success(T("cmp_msg_saved_a", label=_cur_meta['preset_label']))
             st.rerun()
     with btn_col_b:
         if st.button(T("cmp_btn_save_b"),
-                      use_container_width=True, key="btn_save_b"):
+                      width="stretch", key="btn_save_b"):
             save_scenario_snapshot("B", results, _cur_meta)
             st.success(T("cmp_msg_saved_b", label=_cur_meta['preset_label']))
             st.rerun()
     with btn_col_c:
-        if st.button(T("cmp_btn_swap"), use_container_width=True, key="btn_swap_ab"):
+        if st.button(T("cmp_btn_swap"), width="stretch", key="btn_swap_ab"):
             slots = st.session_state.get("compare_slots", {})
             slots["A"], slots["B"] = slots.get("B"), slots.get("A")
             # None 정리
@@ -5308,7 +5308,7 @@ with tab_compare:
             st.session_state["compare_slots"] = slots
             st.rerun()
     with btn_col_d:
-        if st.button(T("cmp_btn_clear"), use_container_width=True, key="btn_clear_all"):
+        if st.button(T("cmp_btn_clear"), width="stretch", key="btn_clear_all"):
             clear_scenario_snapshot(None)
             st.rerun()
 
@@ -5461,7 +5461,7 @@ with tab_compare:
                              xanchor="right", x=1),
                 margin=dict(l=50, r=20, t=70, b=60),
             )
-            st.plotly_chart(fig_cmp, use_container_width=True, config=PLOTLY_CONFIG)
+            st.plotly_chart(fig_cmp, width="stretch", config=PLOTLY_CONFIG)
 
             # ─── 차이(Δ) 테이블 ───
             st.markdown("#### 📋 차이 (Δ = B − A) 표")
@@ -5497,7 +5497,7 @@ with tab_compare:
             simple_cols = [c for c in simple_cols if c in delta_df.columns]
             st.dataframe(
                 delta_df[simple_cols],
-                use_container_width=True, hide_index=True,
+                width="stretch", hide_index=True,
             )
 
             # ─── 자동 인사이트 ───
@@ -5606,7 +5606,7 @@ with tab_refs:
             "손실 [kg/tCO₂]": f"{t['loss_kg_per_tCO2']:,.1f}",
             "출처 ID": ref_str,
         })
-    st.dataframe(pd.DataFrame(map_rows), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(map_rows), width="stretch", hide_index=True)
 
     st.markdown("---")
     st.markdown("### 🧮 계산식 ↔ 출처 매핑")
@@ -5617,7 +5617,7 @@ with tab_refs:
             "수식 / 가정": formula,
             "출처": ", ".join(f"[{r}]" for r in ref_ids),
         })
-    st.dataframe(pd.DataFrame(formula_rows), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(formula_rows), width="stretch", hide_index=True)
 
     st.markdown("---")
     st.markdown("### 📐 지표 정의 (수식 정리)")
@@ -5670,7 +5670,7 @@ with tab_refs:
         {"기술": LIT["Biphasic_DMX"]["name"] + " †", "Tier": "C — Pilot",
          "기준": "Dunkirk 0.5 t/h 파일럿 (3D Project)", "불확실성": "± 25%"},
     ])
-    st.dataframe(tier_data, use_container_width=True, hide_index=True)
+    st.dataframe(tier_data, width="stretch", hide_index=True)
 
     st.warning(
         "⚠️ 본 툴의 수치는 공개 보고서 기반 *representative values*. "
@@ -6434,7 +6434,7 @@ with tab_lca:
         legend=dict(orientation="h", y=-0.18),
         yaxis_title="tCO₂ / tCO₂ captured",
     )
-    st.plotly_chart(f_lca, use_container_width=True, config=PLOTLY_CONFIG)
+    st.plotly_chart(f_lca, width="stretch", config=PLOTLY_CONFIG)
 
     # ── 2. CRCF Efficiency Tier 분류 ──
     st.markdown("##### 📊 CRCF / ICVCM 등급")
@@ -6471,7 +6471,7 @@ with tab_lca:
             "연 Net 감축 [kt/yr]": net_kt_str,
             "CRCF 등급": crcf_tier(pct),
         })
-    st.dataframe(pd.DataFrame(tier_rows), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(tier_rows), width="stretch", hide_index=True)
 
     # ── 3. 시나리오 비교 인사이트 ──
     avg_net = sum(r["crcf_efficiency_pct"] for r in results) / len(results)
@@ -6510,7 +6510,7 @@ with tab_lca:
                 f"조건부 가치 (× ${kets_ccu_price_info:.1f}/t)":
                                               fmt_money(implicit_usd, fx_krw_per_usd, display_currency),
             })
-        st.dataframe(pd.DataFrame(kets_primary_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(kets_primary_rows), width="stretch", hide_index=True)
         st.caption(
             "→ K-ETS 차감 톤수 = **MRV로 측정한 실제 출하 CO₂ 톤수** "
             "(환경부 배출량 보고·검증 지침)"
@@ -6529,7 +6529,7 @@ with tab_lca:
                 "Net 감축 (LCA) [kt/yr]":  f"{net_t/1000:,.1f}",
                 "실제 환경 효율 [%]":       f"{net_pct:.1f}",
             })
-        st.dataframe(pd.DataFrame(kets_secondary_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(kets_secondary_rows), width="stretch", hide_index=True)
         st.caption(
             "ℹ️ Net 감축량은 voluntary credit·EU CRCF 등 **lifecycle 평가 시장**에서 의미. "
             "K-ETS 차감과는 별개."
