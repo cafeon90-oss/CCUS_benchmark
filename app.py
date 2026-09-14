@@ -88,6 +88,7 @@ TRANSLATIONS = {
         "sb_trl_opt_9": "🟢 TRL 9 (상용)",
         "sb_trl_opt_78": "🟡 TRL 7-8 (Demo)",
         "sb_trl_opt_le6": "🟠 TRL ≤6 (Pilot/연구)",
+        "sb_trl_auto_added": "ℹ️ 프리셋 기술이 가려지지 않도록 TRL 필터에 자동 추가: {groups}",
         "sb_select_techs": "비교할 기술 선택",
         "sb_input_hint": "⌨️ 모든 입력은 직접 숫자 입력 가능 (미입력시 default 사용)",
         "sb_capture_amount": "연간 CO₂ 포집량 [MtCO₂/yr]",
@@ -166,6 +167,7 @@ TRANSLATIONS = {
         "sb_trl_opt_9": "🟢 TRL 9 (commercial)",
         "sb_trl_opt_78": "🟡 TRL 7-8 (demo)",
         "sb_trl_opt_le6": "🟠 TRL ≤6 (pilot / R&D)",
+        "sb_trl_auto_added": "ℹ️ Added to the TRL filter so the preset's technologies stay visible: {groups}",
         "sb_select_techs": "Technologies to compare",
         "sb_input_hint": "⌨️ All inputs accept direct numeric entry (defaults used if blank).",
         "sb_capture_amount": "Annual CO₂ capture [Mt CO₂/yr]",
@@ -1672,8 +1674,18 @@ def apply_preset():
     if not preset:
         return
     # 설정값 적용
+    # ⚠️ session_state 직접 쓰기는 위젯 min/max·options 검증을 건너뜀 → 범위 밖 값은
+    #    Streamlit이 에러 없이 기본값으로 되돌림. 프리셋 값 수정 시 tests/test_presets.py 실행.
     for k, v in preset["settings"].items():
         st.session_state[k] = v
+    # 프리셋 기술이 TRL 필터에 가려지지 않도록 필요한 TRL 그룹을 자동으로 켬
+    # (필터 밖 기술은 multiselect가 에러 없이 빼 버림)
+    _needed = {trl_group(LIT[tk].get("TRL", 7)) for tk in preset["techs"] if tk in LIT}
+    _current = set(st.session_state.get("trl_filter", _TRL_OPTS_CANONICAL))
+    _added = [g for g in _TRL_OPTS_CANONICAL if g in _needed - _current]
+    if _added:
+        st.session_state["trl_filter"] = [g for g in _TRL_OPTS_CANONICAL if g in _current | _needed]
+        st.session_state["_trl_auto_added"] = _added  # 사이드바에서 1회 안내 후 삭제
     # 선택 기술 적용
     st.session_state["selected_techs"] = preset["techs"]
 
@@ -1944,6 +1956,11 @@ _LEGACY_CAPACITY_RANGE_PLACEHOLDER = {
     "TSA_Solid":      (0.01,  1.0),    # 분산형 소규모 적합
     "CaL":            (0.5,   5.0),    # 시멘트 산업 통합
 }
+
+
+# TRL 필터 옵션 (canonical 한글 라벨 — trl_group() 반환값과 반드시 일치).
+# 사이드바 필터와 apply_preset() 콜백이 함께 쓰므로 모듈 상수로 둔다.
+_TRL_OPTS_CANONICAL = ["🟢 TRL 9 (상용)", "🟡 TRL 7-8 (Demo)", "🟠 TRL ≤6 (Pilot/연구)"]
 
 
 def trl_group(trl: int) -> str:
@@ -2509,7 +2526,6 @@ with st.sidebar:
     # NOTE: TRL option labels are also used as keys into TECH classification → keep
     # the canonical Korean labels regardless of lang, but show the chosen language
     # to the user via format_func. (Avoids breaking downstream `trl_group()` matches.)
-    _trl_opts_canonical = ["🟢 TRL 9 (상용)", "🟡 TRL 7-8 (Demo)", "🟠 TRL ≤6 (Pilot/연구)"]
     _trl_opts_display = {
         "🟢 TRL 9 (상용)":      T("sb_trl_opt_9"),
         "🟡 TRL 7-8 (Demo)":   T("sb_trl_opt_78"),
@@ -2517,8 +2533,8 @@ with st.sidebar:
     }
     trl_filter = st.multiselect(
         T("sb_trl_label"),
-        options=_trl_opts_canonical,
-        default=_trl_opts_canonical,
+        options=_TRL_OPTS_CANONICAL,
+        default=_TRL_OPTS_CANONICAL,
         format_func=lambda x: _trl_opts_display.get(x, x),
         help=(
             "TRL = Technology Readiness Level (1~9). NASA·EU·IEA 표준.\n"
@@ -2526,6 +2542,11 @@ with st.sidebar:
         ),
         key="trl_filter",
     )
+    # apply_preset()이 TRL 필터를 자동으로 넓혔으면 1회 안내 (조용한 변경 방지)
+    _trl_auto_added = st.session_state.pop("_trl_auto_added", None)
+    if _trl_auto_added:
+        st.caption(T("sb_trl_auto_added",
+                     groups=", ".join(_trl_opts_display.get(g, g) for g in _trl_auto_added)))
 
     # TRL 필터 적용한 기술 옵션 풀
     _filtered_keys = [k for k in TECH_KEYS if trl_group(LIT[k].get("TRL", 7)) in trl_filter]
@@ -2543,14 +2564,16 @@ with st.sidebar:
 
     capture_mt_yr = st.number_input(
         T("sb_capture_amount"),
-        min_value=0.1, max_value=20.0, value=3.7, step=0.1,
+        # 하한 0.01 = SSOT capacity_range_mt_yr 최소값(TSA). 0.1이면 kr_ultra_lco2(0.05)가 3.7로 되돌아감
+        min_value=0.01, max_value=20.0, value=3.7, step=0.1,
         format="%.2f",
         help=(
             "NETL B12C/B12B 기준값 ≈ 3.7 Mt/yr · default: 3.7\n"
             "규모 효과 적용 (CCS specific):\n"
             "• CAPEX: IEAGHG/NETL n=0.65\n"
             "• SRD: ±10%/decade (IEAGHG 2013/04)\n"
-            "• We_comp: ±6%/decade (NETL Rev4)"
+            "• We_comp: ±6%/decade (NETL Rev4)\n"
+            "⚠️ 0.1 Mt/yr 미만(기준 규모의 1/37 이하)은 CAPEX 외삽 폭이 커 신뢰도 낮음 (1차 근사)"
         ),
         key="capture_mt_yr",
     )
@@ -4435,7 +4458,7 @@ with tab_econ:
         f.update_layout(
             title=(f"연환산 CAPEX [USD/tCO₂] · 수명 {lifetime}년 · 할인율 {discount*100:.1f}%"
                    f"<br><span style='font-size:11px; color:#8b95a7;'>"
-                   f"포집 {capture_mt_yr:.1f} Mt/yr → {scale_label} · 시나리오: {proj_label}"
+                   f"포집 {capture_mt_yr:.2f} Mt/yr → {scale_label} · 시나리오: {proj_label}"
                    f"</span>"),
             template="plotly_dark", height=420,
             xaxis_tickangle=0, margin=dict(l=10, r=10, t=70, b=80),
@@ -4473,7 +4496,7 @@ with tab_econ:
         textposition="outside",
     ))
     f.update_layout(
-        title=f"COCA [USD/tCO₂] (연간 {capture_mt_yr:.1f} Mt 기준)",
+        title=f"COCA [USD/tCO₂] (연간 {capture_mt_yr:.2f} Mt 기준)",
         template="plotly_dark", height=400,
         xaxis_tickangle=0, margin=CHART_MARGIN,
     )
@@ -4604,7 +4627,7 @@ with tab_econ:
     st.markdown("### 🪙 연간 손익 분석 — 시설 단위 수익성")
     st.caption(
         f"연간 매출 − 연간 비용 = 연간 손익. "
-        f"포집 {capture_mt_yr:.1f} Mt/yr · 환율 {fx_krw_per_usd:,.0f} KRW/USD"
+        f"포집 {capture_mt_yr:.2f} Mt/yr · 환율 {fx_krw_per_usd:,.0f} KRW/USD"
     )
 
     # 손익 막대 차트 (USD)
