@@ -29,7 +29,7 @@ import urllib.request
 # ======================================================================
 CCUS_METRICS_URL = (
     "https://raw.githubusercontent.com/cafeon90-oss/"
-    "ccus_benchmark/main/data/ccus_metrics.json"
+    "CCUS_benchmark/main/data/ccus_metrics.json"  # GitHub URLs are case-sensitive (repo: CCUS_benchmark)
 )
 
 # Fallback 데이터 (네트워크 실패 시) — 최소 stub
