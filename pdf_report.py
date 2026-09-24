@@ -149,11 +149,23 @@ def _profit_color(usd: float):
 # ─────────────────────────────────────────────────────────────
 # Plotly figure → PNG bytes (optional — kaleido must be installed)
 # ─────────────────────────────────────────────────────────────
+# 마지막 PNG 변환 실패 사유 (앱 안내 문구에 표시)
+LAST_PNG_ERROR: str | None = None
+
+
 def fig_to_png_bytes(fig, width=900, height=400, scale=1.6) -> bytes | None:
-    """Convert Plotly figure to PNG. Returns None if kaleido missing."""
+    """Convert Plotly figure to PNG via kaleido 1.x (needs Chrome/Chromium).
+
+    Returns None on failure and records the reason in LAST_PNG_ERROR.
+    """
+    global LAST_PNG_ERROR
     try:
-        return fig.to_image(format="png", width=width, height=height, scale=scale)
-    except Exception:
+        png = fig.to_image(format="png", width=width, height=height, scale=scale)
+        LAST_PNG_ERROR = None
+        return png
+    except Exception as e:  # kaleido 미설치·구버전, Chrome/Chromium 없음 등
+        lines = str(e).strip().splitlines()
+        LAST_PNG_ERROR = f"{type(e).__name__}: {lines[0][:160]}" if lines else type(e).__name__
         return None
 
 

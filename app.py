@@ -33,6 +33,7 @@ import plotly.express as px
 
 # PDF 리포트 (선택적 — reportlab 미설치 시에도 앱은 정상 작동)
 try:
+    import pdf_report as _pdf_mod  # LAST_PNG_ERROR (차트 변환 실패 사유) 조회용
     from pdf_report import build_pdf_report, fig_to_png_bytes
     _PDF_AVAILABLE = True
 except Exception as _pdf_err:
@@ -122,7 +123,7 @@ TRANSLATIONS = {
         "cmp_msg_saved_b": "✅ B 저장: {label}",
         # ── PDF section ─────────────────────────────────────────
         "pdf_h_title": "#### 📥 PDF 리포트 내보내기",
-        "pdf_chart_toggle": "차트 PNG 포함 (kaleido 필요)",
+        "pdf_chart_toggle": "차트 PNG 포함",
         "pdf_btn_label": "📄 PDF 다운로드",
     },
     "en": {
@@ -201,7 +202,7 @@ TRANSLATIONS = {
         "cmp_msg_saved_b": "✅ Saved B: {label}",
         # ── PDF section ─────────────────────────────────────────
         "pdf_h_title": "#### 📥 Export PDF Report",
-        "pdf_chart_toggle": "Embed chart PNGs (requires kaleido)",
+        "pdf_chart_toggle": "Embed chart PNGs",
         "pdf_btn_label": "📄 Download PDF",
     },
 }
@@ -1136,25 +1137,29 @@ REFS = {
     },
     "KRX_KAU_2024": {
         "cat": "report",
-        "cite": "한국거래소 KRX (2024). 배출권 시장 운영 통계, KAU 시세. "
-                "2024년 평균 9,500~10,500 KRW/tCO₂.",
+        "cite": "한국거래소 KRX 배출권시장 정보플랫폼, KAU25 시세. "
+                "2026-08-20 종가 30,100 KRW/tCO₂ (4차 계획기간 할당 강화로 1년 새 약 3.5배), "
+                "2026-09-07 29,950 KRW/tCO₂.",
         "url": "https://ets.krx.co.kr/",
-        "used_for": "K-ETS default 단가 ($7/t)",
+        "used_for": "K-ETS default 단가 ($22/t = 30,000 KRW ÷ 1,370)",
     },
     "ICE_EUA_2024": {
         "cat": "report",
-        "cite": "Intercontinental Exchange (ICE) EUA Futures (2024). EU ETS 배출권 시세. "
-                "2024년 평균 €70~80/tCO₂.",
-        "url": "https://www.ice.com/products/197/EUA-Futures",
-        "used_for": "EU ETS default 단가 ($80/t)",
+        "cite": "EU ETS 배출권(EUA) 시세 — 2026-09-21 €86.89/tCO₂ (Trading Economics; "
+                "자매 도구 CBAM 계산기가 매주 자동 수집). 기준 거래소는 ICE EUA Futures.",
+        "url": "https://tradingeconomics.com/commodity/carbon",
+        "used_for": "EU ETS default 단가 ($99/t = €86.89 × 1.138 USD/EUR)",
     },
     "IRS_45Q_IRA": {
         "cat": "report",
-        "cite": "IRS Notice 2022-38; Inflation Reduction Act 2022, Section 13104. "
-                "Section 45Q tax credit: $85/t (CCS), $60/t (EOR/CCU), $180/t (DAC+CCS), "
-                "$130/t (DAC+CCU). 12-year credit period.",
+        "cite": "IRS Notice 2022-38; Inflation Reduction Act 2022, Section 13104; "
+                "One Big Beautiful Bill Act (H.R. 1, signed 2025-07-04). "
+                "Facilities placed in service after 2025-07-04: $85/t point-source capture and "
+                "$180/t DAC, the same for geologic storage, EOR and utilization "
+                "(earlier facilities: $60/t EOR/CCU, $130/t DAC+CCU). "
+                "12-year credit period; construction must begin before 2033.",
         "url": "https://www.irs.gov/credits-deductions/credit-for-carbon-oxide-sequestration",
-        "used_for": "US 45Q 보조금 단가 ($85/$60/$180/$130/t)",
+        "used_for": "US 45Q 보조금 단가 ($85/t 포인트소스 · $180/t DAC, OBBBA 이후 격리·EOR·활용 동일)",
     },
     "NL_SDE_2024": {
         "cat": "report",
@@ -1612,8 +1617,8 @@ PRESETS = {
         "settings": {
             "capture_mt_yr": 0.5, "facility_mode": "CCS",
             "project_scenario": "retrofit_industrial",
-            "cm_select": "K-ETS", "cm_price_K-ETS": 7.0,
-            "sub_select": "K-CCUS-est", "sub_price_K-CCUS-est": 21.0,
+            "cm_select": "K-ETS", "cm_price_K-ETS": 22.0,
+            "sub_select": "K-CCUS-est", "sub_price_K-CCUS-est": 22.0,
             "extra_rev": 0.0,
         },
     },
@@ -1912,15 +1917,15 @@ PROJECT_SCENARIOS = {
 
 
 CARBON_MARKETS = {
-    "K-ETS":      {"label": "🇰🇷 K-ETS (한국)",            "type": "credit",   "price_usd_t": 7.0,   "native": "10,000 KRW/t",        "region": "KR"},
-    "EU-ETS":     {"label": "🇪🇺 EU ETS (유럽)",           "type": "credit",   "price_usd_t": 80.0,  "native": "€75/t",               "region": "EU"},
+    "K-ETS":      {"label": "🇰🇷 K-ETS (한국)",            "type": "credit",   "price_usd_t": 22.0,  "native": "30,000 KRW/t (KAU25 2026-09)",        "region": "KR"},
+    "EU-ETS":     {"label": "🇪🇺 EU ETS (유럽)",           "type": "credit",   "price_usd_t": 99.0,  "native": "€87/t (2026-09)",               "region": "EU"},
     "RGGI":       {"label": "🇺🇸 RGGI (미 동부)",           "type": "credit",   "price_usd_t": 20.0,  "native": "$20/t",               "region": "US"},
     "CA-CAT":     {"label": "🇺🇸 CA Cap-Trade (캘리포니아)", "type": "credit",   "price_usd_t": 30.0,  "native": "$30/t",               "region": "US"},
     "45Q-CCS":    {"label": "🇺🇸 US 45Q — CCS 지중저장",    "type": "subsidy",  "price_usd_t": 85.0,  "native": "$85/t (12yr)",        "region": "US"},
-    "45Q-EOR":    {"label": "🇺🇸 US 45Q — CCU/EOR",        "type": "subsidy",  "price_usd_t": 60.0,  "native": "$60/t (12yr)",        "region": "US"},
+    "45Q-EOR":    {"label": "🇺🇸 US 45Q — CCU/EOR",        "type": "subsidy",  "price_usd_t": 85.0,  "native": "$85/t (12yr, OBBBA 2025)",        "region": "US"},
     "NL-SDE":     {"label": "🇳🇱 NL SDE++ (네덜란드)",      "type": "subsidy",  "price_usd_t": 120.0, "native": "€110/t",              "region": "EU"},
     "UK-CfD":     {"label": "🇬🇧 UK CCUS CfD",              "type": "subsidy",  "price_usd_t": 180.0, "native": "£150/t",              "region": "UK"},
-    "K-CCUS-est": {"label": "🇰🇷 Korea CCUS Act (추정)",   "type": "subsidy",  "price_usd_t": 21.0,  "native": "30,000 KRW/t (placeholder)", "region": "KR"},
+    "K-CCUS-est": {"label": "🇰🇷 Korea CCUS Act (추정)",   "type": "subsidy",  "price_usd_t": 22.0,  "native": "30,000 KRW/t (placeholder)", "region": "KR"},
     "Custom":     {"label": "✏️ Custom 입력",                "type": "credit",   "price_usd_t": 0.0,   "native": "—",                   "region": "ANY"},
 }
 
@@ -2703,9 +2708,9 @@ with st.sidebar:
 
     fx_krw_per_usd = st.number_input(
         "💱 환율 [KRW/USD]",
-        min_value=800.0, max_value=2000.0, value=1400.0, step=10.0,
+        min_value=800.0, max_value=2000.0, value=1370.0, step=10.0,
         format="%.0f",
-        help="default: 1,400 (2026.4 기준)",
+        help="default: 1,370 (2026-09-24 기준)",
     )
 
     # ─── 비용 기준 연도 (인플레이션 조정) ───
@@ -4165,10 +4170,10 @@ with tab_overall:
     if not _PDF_AVAILABLE:
         _pdf_unavail_msg = (
             "📌 PDF 모듈이 로드되지 않았습니다. 로컬 환경에서 "
-            "`pip install reportlab kaleido==0.2.1` 후 재시작해 주세요."
+            "`pip install reportlab 'kaleido>=1'` 후 재시작해 주세요."
             if st.session_state.get("lang", "ko") == "ko" else
             "📌 PDF module not loaded. Install locally with "
-            "`pip install reportlab kaleido==0.2.1` and restart."
+            "`pip install reportlab 'kaleido>=1'` and restart."
         )
         st.info(_pdf_unavail_msg)
     else:
@@ -4176,10 +4181,10 @@ with tab_overall:
         with pdf_col1:
             _pdf_chart_help = (
                 "체크하면 연 손익·COCA·Net COCA·에너지 차트를 PNG로 PDF에 임베드합니다. "
-                "kaleido 미설치 시 자동으로 차트 없이 생성됩니다."
+                "차트 변환에는 Chrome/Chromium이 필요하며, 실패하면 차트 없이 생성됩니다."
                 if st.session_state.get("lang", "ko") == "ko" else
                 "If checked, profit / COCA / Net COCA / energy charts are embedded as PNGs. "
-                "If kaleido is missing, the PDF is generated without charts."
+                "Chart export needs Chrome/Chromium; if it fails, the PDF is generated without charts."
             )
             include_charts_pdf = st.checkbox(
                 T("pdf_chart_toggle"),
@@ -4323,11 +4328,12 @@ with tab_overall:
                         )
                         _chart_pngs["energy_bars"] = fig_to_png_bytes(fig_e)
 
-                        # 모든 차트가 None이면 (kaleido 미설치) 메시지
+                        # 모든 차트 변환이 실패하면 원인과 함께 안내 (kaleido 1.x + Chrome/Chromium 필요)
                         if all(v is None for v in _chart_pngs.values()):
                             st.warning(
-                                "⚠️ kaleido 미설치 — 차트 없이 텍스트/표만 PDF 생성됩니다. "
-                                "차트 포함하려면: `pip install kaleido==0.2.1`"
+                                "⚠️ 차트 이미지 변환 실패 — 차트 없이 텍스트/표만 PDF를 만듭니다. "
+                                "(kaleido 1.x와 Chrome/Chromium 필요 · 원인: "
+                                f"{_pdf_mod.LAST_PNG_ERROR or '알 수 없음'})"
                             )
                             _chart_pngs = {}
                     except Exception as _e:
@@ -4974,7 +4980,7 @@ with tab_econ:
         f"**{n_breakeven}개가 현재 인센티브 stack으로 흑자 진입**. "
         f"나머지는 평균 **+${avg_gap:,.1f}/t** 추가 인센티브 필요. "
         f"\n\n"
-        f"**참고**: 45Q-CCS $85/t = 미국 IRA 한도. NL SDE++ €110 ≈ $120, UK CfD £150 ≈ $180 — "
+        f"**참고**: 45Q $85/t = 미국 한도 (OBBBA 2025 이후 격리·EOR·활용 동일).NL SDE++ €110 ≈ $120, UK CfD £150 ≈ $180 — "
         f"이 수준 이상의 보조금이 있어야 mid-scale CCS 흑자 가능."
     )
 
@@ -5916,12 +5922,12 @@ $$\text{{CRF}} = \frac{{i(1+i)^n}}{{(1+i)^n - 1}}$$
 - EU: ≈ 100~150 USD/MWh
 - 출처: **EIA AEO 2024**, **IEA Energy Prices 2023**
 
-**탄소시장 가격 (모든 default, 2024 평균)**
+**탄소시장 가격 (default — K-ETS·EU ETS는 2026-09 갱신, 나머지는 2024 평균)**
 
 | 시장 | Default ($USD/t) | 환산 | 변동성 | 출처 |
 |---|---|---|---|---|
-| K-ETS | 7 | 10,000 KRW/t | 高 (5~15) | KRX 2024 |
-| EU ETS | 80 | €75 | 中 (60~100) | ICE 2024 |
+| K-ETS | 22 | 30,000 KRW/t (KAU25) | 高 (최근 1년 6~22) | KRX 2026-09 |
+| EU ETS | 99 | €87 | 中 (최근 1년 80~100) | Trading Economics 2026-09-21 |
 | RGGI (US east) | 20 | — | 低 | RGGI Inc. 2024 |
 | CA Cap-Trade | 30 | — | 低 | CARB 2024 |
 
@@ -5929,14 +5935,14 @@ $$\text{{CRF}} = \frac{{i(1+i)^n}}{{(1+i)^n - 1}}$$
 
 | 제도 | Default | 조건 | 출처 |
 |---|---|---|---|
-| US 45Q-CCS | $85/t | 12yr, 75%+ capture | IRS Notice 2022-38 (IRA) |
-| US 45Q-EOR | $60/t | 12yr | IRS Notice 2022-38 |
-| US 45Q-DAC | $180/t | 12yr | IRS Notice 2022-38 |
+| US 45Q-CCS | $85/t | 12yr, 75%+ capture | IRA 2022 · OBBBA 2025 |
+| US 45Q-EOR·CCU | $85/t | 12yr, 2025-07-04 이후 가동 설비 (이전 설비는 $60) | OBBBA 2025 (H.R. 1) |
+| US 45Q-DAC | $180/t | 12yr, 저장·활용 동일 (OBBBA 이후) | IRA 2022 · OBBBA 2025 |
 | NL SDE++ | $120/t (€110) | CfD 12~15yr | RVO Netherlands 2024 |
 | UK CCUS CfD | $180/t (£150) | Track 1/2 cluster | UK BEIS 2023 |
-| K-CCUS Act | $21/t (placeholder) | 시행령 미정 | 산업부 2024 |
+| K-CCUS Act | $22/t (30,000 KRW, placeholder) | 시행령 미정 | 산업부 2024 |
 
-**환율**: default 1,400 KRW/USD (2026.4 기준, 사용자 조정 가능)
+**환율**: default 1,370 KRW/USD (2026-09-24 기준, 사용자 조정 가능)
         """)
 
     # ── 7. CAP 냉동기 ──
@@ -6117,10 +6123,10 @@ K-ETS CCU 차감은 **"배출량 보고 시 출하량만큼 차감"**일 뿐, �
 - **탭 ⑨에서 별도 표시** — 보고 차감 톤수 + 조건부 가치 시나리오
 - **사이드바 toggle**: K-ETS CCU 차감 보고 ON 시 정보용 가격 입력
 
-**예시** (K-ETS $7/t, CCU 0.3 Mt/yr 출하):
+**예시** (K-ETS $22/t ≈ 30,000원, CCU 0.3 Mt/yr 출하):
 - Gross 출하량 = 264 kt (yield 88%)
 - Net 감축량 (LCA 반영) ≈ 200 kt
-- 조건부 가치 (시나리오 1, short인 경우) = 264k × $7 = **$1.85M/yr (≈ 26억원)**
+- 조건부 가치 (시나리오 1, short인 경우) = 264k × $22/t = **약 5.8M USD/yr (≈ 79억원)**
 - 위는 **실제 매출에 더하지 않고**, 의사결정 시 별도 검토 사항
 
 **미인정 사례 (case-by-case)**:
@@ -6328,8 +6334,8 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 3. **Page 3**: LCA / Net CO₂ 분해 표 + 방법론 요약 + 면책 조항
 
 **기술 스택**
-- ReportLab 4.x (Platypus/SimpleDocTemplate)
-- Plotly → kaleido로 PNG 변환 (~5초)
+- ReportLab 4.x·5.x (Platypus/SimpleDocTemplate)
+- Plotly → kaleido 1.x로 PNG 변환 (Chrome/Chromium 사용, 차트 4장 로컬 기준 약 8초)
 - 한글: ReportLab 기본 폰트 미지원 → 표 헤더는 짧은 한글 그대로, 인사이트는 영문화
 - subscript/superscript: `<sub>` 태그 사용 (Helvetica가 Unicode 첨자 미지원)
 
@@ -6340,7 +6346,7 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 
 **Fallback 안전장치**
 - ReportLab 미설치 시: 안내 메시지만 표시, 앱은 정상 작동
-- kaleido 미설치 시: 차트 없이 텍스트/표만 PDF 생성
+- 차트 변환 실패 시 (kaleido 1.x 또는 Chrome/Chromium 없음): 차트 없이 텍스트/표만 PDF 생성하고 원인 표시
 
 **활용 시나리오**
 - 이사회 자료 첨부: 분석 한 페이지 요약
@@ -6563,7 +6569,7 @@ with tab_lca:
     st.markdown("""
 | 시장/제도 | 기준 | 본 모델 | 출처 |
 |---|---|---|---|
-| 🇺🇸 **45Q (CCS/EOR/DAC)** | 격리·이용량 (**gross**) | ✅ 정확 | IRS Section 45Q (IRA 2022) |
+| 🇺🇸 **45Q (CCS/EOR/DAC)** | 격리·이용량 (**gross**) | ✅ 정확 | IRS Section 45Q (IRA 2022, OBBBA 2025 개정) |
 | 🇪🇺 **EU ETS** | 격리량 (**gross**) | ✅ 정확 | EU Directive Art. 49 |
 | 🇰🇷 **K-ETS (CCS)** | 격리량 (**gross**) | ✅ 정확 | 「온실가스 배출권법」 Art.14 |
 | 🇰🇷 **K-ETS CCU 차감** | 출하량 (**gross**) | ✅ **사이드바 toggle 추가됨** | 환경부 고시 |
