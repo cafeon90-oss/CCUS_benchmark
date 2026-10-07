@@ -1137,9 +1137,9 @@ REFS = {
     },
     "KRX_KAU_2024": {
         "cat": "report",
-        "cite": "한국거래소 KRX 배출권시장 정보플랫폼, KAU25 시세. "
-                "2026-08-20 종가 30,100 KRW/tCO₂ (4차 계획기간 할당 강화로 1년 새 약 3.5배), "
-                "2026-09-07 29,950 KRW/tCO₂.",
+        "cite": "한국거래소 KRX 배출권시장 정보플랫폼. KAU25 2026-08-20 종가 30,100 KRW/tCO₂ "
+                "(4차 계획기간 할당 강화로 1년 새 약 3.5배, 8월 말 거래 종료) → "
+                "지표물 KAU26 2026-09-23 30,150 KRW/tCO₂.",
         "url": "https://ets.krx.co.kr/",
         "used_for": "K-ETS default 단가 ($22/t = 30,000 KRW ÷ 1,370)",
     },
@@ -1917,7 +1917,7 @@ PROJECT_SCENARIOS = {
 
 
 CARBON_MARKETS = {
-    "K-ETS":      {"label": "🇰🇷 K-ETS (한국)",            "type": "credit",   "price_usd_t": 22.0,  "native": "30,000 KRW/t (KAU25 2026-09)",        "region": "KR"},
+    "K-ETS":      {"label": "🇰🇷 K-ETS (한국)",            "type": "credit",   "price_usd_t": 22.0,  "native": "30,000 KRW/t (KAU26 2026-09)",        "region": "KR"},
     "EU-ETS":     {"label": "🇪🇺 EU ETS (유럽)",           "type": "credit",   "price_usd_t": 99.0,  "native": "€87/t (2026-09)",               "region": "EU"},
     "RGGI":       {"label": "🇺🇸 RGGI (미 동부)",           "type": "credit",   "price_usd_t": 20.0,  "native": "$20/t",               "region": "US"},
     "CA-CAT":     {"label": "🇺🇸 CA Cap-Trade (캘리포니아)", "type": "credit",   "price_usd_t": 30.0,  "native": "$30/t",               "region": "US"},
@@ -5926,7 +5926,7 @@ $$\text{{CRF}} = \frac{{i(1+i)^n}}{{(1+i)^n - 1}}$$
 
 | 시장 | Default ($USD/t) | 환산 | 변동성 | 출처 |
 |---|---|---|---|---|
-| K-ETS | 22 | 30,000 KRW/t (KAU25) | 高 (최근 1년 6~22) | KRX 2026-09 |
+| K-ETS | 22 | 30,000 KRW/t (KAU26) | 高 (최근 1년 6~22) | KRX 2026-09 |
 | EU ETS | 99 | €87 | 中 (최근 1년 80~100) | Trading Economics 2026-09-21 |
 | RGGI (US east) | 20 | — | 低 | RGGI Inc. 2024 |
 | CA Cap-Trade | 30 | — | 低 | CARB 2024 |
