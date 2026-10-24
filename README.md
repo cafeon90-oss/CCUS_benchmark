@@ -33,17 +33,19 @@ NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER 등 공식 자료 기반의 10종 C
 | Cansolv DC-103 | Shell 2세대 amine | 2.50 | Boundary Dam, NETL 2022 |
 | Aker S26 | Aker 솔벤트 | 2.80 | Norcem Brevik, Twence |
 
-### 비아민계 (6종)
+### 비아민계 (5종)
 | 기술 | 흡수제/소재 | SRD | 단계 |
 |---|---|---|---|
 | K₂CO₃ / KIERSOL † | K₂CO₃ + 활성화제 | 2.95 | Pilot (Tier C) |
-| Chilled Ammonia (CAP) | NH₃ 28 wt% | 2.40 | Demo (Tier A) |
 | Biphasic DMX™ † | 3차 아민 (상분리) | 2.30 | Pilot (Tier C) |
 | Solid Sorbent TSA | 고체 흡착제 (Svante형) | 2.70 | Demo (Tier B) |
 | VPSA (H₂ 합성가스) | 제올라이트·활성탄 (진공·압력 변동) | 0 (전기만) | 상용 — Port Arthur, H₂ SMR 전용 |
-| Calcium Looping (CaL) | CaO ⇌ CaCO₃ | 3.20 | Demo (Tier B) |
+| Calcium Looping (CaL) | CaO ⇌ CaCO₃ | 3.20 | Pilot (TRL 6, Tier B) |
 
 `†` = 파일럿/실증 데이터 (±25% 불확실성)
+
+기본 화면은 상용·실증(TRL 7 이상) 기술만 보이고, 파일럿 단계(KIERSOL·DMX·CaL)는 사이드바 TRL 필터에서 켤 수 있습니다.
+냉각 암모니아(CAP)는 2011년 상업 규모 계획 취소 후 상용 플랜트가 없어 2026-10 제외했습니다.
 
 ---
 
@@ -134,7 +136,7 @@ LIT 수치 (SRD·CAPEX·OPEX·손실 등)는 **`data/ccus_metrics.json`** (schem
 
 ```
 ccus_benchmark repo (master)
-└── data/ccus_metrics.json     ← 10 technologies, schema v1.0
+└── data/ccus_metrics.json     ← 9 technologies, schema v1.0
     │
     ├── ccus_benchmark/app.py        loads (1h cache)
     └── cbam_calculator/app.py       fetches via raw GitHub URL (24h cache)

@@ -263,54 +263,6 @@
       "notes": "한국에너지기술연구원(KIER) 자체 개발 솔벤트. K₂CO₃ 25-30 wt% + 활성화제 (Piperazine 계열 amine). 0.5 MWe 파일럿 실증. 70°C warm absorber로 reaction kinetics 보완."
     },
 
-    "CAP_B12C": {
-      "name": "Chilled Ammonia (CAP)",
-      "short_name": "CAP",
-      "category": "Chilled NH₃",
-      "material": "NH₃ 28 wt% 수용액 (0~10 °C 냉각)",
-      "source": "NETL Rev4a Case B12C",
-      "status": "demo",
-      "TRL": 7,
-      "is_pilot": false,
-
-      "performance": {
-        "SRD_GJ_per_tCO2": 2.40,
-        "T_regen_C": 150,
-        "T_abs_C": 5,
-        "p_regen_bar": 24.0,
-        "capture_rate_default": 0.90
-      },
-
-      "energy_components_GJe_per_tCO2": {
-        "We_pump": 0.018,
-        "We_comp": 0.18,
-        "We_chill": 0.18,
-        "We_aux": 0.05
-      },
-
-      "economics": {
-        "CAPEX_USD_per_tCO2_yr": 1200,
-        "OPEX_solvent_USD_per_tCO2": 0.6,
-        "OPEX_other_USD_per_tCO2": 13.0
-      },
-
-      "operations": {
-        "capacity_range_mt_yr": [1.0, 5.0],
-        "loss_kg_per_tCO2": 0.3,
-        "loss_mechanism": "NH₃ slip (water wash 회수)"
-      },
-
-      "lca": {
-        "solvent_emission_factor_kgCO2_per_kg": 2.2
-      },
-
-      "references": [
-        "NETL_Rev4a", "Darde2010", "Telikapalli2011"
-      ],
-
-      "notes": "흡수탑 0~10 °C 냉각. 가압 재생 → CO₂ 압축 부하 절감. NETL B12C 공식 케이스."
-    },
-
     "Biphasic_DMX": {
       "name": "Biphasic DMX™ †",
       "short_name": "DMX†",
@@ -470,8 +422,8 @@
       "category": "CaO/CaCO₃",
       "material": "CaO ⇌ CaCO₃ (석회석 기원, 고체)",
       "source": "IEAGHG 2013/14 CaL Report",
-      "status": "demo",
-      "TRL": 7,
+      "status": "pilot",
+      "TRL": 6,
       "is_pilot": false,
 
       "performance": {
@@ -509,7 +461,7 @@
         "IEAGHG_CaL_2013", "Abanades2002", "Grasa2006", "Romeo2008", "Hanak_2015"
       ],
 
-      "notes": "650/900 °C 고온 순환. 시멘트 산업 통합 가능. ASU 포함 oxy-calcination."
+      "notes": "650/900 °C 고온 순환. 시멘트 산업 통합 가능. ASU 포함 oxy-calcination. 상용 플랜트 없음 — La Pereda 1.7 MWt 등 파일럿, EU CaLby2030(2022~2026) 3개 파일럿도 TRL 6이라 2026-10 TRL 7→6."
     }
   },
 
@@ -529,8 +481,6 @@
     "KIER_KIERSOL_2013": "KIER 한국에너지기술연구원 (2013-2018). KIERSOL 흡수제 파일럿 실증 보고서.",
     "Yoo2013": "Yoo, M. et al. (KIER) (2013). Development of CO₂ absorbents for power plant flue gas. Korean J. Chem. Eng., 30(7), 1497-1503.",
     "Cullinane2004": "Cullinane, J. T., Rochelle, G. T. (2004). Carbon dioxide absorption with aqueous K₂CO₃ promoted by piperazine. Chem. Eng. Sci., 59(17), 3619-3630.",
-    "Darde2010": "Darde, V. et al. (2010). Chilled ammonia process for CO₂ capture. IJGGC, 4(2), 131-136.",
-    "Telikapalli2011": "Telikapalli, V. et al. (2011). CCS with the Alstom Chilled Ammonia Process — Field Pilot Results. Energy Procedia, 4, 273-281.",
     "TotalEnergies_3D": "3D Project Consortium (2017-2023). DMX™ Demonstration in Dunkirk. H2020 Grant 838031.",
     "Raynal2011": "Raynal, L. et al. (2011). From MEA to demixing solvents and future steps. Chem. Eng. J., 171(3), 742-752.",
     "DOE_NETL_Sorbent_Program": "DOE/NETL Carbon Capture Program (2018). Solid Sorbent Process Designs.",

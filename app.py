@@ -2,22 +2,19 @@
 비아민계 CO₂ 포집 흡수제 기술 벤치마크 Streamlit 앱
 =====================================================
 
-비교 기술 (5종 + MEA 기준):
-  0. MEA 30wt% (Baseline 비교용)
-  1. K₂CO₃ 계열 (Hot Carbonate / KIERSOL)
-  2. 냉각 암모니아 공정 (CAP) — NETL Rev4a B12C
-  3. 이중상 용매 (Biphasic / DMX™)
-  4. 고체 흡착제 TSA
-  5. 칼슘 루핑 (CaL)
+비교 기술: data/ccus_metrics.json 에 수록된 전부 (2026-10 기준 9종)
+  상용 아민 (MEA 기준·KS-21·DC-103·Aker S26) · 고체 흡착 TSA · VPSA (H₂ 합성가스 전용)
+  파일럿 단계 (기본 화면 숨김): KIERSOL · Biphasic DMX™ · CaL
+  상용화가 멈춘 냉각 암모니아(CAP)는 2026-10 제외
 
 데이터 소스:
-  - NETL Rev4a Case B12C (Chilled Ammonia 공식 케이스)
+  - NETL Rev4a / NETL 2022 Baseline Case B12B (아민 포집 발전소 기준)
   - IEAGHG Technical Reports (Calcium Looping, Biphasic 솔벤트)
   - DOE NETL 고체흡착제 R&D 보고서
   - KIER KIERSOL 파일럿 실증 보고서
 
 지표 정의 (사용자 정의식, 아민 툴과 동일 기준):
-  We     [GJe/tCO₂]  = We_thermal(Carnot) + We_elec(펌프·압축·냉동기·보조)
+  We     [GJe/tCO₂]  = We_thermal(Carnot) + We_elec(펌프·압축·보조)
   SPECCA [MJ/tCO₂]   = (SRD×500 + We_elec×2500) / capture
   COCA   [USD/tCO₂]  = (연간 CAPEX + OPEX) / 연간 CO₂ 포집량
 
@@ -56,7 +53,7 @@ TRANSLATIONS = {
         "main_title": "🌫️ CO₂ 포집·CCUS 기술·경제성 벤치마크",
         "main_caption": (
             "Advanced Amine (KS-21·DC-103·Aker S26) + 🇰🇷 **KIERSOL (KIER)** + "
-            "비아민계 (CAP·DMX·TSA·CaL) 통합 비교 · "
+            "비아민계 (TSA·VPSA·DMX·CaL) 통합 비교 · "
             "NETL 2022 / IEAGHG / IRS 45Q / KIER 기반"
         ),
         "ssot_indicator": (
@@ -135,7 +132,7 @@ TRANSLATIONS = {
         "main_title": "🌫️ CO₂ Capture · CCUS Tech-Economic Benchmark",
         "main_caption": (
             "Advanced Amine (KS-21 · DC-103 · Aker S26) + 🇰🇷 **KIERSOL (KIER)** + "
-            "non-amine (CAP · DMX · TSA · CaL) integrated comparison · "
+            "non-amine (TSA · VPSA · DMX · CaL) integrated comparison · "
             "based on NETL 2022 / IEAGHG / IRS 45Q / KIER"
         ),
         "ssot_indicator": (
@@ -439,7 +436,7 @@ TS_COSTS = {
 # CCS 특화 스케일링 (IEAGHG / NETL 벤치마크 기반)
 # 일반 화공의 Lang's rule이 아니라 CCS plant-specific 데이터
 # ──────────────────────────────────────────────────────────
-REF_CAPTURE_MT_YR = 3.7         # NETL B12C/B12B 기준 규모
+REF_CAPTURE_MT_YR = 3.7         # NETL B12B 기준 규모
 
 # CAPEX scaling (IEAGHG 2007, NETL QGESS — CCS 표준)
 CAPEX_SCALE_EXPONENT = 0.65     # CCS 플랜트 평균 (일반 화공 0.7보다 낮음)
@@ -496,7 +493,7 @@ GRID_FACTORS = {
 
 # ══════════════════════════════════════════════════════════════════════
 # 🎯 Single Source of Truth — data/ccus_metrics.json 에서 로드
-# 9개 기술의 LIT, SHORT_NAMES, MATERIALS, LIT_REFS, CAPACITY_RANGE,
+# 기술별 LIT, SHORT_NAMES, MATERIALS, LIT_REFS, CAPACITY_RANGE,
 # SOLVENT_EMISSION_FACTORS 모두 한 JSON 파일에서 자동 추출
 # 자매 도구 (CBAM Calculator)도 동일 JSON을 GitHub raw URL로 fetch
 # ══════════════════════════════════════════════════════════════════════
@@ -748,213 +745,9 @@ COMMERCIAL_PLANTS = [
 
 # ──────────────────────────────────────────────────────────────────────
 # LIT (기술 라이브러리) — data/ccus_metrics.json 에서 자동 로드 (위 참조)
-# 이전에 hardcoded 되어 있던 9개 기술 데이터는 모두 JSON 으로 이동됨
+# 기술 데이터는 코드에 두지 않음 (LIT_REFS·SHORT_NAMES·MATERIALS·CAPACITY_RANGE도 JSON)
 # 수정은 data/ccus_metrics.json 한 곳에서만 (자매 도구 CBAM도 동일 fetch)
 # ──────────────────────────────────────────────────────────────────────
-_LEGACY_LIT_PLACEHOLDER = {
-    "MEA_baseline": {
-        "name": "MEA 30 wt% (참고)",
-        "category": "Amine (ref)",
-        "source": "NETL B12B / IEAGHG 2014",
-        "status": "commercial",
-        "TRL": 9,
-        "SRD": 3.60,
-        "T_regen": 120,
-        "T_abs": 40,
-        "p_regen_bar": 1.8,
-        "We_pump": 0.012,
-        "We_comp": 0.40,
-        "We_chill": 0.00,
-        "We_aux": 0.05,
-        "CAPEX_per_t": 950,
-        "OPEX_solvent": 1.5,
-        "OPEX_other": 12.0,
-        "loss_kg_per_tCO2": 1.5,
-        "loss_mech": "산화·열분해 (degradation)",
-        "is_pilot": False,
-        "notes": "30 wt% MEA + reclaimer. 1세대 표준, 비교 기준선.",
-    },
-    "MHI_KS21": {
-        "name": "MHI KS-21™",
-        "category": "Advanced Amine",
-        "source": "Mitsubishi Heavy Industries (Petra Nova KS-1 → KS-21)",
-        "status": "commercial",
-        "TRL": 9,
-        "SRD": 2.80,
-        "T_regen": 120,
-        "T_abs": 40,
-        "p_regen_bar": 1.8,
-        "We_pump": 0.011,
-        "We_comp": 0.40,
-        "We_chill": 0.00,
-        "We_aux": 0.04,
-        "CAPEX_per_t": 920,
-        "OPEX_solvent": 1.8,
-        "OPEX_other": 12.0,
-        "loss_kg_per_tCO2": 0.6,
-        "loss_mech": "Hindered amine 구조 → 산화 분해 ↓",
-        "is_pilot": False,
-        "notes": "MHI 2세대 hindered amine. Petra Nova(KS-1)에서 KS-21로 진화 (2020+). 일본·동남아 적용.",
-    },
-    "Cansolv_DC103": {
-        "name": "Cansolv DC-103",
-        "category": "Advanced Amine",
-        "source": "Shell Cansolv (NETL 2022 Baseline)",
-        "status": "commercial",
-        "TRL": 9,
-        "SRD": 2.50,
-        "T_regen": 110,
-        "T_abs": 40,
-        "p_regen_bar": 1.8,
-        "We_pump": 0.012,
-        "We_comp": 0.40,
-        "We_chill": 0.00,
-        "We_aux": 0.04,
-        "CAPEX_per_t": 880,
-        "OPEX_solvent": 1.6,
-        "OPEX_other": 11.5,
-        "loss_kg_per_tCO2": 0.7,
-        "loss_mech": "낮은 휘발성, 산화 안정성 ↑",
-        "is_pilot": False,
-        "notes": "Shell 상용 솔벤트. Boundary Dam (1 Mt/yr 운영). NETL 2022 B11B/B12B/B31B 공식 reference.",
-    },
-    "Aker_S26": {
-        "name": "Aker S26",
-        "category": "Advanced Amine",
-        "source": "Aker Carbon Capture (Norcem Brevik, Twence)",
-        "status": "commercial",
-        "TRL": 9,
-        "SRD": 2.80,
-        "T_regen": 120,
-        "T_abs": 40,
-        "p_regen_bar": 1.8,
-        "We_pump": 0.012,
-        "We_comp": 0.40,
-        "We_chill": 0.00,
-        "We_aux": 0.045,
-        "CAPEX_per_t": 1000,
-        "OPEX_solvent": 1.7,
-        "OPEX_other": 12.5,
-        "loss_kg_per_tCO2": 0.8,
-        "loss_mech": "낮은 emission, 안정성 ↑",
-        "is_pilot": False,
-        "notes": "Norcem Brevik (시멘트, 0.4 Mt/yr, 2024 가동), Twence WtE. 유럽 대표 상용 솔벤트.",
-    },
-    "K2CO3_KIERSOL": {
-        "name": "KIERSOL (KIER 한국) †",
-        "category": "Hot Carbonate",
-        "source": "KIER KIERSOL 파일럿 (Korea Institute of Energy Research)",
-        "status": "pilot",
-        "TRL": 6,
-        "SRD": 2.95,
-        "T_regen": 105,
-        "T_abs": 70,
-        "p_regen_bar": 1.5,
-        "We_pump": 0.025,
-        "We_comp": 0.38,
-        "We_chill": 0.00,
-        "We_aux": 0.06,
-        "CAPEX_per_t": 1050,
-        "OPEX_solvent": 0.8,
-        "OPEX_other": 11.0,
-        "loss_kg_per_tCO2": 0.5,
-        "loss_mech": "촉진제 열화·미량 분해",
-        "is_pilot": True,
-        "notes": "한국에너지기술연구원(KIER) 자체 개발 솔벤트. "
-                 "K₂CO₃ 25-30 wt% + 활성화제 (Piperazine 계열 amine). "
-                 "0.5 MWe 파일럿 실증. 70°C warm absorber로 reaction kinetics 보완.",
-    },
-    "CAP_B12C": {
-        "name": "Chilled Ammonia (CAP)",
-        "category": "Chilled NH₃",
-        "source": "NETL Rev4a Case B12C",
-        "status": "demo",
-        "TRL": 7,
-        "SRD": 2.40,
-        "T_regen": 150,
-        "T_abs": 5,
-        "p_regen_bar": 24.0,
-        "We_pump": 0.018,
-        "We_comp": 0.18,
-        "We_chill": 0.18,
-        "We_aux": 0.05,
-        "CAPEX_per_t": 1200,
-        "OPEX_solvent": 0.6,
-        "OPEX_other": 13.0,
-        "loss_kg_per_tCO2": 0.3,
-        "loss_mech": "NH₃ slip (water wash 회수)",
-        "is_pilot": False,
-        "notes": "흡수탑 0~10 °C 냉각. 가압 재생 → CO₂ 압축 부하 절감. NETL B12C 공식 케이스.",
-    },
-    "Biphasic_DMX": {
-        "name": "Biphasic DMX™ †",
-        "category": "Biphasic",
-        "source": "TotalEnergies / IFP-EN / 3D Project",
-        "status": "pilot",
-        "TRL": 6,
-        "SRD": 2.30,
-        "T_regen": 155,
-        "T_abs": 40,
-        "p_regen_bar": 1.8,
-        "We_pump": 0.020,
-        "We_comp": 0.36,
-        "We_chill": 0.00,
-        "We_aux": 0.05,
-        "CAPEX_per_t": 1100,
-        "OPEX_solvent": 1.8,
-        "OPEX_other": 12.0,
-        "loss_kg_per_tCO2": 1.0,
-        "loss_mech": "용매 분해·휘발",
-        "is_pilot": True,
-        "notes": "상분리 후 CO₂ 농후상만 재생 → 재생 유량 ½. SRD 보정계수 ≈ 0.7 적용.",
-    },
-    "TSA_Solid": {
-        "name": "Solid Sorbent TSA",
-        "category": "Solid Sorbent",
-        "source": "DOE NETL R&D / SRI / RTI",
-        "status": "demo",
-        "TRL": 7,
-        "SRD": 2.20,
-        "T_regen": 110,
-        "T_abs": 40,
-        "p_regen_bar": 1.2,
-        "We_pump": 0.005,
-        "We_comp": 0.40,
-        "We_chill": 0.00,
-        "We_aux": 0.10,
-        "CAPEX_per_t": 1300,
-        "OPEX_solvent": 2.5,
-        "OPEX_other": 10.0,
-        "loss_kg_per_tCO2": 2.0,
-        "loss_mech": "사이클 열화·마모 (attrition)",
-        "is_pilot": False,
-        "notes": "고체 흡착제, 무수계, 사이클 시간 변수 영향 大. 분산형 소규모에 유리.",
-    },
-    "CaL": {
-        "name": "Calcium Looping (CaL)",
-        "category": "CaO/CaCO₃",
-        "source": "IEAGHG 2013/14 CaL Report",
-        "status": "demo",
-        "TRL": 7,
-        "SRD": 3.20,
-        "T_regen": 900,
-        "T_abs": 650,
-        "p_regen_bar": 1.0,
-        "We_pump": 0.000,
-        "We_comp": 0.36,
-        "We_chill": 0.00,
-        "We_aux": 0.15,
-        "CAPEX_per_t": 850,
-        "OPEX_solvent": 1.5,
-        "OPEX_other": 14.0,
-        "loss_kg_per_tCO2": 30.0,
-        "loss_mech": "다회 사이클 비활성화 (CaO sintering)",
-        "is_pilot": False,
-        "notes": "650/900 °C 고온 순환. 시멘트 산업 통합 가능. ASU 포함 oxy-calcination.",
-    },
-}
-
-_LEGACY_TECH_KEYS = list(_LEGACY_LIT_PLACEHOLDER.keys())  # 미사용 (JSON loader가 TECH_KEYS 정의)
 
 # ======================================================================
 # 레퍼런스 통합 라이브러리 (REFS)
@@ -967,7 +760,7 @@ REFS = {
                 "DOE/NETL-2015/1723. Cases B11A/B11B (NGCC), B12A/B12B (Subcritical PC + MEA), "
                 "B12C (Subcritical PC + Chilled Ammonia).",
         "url": "https://netl.doe.gov/projects/files/CostAndPerformanceBaselineForFossilEnergyPlantsVolume1BituminousCoalAndNaturalGasToElectricity.pdf",
-        "used_for": "CAP SRD 2.4 GJ/t, 보조전력 분해, COE/COC, MEA baseline",
+        "used_for": "보조전력 분해, COE/COC, MEA baseline",
     },
     "NETL_QGESS": {
         "cat": "report",
@@ -1068,22 +861,6 @@ REFS = {
         "url": "https://pubs.rsc.org/en/content/articlehtml/2018/ee/c7ee02342a",
         "used_for": "전기술 SRD 비교 범위, COCA 통합 리뷰",
     },
-    "Darde2010": {
-        "cat": "paper",
-        "cite": "Darde, V., Thomsen, K., van Well, W. J. M., Stenby, E. H. (2010). "
-                "Chilled ammonia process for CO₂ capture. International Journal of Greenhouse "
-                "Gas Control, 4(2), 131-136.",
-        "url": "https://doi.org/10.1016/j.ijggc.2009.10.005",
-        "used_for": "CAP SRD 2.0~2.4 범위, 흡수탑 0~10 °C, NH₃ slip",
-    },
-    "Telikapalli2011": {
-        "cat": "paper",
-        "cite": "Telikapalli, V., Kozak, F., Francuz, J., Sherrick, B., Black, J., Muraskin, D., "
-                "Cage, M., Hammond, M., Spitznogle, G. (2011). CCS with the Alstom Chilled "
-                "Ammonia Process Development Program — Field Pilot Results. Energy Procedia, 4, 273-281.",
-        "url": "https://doi.org/10.1016/j.egypro.2011.01.052",
-        "used_for": "Alstom (현 GE) CAP 파일럿 실증값",
-    },
     "Raynal2011": {
         "cat": "paper",
         "cite": "Raynal, L., Bouillon, P. A., Gomez, A., Broutin, P. (2011). From MEA to "
@@ -1158,13 +935,6 @@ REFS = {
                 "Butterworths. Real-process exergy efficiency typically 40-65% of Carnot.",
         "url": "",
         "used_for": "ETA_CARNOT_FRAC = 0.55 가정 근거",
-    },
-    "ASHRAE_HVAC": {
-        "cat": "methodology",
-        "cite": "ASHRAE Handbook — HVAC Systems and Equipment (2020). Chapter on Refrigeration. "
-                "Real chiller COP ≈ 0.5-0.6 × inverse-Carnot COP.",
-        "url": "https://www.ashrae.org/technical-resources/ashrae-handbook",
-        "used_for": "CAP 냉동기 COP_eff = COP_Carnot × 0.55",
     },
     "EIA_AEO_2024": {
         "cat": "methodology",
@@ -1556,30 +1326,14 @@ def ref_link(ref_id: str, label: str = None) -> str:
     return text
 
 
-# LIT_REFS — JSON에서 자동 로드됨 (위 loader 참조). 아래 placeholder는 미사용.
-_LEGACY_LIT_REFS_PLACEHOLDER = {
-    "MEA_baseline":    ["NETL_Rev4a", "NETL_2022_Baseline", "Rochelle2009",
-                         "IEAGHG_Solvents_2014", "Lepaumier2009", "Bui2018", "Cousins_2011"],
-    "MHI_KS21":        ["MHI_KS21_2020", "GCCSI_Boundary_Petra", "Cousins_2011"],
-    "Cansolv_DC103":   ["NETL_2022_Baseline", "Cansolv_DC103_Tech", "GCCSI_Boundary_Petra"],
-    "Aker_S26":        ["Aker_S26_2023", "Norcem_Brevik_2024"],
-    "K2CO3_KIERSOL":   ["KIER_KIERSOL_2013", "Yoo2013", "Cullinane2004"],
-    "CAP_B12C":        ["NETL_Rev4a", "Darde2010", "Telikapalli2011"],
-    "Biphasic_DMX":    ["TotalEnergies_3D", "Raynal2011"],
-    "TSA_Solid":       ["DOE_NETL_Sorbent_Program", "Sjostrom_Krutka_2010", "Bui2018"],
-    "CaL":             ["IEAGHG_CaL_2013", "Abanades2002", "Grasa2006", "Romeo2008", "Hanak_2015"],
-}
-
 FORMULA_REFS = {
     "Carnot 효율 η = (T_h - T_c) / T_h":                                              ["Bejan2016"],
     "Second-law factor 0.55":                                                          ["Bejan2016", "Kotas1985"],
-    "역카르노 COP = T_c / (T_h - T_c) × 0.55":                                         ["ASHRAE_HVAC"],
     "압축 W ∝ log(p_out / p_in) (5단 + 중간냉각)":                                     ["Aspen_NETL", "Romeo2008"],
     "CRF = i(1+i)^n / [(1+i)^n - 1]":                                                 ["NETL_QGESS"],
     "할인율 8%, 수명 25년 (default)":                                                  ["NETL_QGESS"],
     "전기 가격 80 USD/MWh (default)":                                                   ["EIA_AEO_2024"],
     "SPECCA = (SRD×500 + We_elec×2500) / capture":                                    ["Manzolini2015"],
-    "CAP 냉각부하 = SRD × 0.18 휴리스틱":                                               ["NETL_Rev4a", "Darde2010"],
     "CAPEX 규모 효과: ∝ scale^0.65 (CCS specific, ref=3.7 Mt/yr)":                      ["IEAGHG_2007_PostComb", "NETL_QGESS"],
     "SRD 규모 효과: ±10%/decade (파일럿 → 상용 +10%, 메가 +5%)":                         ["IEAGHG_2013_SolventRD"],
     "We_comp 규모 효과: ±6%/decade (소형 왕복식 → 대형 다단 원심)":                       ["IEAGHG_2014_Solvents", "NETL_Rev3_2015"],
@@ -1608,31 +1362,6 @@ FORMULA_REFS = {
     "TRL (Technology Readiness Level): 1~9 (NASA·EU·IEA 표준)":                              ["IPCC_AR6_WG3_2022"],
 }
 
-# SHORT_NAMES — JSON에서 자동 로드됨. 아래 placeholder는 미사용.
-_LEGACY_SHORT_NAMES_PLACEHOLDER = {
-    "MEA_baseline":   "MEA",
-    "MHI_KS21":       "KS-21",
-    "Cansolv_DC103":  "DC-103",
-    "Aker_S26":       "Aker S26",
-    "K2CO3_KIERSOL":  "KIERSOL†",
-    "CAP_B12C":       "CAP",
-    "Biphasic_DMX":   "DMX†",
-    "TSA_Solid":      "TSA",
-    "CaL":            "CaL",
-}
-
-# MATERIALS — JSON에서 자동 로드됨. 아래 placeholder는 미사용.
-_LEGACY_MATERIALS_PLACEHOLDER = {
-    "MEA_baseline":   "MEA 30 wt% 수용액 (HOCH₂CH₂NH₂)",
-    "MHI_KS21":       "Hindered amine 혼합물 (KS-21™, MHI 2세대)",
-    "Cansolv_DC103":  "2세대 amine 혼합물 (Shell Cansolv proprietary)",
-    "Aker_S26":       "Aker S26 솔벤트 (proprietary blend)",
-    "K2CO3_KIERSOL":  "KIERSOL™ — K₂CO₃ 25~30wt% + Piperazine 계열 활성화제",
-    "CAP_B12C":       "NH₃ 28 wt% 수용액 (0~10 °C 냉각)",
-    "Biphasic_DMX":   "3차 아민 혼합액 (DMX™, 상분리형)",
-    "TSA_Solid":      "고체 흡착제 (아민 함침/제올라이트/MOF)",
-    "CaL":            "CaO ⇌ CaCO₃ (석회석 기원, 고체)",
-}
 
 CCU_GRADES = {
     "food":    {"label": "식품·음료급 (99.9%)",     "purity": 99.9,
@@ -1648,7 +1377,7 @@ PRESETS = {
     "us_petra_nova": {
         "label": "🇺🇸 미국 발전소 retrofit + 45Q (Petra Nova형)",
         "description": "1.4 Mt/yr 석탄 발전소 retrofit · 45Q-CCS + EOR 매출",
-        "techs": ["MEA_baseline", "K2CO3_KIERSOL", "CAP_B12C"],
+        "techs": ["MEA_baseline", "MHI_KS21", "Cansolv_DC103"],
         "settings": {
             "capture_mt_yr": 1.4, "facility_mode": "CCS",
             "project_scenario": "retrofit_power",
@@ -1659,7 +1388,7 @@ PRESETS = {
     "kr_cement": {
         "label": "🇰🇷 한국 시멘트 산업 retrofit (POSCO형)",
         "description": "0.5 Mt/yr 시멘트 retrofit · K-ETS + K-CCUS Act",
-        "techs": ["MEA_baseline", "CaL"],
+        "techs": ["MEA_baseline", "Aker_S26", "CaL"],
         "settings": {
             "capture_mt_yr": 0.5, "facility_mode": "CCS",
             "project_scenario": "retrofit_industrial",
@@ -1671,9 +1400,9 @@ PRESETS = {
     "eu_blue_h2": {
         "label": "🇪🇺 EU 블루수소 greenfield + SDE++",
         "description": "1.5 Mt/yr 신규 산업 + 네덜란드 SDE++ (€110/t)",
-        "techs": ["MEA_baseline", "CAP_B12C", "Biphasic_DMX"],
+        "techs": ["MEA_baseline", "Cansolv_DC103", "VPSA_Syngas"],
         "settings": {
-            "capture_mt_yr": 1.5, "facility_mode": "CCS",
+            "capture_mt_yr": 1.5, "facility_mode": "CCS", "source_sector": "h2_smr",
             "project_scenario": "greenfield_industrial",
             "cm_select": "None", "sub_select": "NL-SDE",
             "sub_price_NL-SDE": 120.0, "extra_rev": 0.0,
@@ -1682,7 +1411,7 @@ PRESETS = {
     "us_dac_lcfs": {
         "label": "🇺🇸 미국 DAC + LCFS (Carbon Engineering형)",
         "description": "0.5 Mt/yr DAC급 · 45Q-DAC $180 + LCFS $150",
-        "techs": ["MEA_baseline", "CAP_B12C", "TSA_Solid"],
+        "techs": ["MEA_baseline", "MHI_KS21", "TSA_Solid"],
         "settings": {
             "capture_mt_yr": 0.5, "facility_mode": "CCS",
             "project_scenario": "greenfield_industrial",
@@ -1705,7 +1434,7 @@ PRESETS = {
     "kr_ultra_lco2": {
         "label": "🇰🇷 반도체 초고순도 LCO₂ (700천원/t)",
         "description": "0.05 Mt/yr 소규모 CCU · 초고순도 99.999%",
-        "techs": ["MEA_baseline", "CAP_B12C", "TSA_Solid"],
+        "techs": ["MEA_baseline", "TSA_Solid"],
         "settings": {
             "capture_mt_yr": 0.05, "facility_mode": "CCU",
             "project_scenario": "greenfield_industrial",
@@ -1732,7 +1461,7 @@ def apply_preset():
     # 프리셋 기술이 TRL 필터에 가려지지 않도록 필요한 TRL 그룹을 자동으로 켬
     # (필터 밖 기술은 multiselect가 에러 없이 빼 버림)
     _needed = {trl_group(LIT[tk].get("TRL", 7)) for tk in preset["techs"] if tk in LIT}
-    _current = set(st.session_state.get("trl_filter", _TRL_OPTS_CANONICAL))
+    _current = set(st.session_state.get("trl_filter", _TRL_OPTS_DEFAULT))
     _added = [g for g in _TRL_OPTS_CANONICAL if g in _needed - _current]
     if _added:
         st.session_state["trl_filter"] = [g for g in _TRL_OPTS_CANONICAL if g in _current | _needed]
@@ -1839,12 +1568,11 @@ TOOLTIPS = {
     ),
     "We": (
         "Equivalent Work — 전력등가 일 [GJe/tCO₂]\n"
-        "■ 계산: We_thermal(Carnot) + 펌프 + CO₂ 압축 + 냉동기(CAP) + 보조\n"
+        "■ 계산: We_thermal(Carnot) + 펌프 + CO₂ 압축 + 보조\n"
         "■ We_thermal = SRD × Carnot η × 0.55 (second-law factor)\n"
         "■ Carnot η = (T_regen − T_cool) / T_regen (절대온도 K)\n"
         "■ 압축: log(p_final/p_regen) × We_comp_LIT (5단 + intercool)\n"
-        "■ CAP 냉동기: Q_chill / COP_eff (역카르노 × 0.55)\n"
-        "■ 출처: Bejan 2016, Kotas 1985, ASHRAE, NETL Aspen"
+        "■ 출처: Bejan 2016, Kotas 1985, NETL Aspen"
     ),
     "SPECCA": (
         "Specific Primary Energy Consumption for CO₂ Avoided [MJ/tCO₂]\n"
@@ -2031,25 +1759,12 @@ def region_icon(key: str) -> str:
     region = CARBON_MARKETS.get(key, {}).get("region", "ANY")
     return REGION_COLORS.get(region, "⚪")
 
-# ────────────── 기술별 실용적 capacity 범위 (Mt/yr) ──────────────
-# 출처: GCCSI 2023, IEAGHG 2014, NETL Rev4a, 각 기술 운영 사례
-# CAPACITY_RANGE — JSON에서 자동 로드됨. 아래 placeholder는 미사용.
-_LEGACY_CAPACITY_RANGE_PLACEHOLDER = {
-    "MEA_baseline":   (0.1,  10.0),    # 광범위, 검증된 상용
-    "MHI_KS21":       (0.5,  10.0),    # 대형 발전소 retrofit
-    "Cansolv_DC103":  (0.5,  10.0),    # Boundary Dam 1 Mt 입증
-    "Aker_S26":       (0.1,   5.0),    # 시멘트~중형 발전소
-    "K2CO3_KIERSOL":  (0.05,  1.0),    # 파일럿 스케일 (KIER 0.5 MWe)
-    "CAP_B12C":       (1.0,   5.0),    # 대형 (냉동 cycle 경제성)
-    "Biphasic_DMX":   (0.05,  2.0),    # 파일럿~중규모 (3D Project)
-    "TSA_Solid":      (0.01,  1.0),    # 분산형 소규모 적합
-    "CaL":            (0.5,   5.0),    # 시멘트 산업 통합
-}
-
 
 # TRL 필터 옵션 (canonical 한글 라벨 — trl_group() 반환값과 반드시 일치).
 # 사이드바 필터와 apply_preset() 콜백이 함께 쓰므로 모듈 상수로 둔다.
 _TRL_OPTS_CANONICAL = ["🟢 TRL 9 (상용)", "🟡 TRL 7-8 (Demo)", "🟠 TRL ≤6 (Pilot/연구)"]
+# 기본 화면은 상용·실증만 (파일럿은 사용자가 켜거나 프리셋이 자동으로 켬)
+_TRL_OPTS_DEFAULT = _TRL_OPTS_CANONICAL[:2]
 
 
 def trl_group(trl: int) -> str:
@@ -2133,15 +1848,6 @@ def carnot_efficiency(T_hot_C: float, T_cold_C: float) -> float:
     return (Th - Tc) / Th
 
 
-def chiller_We(Q_chill_GJ: float, T_abs_C: float, T_amb_C: float) -> float:
-    Tc = T_abs_C + 273.15
-    Th = T_amb_C + 273.15 + 10
-    if Th <= Tc:
-        return 0.0
-    cop_carnot = Tc / (Th - Tc)
-    cop_eff = max(cop_carnot * ETA_CARNOT_FRAC, 1.0)
-    return Q_chill_GJ / cop_eff
-
 
 def calc_We(tech: dict, T_cool_C: float, p_final_bar: float,
             capture_t_yr: float = REF_CAPTURE_MT_YR * 1e6,
@@ -2168,12 +1874,8 @@ def calc_We(tech: dict, T_cool_C: float, p_final_bar: float,
     p_factor = max(p_factor, 0.3)
     we_comp_eff = we_comp_scaled * p_factor
 
-    # 4) 냉동기 (CAP만 동적)
-    if tech["category"] == "Chilled NH₃":
-        Q_chill = srd_scaled * 0.18
-        we_chill_eff = chiller_We(Q_chill, tech["T_abs"], T_cool_C)
-    else:
-        we_chill_eff = tech.get("We_chill", 0.0)
+    # 4) 냉동기 (현재 수록 기술은 0, Custom 입력용)
+    we_chill_eff = tech.get("We_chill", 0.0)
 
     we_pump = tech["We_pump"]
     we_aux = tech["We_aux"]
@@ -2302,7 +2004,7 @@ def calc_COCA(
     # 2) 포집율 효과 — 90% baseline, 99% 접근 시 column 크기 ↑
     capture_factor = capture_rate_factor(capture_eff, CAPEX_VS_CAPTURE_COEF)
     project_capex_per_t = project_capex_per_t * capture_factor
-    # 3) 규모의 경제 적용 (NETL B12C 3.7 Mt/yr 대비)
+    # 3) 규모의 경제 적용 (NETL B12B 3.7 Mt/yr 대비)
     scaled_capex_per_t = scale_capex_per_t(project_capex_per_t, capture_t_yr)
     # 4) CCU 정제 등급 CAPEX adder
     eff_capex_per_t = scaled_capex_per_t * (1 + ccu_share * (capex_mult - 1))
@@ -2636,7 +2338,7 @@ with st.sidebar:
     trl_filter = st.multiselect(
         T("sb_trl_label"),
         options=_TRL_OPTS_CANONICAL,
-        default=_TRL_OPTS_CANONICAL,
+        default=_TRL_OPTS_DEFAULT,
         format_func=lambda x: _trl_opts_display.get(x, x),
         help=(
             "TRL = Technology Readiness Level (1~9). NASA·EU·IEA 표준.\n"
@@ -2657,7 +2359,7 @@ with st.sidebar:
         T("sb_select_techs"),
         options=_filtered_keys,
         default=[k for k in ["MEA_baseline", "MHI_KS21", "Cansolv_DC103", "Aker_S26",
-                              "CAP_B12C", "TSA_Solid", "CaL"] if k in _filtered_keys],
+                              "TSA_Solid", "CaL"] if k in _filtered_keys],
         format_func=lambda k: f"{trl_group(LIT[k].get('TRL', 7)).split()[0]} {LIT[k]['name']}",
         key="selected_techs",
     )
@@ -2670,7 +2372,7 @@ with st.sidebar:
         min_value=0.01, max_value=20.0, value=3.7, step=0.1,
         format="%.2f",
         help=(
-            "NETL B12C/B12B 기준값 ≈ 3.7 Mt/yr · default: 3.7\n"
+            "NETL B12B 기준값 ≈ 3.7 Mt/yr · default: 3.7\n"
             "규모 효과 적용 (CCS specific):\n"
             "• CAPEX: IEAGHG/NETL n=0.65\n"
             "• SRD: ±10%/decade (IEAGHG 2013/04)\n"
@@ -3402,7 +3104,7 @@ CO₂ 포집·CCUS 기술의 **기술 성능·경제성·Lifecycle CO₂·정책
 ### 기본 입력
 - **포집량 [Mt/yr]**: 연간 CO₂ 포집 능력. NETL 기준 3.7 Mt = 550 MWe 발전소 retrofit
 - **포집율 [%]**: 90% = NETL baseline (cost-optimal). 99%↑ 시 SRD/CAPEX 비선형 증가 (IEAGHG 2019)
-- **냉각수 온도 [°C]**: 25°C 표준. 더운 지역(35°C+) → CAP의 냉동기 부하 ↑
+- **냉각수 온도 [°C]**: 25°C 표준. 열→전기 환산(Carnot)의 저온 쪽 온도
 - **CO₂ 최종 압력 [bar]**: 152 = NETL 초임계 표준. 액화탄산용 5~25, EOR 100~150
 - **TRL 필터**: 기술 성숙도별 그룹화 (🟢 9 / 🟡 7-8 / 🟠 ≤6)
 
@@ -3479,7 +3181,7 @@ CO₂ 포집·CCUS 기술의 **기술 성능·경제성·Lifecycle CO₂·정책
 ## 📚 자세한 방법론·출처
 
 - **탭 ⑧ 방법론**: 13개 섹션 (지표 정의·규모 효과·LCA·K-ETS 등)
-- **탭 ⑨ 참고문헌**: 76개 출처 (NETL/IEAGHG/IRS 45Q/IPCC/peer-reviewed)
+- **탭 ⑨ 참고문헌**: 70여 개 출처 (NETL/IEAGHG/IRS 45Q/IPCC/peer-reviewed)
 """)
 
 if not selected:
@@ -3985,7 +3687,7 @@ with tab_overall:
             {"title": "We", "full": "Equivalent Work (전력등가 일)",
              "unit": "GJe / tCO₂", "color": "#81C784",
              "formula": "We<sub>thermal</sub>(Carnot) + We<sub>elec</sub>",
-             "desc": "재생열을 Carnot로 전기등가 환산 + 펌프·압축·냉동기·보조 전력 합.",
+             "desc": "재생열을 Carnot로 전기등가 환산 + 펌프·압축·보조 전력 합.",
              "hint": "↓ 낮을수록 통합 에너지 효율 우수"},
             {"title": "SPECCA", "full": "Specific Primary Energy<br>Consumption for CO₂ Avoided",
              "unit": "MJ / tCO₂", "color": "#FFB74D",
@@ -4029,8 +3731,7 @@ with tab_overall:
             <b>📐 보조 개념</b> &nbsp;·&nbsp;
             <b>Carnot</b>: η<sub>C</sub> = (T<sub>regen</sub> − T<sub>cool</sub>) / T<sub>regen</sub> &nbsp;·&nbsp;
             실효 = η<sub>C</sub> × 0.55 &nbsp;·&nbsp;
-            <b>CRF</b>: i(1+i)<sup>n</sup> / [(1+i)<sup>n</sup> − 1] &nbsp;·&nbsp;
-            <b>CAP COP</b>: T<sub>abs</sub> / (T<sub>amb</sub> − T<sub>abs</sub>) × 0.55
+            <b>CRF</b>: i(1+i)<sup>n</sup> / [(1+i)<sup>n</sup> − 1]
             </div>
             """, unsafe_allow_html=True)
 
@@ -4527,7 +4228,7 @@ with tab_overall:
 # ---------- ④ 에너지 페널티 ----------
 with tab_energy:
     st.markdown("### 전력등가 일(We) 분해 — 스택 막대")
-    st.caption("We_thermal: SRD를 Carnot 효율로 전기등가 환산 (참고). We_elec: 펌프·압축·냉동기·보조.")
+    st.caption("We_thermal: SRD를 Carnot 효율로 전기등가 환산 (참고). We_elec: 펌프·압축·보조.")
 
     components = [
         ("We_pump", "펌프", "#7986CB"),
@@ -4540,6 +4241,8 @@ with tab_energy:
     f = go.Figure()
     names_short = [SHORT_NAMES.get(r["key"], r["name"]) for r in results]
     for col, label, color in components:
+        if not any(r[col] for r in results):
+            continue
         f.add_trace(go.Bar(
             name=label, x=names_short,
             y=[r[col] for r in results],
@@ -4554,32 +4257,6 @@ with tab_energy:
     )
     st.plotly_chart(f, width="stretch", config=PLOTLY_CONFIG)
 
-    st.markdown("---")
-    st.markdown("### CAP 냉동기 부하 — 냉각수 온도 민감도")
-    st.caption("CAP의 We_chill은 냉각수 온도에 민감. Carnot COP × 0.55.")
-
-    if any(r["category"] == "Chilled NH₃" for r in results):
-        T_range = np.arange(5, 46, 2)
-        cap_data = LIT["CAP_B12C"]
-        # 현재 시나리오 (scale + capture rate)와 일관된 scaled SRD 사용
-        cap_srd_scaled = scale_srd(cap_data["SRD"], capture_t_yr) * \
-                         capture_rate_factor(capture_eff, SRD_VS_CAPTURE_COEF)
-        Q_chill = cap_srd_scaled * 0.18
-        chill_we = [chiller_We(Q_chill, cap_data["T_abs"], T) for T in T_range]
-        f2 = go.Figure()
-        f2.add_trace(go.Scatter(
-            x=T_range, y=chill_we, mode="lines+markers",
-            line=dict(color="#BA68C8", width=3), marker=dict(size=8),
-        ))
-        f2.add_vline(x=T_cool_C, line_dash="dash", line_color="#ffc107",
-                     annotation_text=f"현재 {T_cool_C}°C")
-        f2.update_layout(
-            template="plotly_dark", height=350,
-            xaxis_title="냉각수 온도 [°C]", yaxis_title="We_chill [GJe/tCO₂]",
-        )
-        st.plotly_chart(f2, width="stretch", config=PLOTLY_CONFIG)
-    else:
-        st.info("CAP을 선택하면 냉동기 민감도 그래프가 활성화됩니다.")
 
 # ---------- ② 경제성 ----------
 with tab_econ:
@@ -5146,10 +4823,10 @@ with tab_econ:
         r0 = results[0]
         # Tier에 따른 ±% 불확실성
         tier_unc = {"A": 0.05, "B": 0.15, "C": 0.25}
-        # MEA·KS-21·DC-103·Aker S26 = A, CAP·TSA·CaL = B, KIERSOL·DMX = C
+        # MEA·KS-21·DC-103·Aker S26 = A, TSA·CaL·VPSA = B, KIERSOL·DMX = C
         if r0["key"] in ("MEA_baseline", "MHI_KS21", "Cansolv_DC103", "Aker_S26"):
             unc = tier_unc["A"]
-        elif r0["key"] in ("CAP_B12C", "TSA_Solid", "CaL"):
+        elif r0["key"] in ("TSA_Solid", "CaL", "VPSA_Syngas"):
             unc = tier_unc["B"]
         else:
             unc = tier_unc["C"]
@@ -5776,7 +5453,7 @@ with tab_refs:
   We_thermal_eq = SRD × Carnot η × 0.55
   We_pump   = LIT 고정값
   We_comp   = LIT × log(p_final / p_regen) / log(152 / 1.8)   [Aspen_NETL, Romeo2008]
-  We_chill  = Q_chill / COP_eff (CAP만 동적)                    [ASHRAE_HVAC]
+  We_chill  = LIT 고정값 (현재 수록 기술은 0, Custom 입력용)
   We_total  = We_thermal_eq + We_pump + We_comp + We_chill + We_aux
 
 [2차 지표]
@@ -5786,11 +5463,6 @@ with tab_refs:
   CRF      = i(1+i)^n / [(1+i)^n - 1]                          [NETL_QGESS]
   연환산 CAPEX = CAPEX × CRF
   COCA     = 연환산 CAPEX + OPEX
-
-[CAP 냉동기]
-  COP_Carnot = T_abs / (T_amb - T_abs)                          [ASHRAE_HVAC]
-  COP_eff    = COP_Carnot × 0.55
-  Q_chill    = SRD × 0.18                                        [NETL_Rev4a]
 """, language="python")
 
     st.markdown("---")
@@ -5805,10 +5477,8 @@ with tab_refs:
          "기준": "Boundary Dam (1 Mt/yr 운영) + NETL 2022 baseline", "불확실성": "± 5%"},
         {"기술": LIT["Aker_S26"]["name"], "Tier": "A — 상용",
          "기준": "Norcem Brevik (시멘트, 0.4 Mt/yr 2024 가동), Twence", "불확실성": "± 8%"},
-        {"기술": LIT["CAP_B12C"]["name"], "Tier": "A — Demo",
-         "기준": "AEP Mountaineer demo + NETL B12C 공식 케이스", "불확실성": "± 10%"},
-        {"기술": LIT["CaL"]["name"], "Tier": "B — Demo",
-         "기준": "1.7 MWe La Pereda 파일럿 + IEAGHG", "불확실성": "± 15%"},
+        {"기술": LIT["CaL"]["name"], "Tier": "B — Pilot",
+         "기준": "1.7 MWt La Pereda·CaLby2030 파일럿(TRL 6) + IEAGHG", "불확실성": "± 15%"},
         {"기술": LIT["TSA_Solid"]["name"], "Tier": "B — Demo",
          "기준": "Svante TEA·Linde SMR 사전 설계(2023, 업체 추정) + DOE 파일럿", "불확실성": "± 20%"},
         {"기술": LIT["VPSA_Syngas"]["name"], "Tier": "B — 상용 1건",
@@ -5895,10 +5565,10 @@ with tab_method:
         "<b style='color:#81C784;'>📚 섹션 가이드</b><br>"
         "<span style='font-size:0.85rem; line-height:1.7;'>"
         "<b>1~6</b>: 데이터 출처·KPI 계산식·규모 효과·CCU 등급·CCS 격리·경제성 가정<br>"
-        "<b>7~10</b>: CAP 냉동기·압축 모델·손실 추정·MEA walk-through 검증<br>"
-        "<b>11~12</b>: LCA 분해·한국 K-ETS CCU 차감 (직접 매출 아님)<br>"
-        "<b>13~16</b>: NPV/IRR/Payback·Tornado·Breakeven·모델 한계<br>"
-        "<b>17~19</b>: <b>🆕 SSOT 데이터 아키텍처 · 🆚 비교 모드 · 📥 PDF 리포트</b>"
+        "<b>7~9</b>: 압축 모델·손실 추정·MEA walk-through 검증<br>"
+        "<b>10~11</b>: LCA 분해·한국 K-ETS CCU 차감 (직접 매출 아님)<br>"
+        "<b>12~15</b>: NPV/IRR/Payback·Tornado·Breakeven·모델 한계<br>"
+        "<b>16~18</b>: <b>🆕 SSOT 데이터 아키텍처 · 🆚 비교 모드 · 📥 PDF 리포트</b>"
         "</span></div>",
         unsafe_allow_html=True,
     )
@@ -5907,7 +5577,7 @@ with tab_method:
     with st.expander("📌 **1. 기준 플랜트 & Data Base**", expanded=True):
         st.markdown("""
 **기준 플랜트** (Reference Case)
-- **Source**: NETL Rev4a Case B12C / NETL 2022 Baseline B12B
+- **Source**: NETL Rev4a / NETL 2022 Baseline Case B12B
 - **Plant Type**: 555 MWe net Subcritical PC + Post-Combustion Capture
 - **Coal**: Illinois No. 6 Bituminous
 - **Capture rate**: 90%
@@ -5921,12 +5591,11 @@ with tab_method:
 |---|---|---|---|
 | MEA | NETL Rev4a B12B (3.6 GJ/t) | Bui 2018, Rochelle 2009 | A — 상용 (±5%) |
 | K₂CO₃/KIERSOL | KIER 파일럿 보고서 | Yoo 2013, Cullinane 2004 | C — Pilot (±25%) |
-| CAP | NETL Rev4a B12C | Darde 2010, Telikapalli 2011 | A — Demo (±10%) |
 | Biphasic DMX | 3D Project (TotalEnergies) | Raynal 2011 | C — Pilot (±25%) |
 | TSA | DOE NETL Sorbent Program | Sjostrom & Krutka 2010 | B — Demo (±20%) |
-| CaL | IEAGHG 2013/19 + Hanak 2015 | Abanades 2002, Grasa 2006 | B — Demo (±15%) |
+| CaL | IEAGHG 2013/19 + Hanak 2015 | Abanades 2002, Grasa 2006 | B — Pilot (±15%) |
 
-**왜 NETL B12C가 기준?**
+**왜 NETL B12B가 기준?**
 NETL Cost & Performance Baseline은 미 정부가 30년+ 유지·검증해온 표준 reference case로,
 - 모든 case의 가정·전제가 동일하게 정규화됨 → 기술 간 직접 비교 가능
 - 공식 cost methodology (QGESS) 적용
@@ -5953,7 +5622,7 @@ NETL Cost & Performance Baseline은 미 정부가 30년+ 유지·검증해온 �
   - `We_thermal_eq` = SRD × Carnot × 0.55  (Bejan 2016, Kotas 1985)
   - `We_pump`      : LIT 고정값 (rich solvent pumping)
   - `We_comp`      : LIT × log(p_final/p_regen) / log(152/1.8)  (Aspen/NETL)
-  - `We_chill`     : Q_chill / COP_eff (CAP만 동적, ASHRAE)
+  - `We_chill`     : LIT 고정값 (현재 수록 기술은 0)
   - `We_aux`       : LIT 고정값 (보조)
 
 **SPECCA (Specific Primary Energy Consumption for CO₂ Avoided)**
@@ -6087,32 +5756,8 @@ $$\text{{CRF}} = \frac{{i(1+i)^n}}{{(1+i)^n - 1}}$$
 **환율**: default 1,370 KRW/USD (2026-09-24 기준, 사용자 조정 가능)
         """)
 
-    # ── 7. CAP 냉동기 ──
-    with st.expander("🧊 **7. CAP 냉동기 (Carnot COP × 0.55) 모델**"):
-        st.markdown(r"""
-**왜 CAP만 냉동기 모델이 동적인가**
-다른 기술은 흡수탑이 상온 운전 (40~70°C)이라 외기/냉각수로 충분.
-**CAP은 0~10°C 흡수**로 냉동 사이클 (NH₃ slip 방지) 필수.
-
-**모델**
-1. 냉각 부하 추정: $Q_\text{chill} = \text{SRD} \times 0.18$
-   - 출처: **NETL Rev4a B12C 보조전력 분석** (실제 측정값에서 SRD 대비 0.16~0.20 fraction)
-   - 휴리스틱이지만 NETL 공식 케이스에 직접 부합
-
-2. 역카르노 COP 계산:
-   $$\text{COP}_\text{Carnot} = \frac{T_\text{abs}}{T_\text{amb} - T_\text{abs}}$$
-   - 응축기 ΔT 마진 +10°C 가정 (실 운영 표준)
-
-3. 실효 COP = COP_Carnot × 0.55 (second-law factor)
-   - 출처: **ASHRAE Handbook (2020)**, real chiller efficiency 0.5~0.6 of Carnot
-
-4. We_chill = Q_chill / COP_eff
-
-**검증**: 냉각수 25°C일 때 We_chill ≈ 0.18 GJe/tCO₂ → NETL B12C 보조전력 분해와 일치
-        """)
-
-    # ── 8. 압축 ──
-    with st.expander("⚙️ **8. CO₂ 압축 일 — Log-pressure 모델**"):
+    # ── 7. 압축 ──
+    with st.expander("⚙️ **7. CO₂ 압축 일 — Log-pressure 모델**"):
         st.markdown(r"""
 **모델**
 $$\text{We}_\text{comp}(\text{p}) = \text{We}_\text{comp,LIT} \times \frac{\log(p_\text{final}/p_\text{regen})}{\log(152/1.8)}$$
@@ -6137,14 +5782,13 @@ floor 0.3 (부분 압축 시에도 최소 손실)
 출처: **NETL Aspen Plus 압축 모델**, **Romeo et al. 2008**, **GPSA 2017**
         """)
 
-    # ── 9. 손실 ──
-    with st.expander("📉 **9. 흡수제·흡착제 손실 추정**"):
+    # ── 8. 손실 ──
+    with st.expander("📉 **8. 흡수제·흡착제 손실 추정**"):
         st.markdown("""
 | 기술 | 손실 (kg/tCO₂) | 메커니즘 | 출처 |
 |---|---|---|---|
 | MEA 30% | 1.5 | 산화·열분해, evaporation | Lepaumier 2009, IEAGHG 2014 Reclaimer Sludge |
 | K₂CO₃/KIERSOL | 0.5 | 활성화제 (PZ) 열화 미량 | KIER reports, Cullinane 2004 |
-| CAP (NH₃) | 0.3 | NH₃ slip (water wash 회수 후 미회수분) | Darde 2010, Telikapalli 2011 |
 | Biphasic DMX | 1.0 | 용매 분해, 휘발 (mid-range vs MEA) | Raynal 2011 |
 | TSA solid | 2.0 | Cycle attrition (마모) + thermal degradation | DOE NETL Sorbent Program, Sjostrom & Krutka 2010 |
 | CaL | 30 | CaO sintering → makeup limestone (저비용 다소비) | Grasa 2006, Hanak 2015 |
@@ -6153,8 +5797,8 @@ floor 0.3 (부분 압축 시에도 최소 손실)
 **CaL의 30 kg/t**는 다른 기술과 비교 시 단순 정량 비교 부적절 — 재료 비용도 별도 고려.
         """)
 
-    # ── 10. Walk-through ──
-    with st.expander("✅ **10. 검증 — MEA 단일 케이스 계산 walk-through**"):
+    # ── 9. Walk-through ──
+    with st.expander("✅ **9. 검증 — MEA 단일 케이스 계산 walk-through**"):
         st.markdown(r"""
 **조건**: MEA 30 wt%, 1 MtCO₂/yr, 25°C 냉각수, 152 bar 출력, CCS 모드, 92% yield, 45Q-CCS
 
@@ -6198,8 +5842,8 @@ floor 0.3 (부분 압축 시에도 최소 손실)
 → MEA를 1 Mt 작은 플랜트로 짓고 45Q-CCS만 받으면 적자. 더 큰 플랜트(scale ↑) 또는 더 강한 인센티브 필요.
         """)
 
-    # ── 11. LCA / Net CO₂ ──
-    with st.expander("🌱 **11. LCA / Net CO₂ — Lifecycle Scope 1+2+3**"):
+    # ── 10. LCA / Net CO₂ ──
+    with st.expander("🌱 **10. LCA / Net CO₂ — Lifecycle Scope 1+2+3**"):
         st.markdown(r"""
 **왜 LCA가 중요한가**
 포집된 CO₂ 1톤 ≠ 실제 줄어든 CO₂ 1톤. 다음 lifecycle 배출 차감 후 진짜 net 효과 계산:
@@ -6237,8 +5881,8 @@ Net Removed [%] = (Gross stored/sold - Σ e_i) × 100
 | LCFS (CA) | Pathway 기반 lifecycle | 별도 계산 |
 """)
 
-    # ── 12. 한국 K-ETS CCU 차감 ──
-    with st.expander("🇰🇷 **12. 한국 K-ETS CCU 차감 제도** (직접 매출 아님 — 조건부 가치)"):
+    # ── 11. 한국 K-ETS CCU 차감 ──
+    with st.expander("🇰🇷 **11. 한국 K-ETS CCU 차감 제도** (직접 매출 아님 — 조건부 가치)"):
         st.markdown("""
 **제도 근거**
 - 「온실가스 배출권의 할당 및 거래에 관한 법률」 Art. 14 (배출량 산정·보고)
@@ -6277,8 +5921,8 @@ K-ETS CCU 차감은 **"배출량 보고 시 출하량만큼 차감"**일 뿐, �
 - 화학 합성·중간재로 단기 사용 → MRV 검증 필요
         """)
 
-    # ── 13. 사업성 지표 (NPV/IRR/Payback) ──
-    with st.expander("💰 **13. 사업성 지표 (NPV / IRR / Payback / PI)**"):
+    # ── 12. 사업성 지표 (NPV/IRR/Payback) ──
+    with st.expander("💰 **12. 사업성 지표 (NPV / IRR / Payback / PI)**"):
         st.markdown(r"""
 **NPV (Net Present Value, 순현재가치)**
 $$\text{NPV} = \sum_{t=0}^{N} \frac{CF_t}{(1+r)^t}$$
@@ -6302,8 +5946,8 @@ $$\text{PI} = \frac{\sum_{t=1}^{N} CF_t / (1+r)^t}{\text{CAPEX}_\text{total}}$$
 **출처**: NETL QGESS Cost Methodology 2019, Peters & Timmerhaus Plant Design 2003
         """)
 
-    # ── 14. 민감도 분석 ──
-    with st.expander("🌪️ **14. Tornado Sensitivity 분석**"):
+    # ── 13. 민감도 분석 ──
+    with st.expander("🌪️ **13. Tornado Sensitivity 분석**"):
         st.markdown("""
 **목적**: 어떤 파라미터가 Net COCA에 가장 큰 영향?
 
@@ -6323,8 +5967,8 @@ $$\text{PI} = \frac{\sum_{t=1}^{N} CF_t / (1+r)^t}{\text{CAPEX}_\text{total}}$$
 **해석**: 가장 긴 막대 = 가장 critical 변수 → 우선 정밀화 필요.
         """)
 
-    # ── 15. CO₂ 가격 Breakeven ──
-    with st.expander("🎯 **15. CO₂ 가격 Breakeven (흑자 진입 인센티브)**"):
+    # ── 14. CO₂ 가격 Breakeven ──
+    with st.expander("🎯 **14. CO₂ 가격 Breakeven (흑자 진입 인센티브)**"):
         st.markdown(r"""
 **목적**: Net COCA = 0 도달에 필요한 추가 인센티브 단가 자동 탐지
 
@@ -6341,8 +5985,8 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 **정책 활용**: K-CCUS Act 시행령 단가 결정 시 reference, 기업 협상 input.
         """)
 
-    # ── 16. 한계 ──
-    with st.expander("⚠️ **16. 모델의 한계 & 미반영 항목**"):
+    # ── 15. 한계 ──
+    with st.expander("⚠️ **15. 모델의 한계 & 미반영 항목**"):
         st.markdown("""
 **모델이 다루지 않는 것**
 
@@ -6372,8 +6016,8 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 - 최종 투자 결정 시 site-specific EPC 견적 필수
         """)
 
-    # ── 17. 데이터 아키텍처 (SSOT) ──
-    with st.expander("📦 **17. 데이터 아키텍처 — Single Source of Truth (자매 도구 연계)**"):
+    # ── 16. 데이터 아키텍처 (SSOT) ──
+    with st.expander("📦 **16. 데이터 아키텍처 — Single Source of Truth (자매 도구 연계)**"):
         st.markdown(
             "**왜 SSOT인가**\n\n"
             f"본 CCUS 도구와 자매 도구 ([🛡️ EU CBAM 계산기]({CBAM_TOOL_URL}))는 동일한 "
@@ -6426,8 +6070,8 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
             f"**현재 schema_version**: `v{_schema}` (헤더 인디케이터에 항상 표시됨)"
         )
 
-    # ── 18. 비교 모드 ──
-    with st.expander("🆚 **18. 시나리오 비교 모드 워크플로**"):
+    # ── 17. 비교 모드 ──
+    with st.expander("🆚 **17. 시나리오 비교 모드 워크플로**"):
         st.markdown("""
 **목적**
 사업 의사결정에서 가장 흔한 질문은 "A안과 B안 중 어느 게 낫나?" 입니다.
@@ -6459,8 +6103,8 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 **Stretch goal**: 3+ 시나리오 동시 비교는 향후 P3에서 (현재는 2개 슬롯)
         """)
 
-    # ── 19. PDF 리포트 ──
-    with st.expander("📥 **19. PDF 리포트 내보내기**"):
+    # ── 18. PDF 리포트 ──
+    with st.expander("📥 **18. PDF 리포트 내보내기**"):
         st.markdown("""
 **목적**
 스크린샷 대신 보고서 형태로 분석 결과를 외부와 공유 (이사회·EPC·정부 협상 input).
@@ -6764,9 +6408,9 @@ st.markdown(
             🌫️ CO₂ 포집·CCUS 기술·경제성 벤치마크 v1.4
         </div>
         <div style='font-size:0.78rem; color:#8b95a7; margin-bottom:14px;'>
-            Advanced Amine + 🇰🇷 KIERSOL + 비아민계 · 10종 · TRL 그룹화 ·
+            Advanced Amine + 🇰🇷 KIERSOL + 비아민계 · {len(LIT)}종 · TRL 그룹화 ·
             NPV·IRR·Payback · Tornado Sensitivity · CO₂ Breakeven ·
-            LCA/Net CO₂ (CRCF·ICVCM) · 76개 출처
+            LCA/Net CO₂ (CRCF·ICVCM) · {len(REFS)}개 출처
         </div>
         <div style='font-size:0.85rem; color:#B0BEC5; margin-bottom:4px;'>
             👤 Built by

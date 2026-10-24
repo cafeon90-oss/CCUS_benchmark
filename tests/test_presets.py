@@ -52,14 +52,19 @@ def _new_app():
     return at
 
 
-def _check_preset(preset_key: str, drop_le6: bool) -> list:
-    """프리셋 적용 후 문제 목록을 돌려준다 (비어 있으면 통과)."""
+LE6 = "🟠 TRL ≤6 (Pilot/연구)"  # app.py _TRL_OPTS_CANONICAL[2]
+
+
+def _check_preset(preset_key: str, pilot_on: bool) -> list:
+    """프리셋 적용 후 문제 목록을 돌려준다 (비어 있으면 통과).
+
+    기본 TRL 필터는 파일럿(≤6)이 꺼져 있음 → pilot_on=True면 사용자가 켠 상태를 재현.
+    """
     preset = PRESETS[preset_key]
-    tag = f"{preset_key} [{'TRL<=6 off' if drop_le6 else 'default filter'}]"
+    tag = f"{preset_key} [{'pilot on' if pilot_on else 'default filter (pilot off)'}]"
     at = _new_app()
-    le6 = next(v for v in at.multiselect(key="trl_filter").value if "≤6" in v)
-    if drop_le6:
-        at.multiselect(key="trl_filter").unselect(le6).run()
+    if pilot_on:
+        at.multiselect(key="trl_filter").select(LE6).run()
     at.selectbox(key="preset_select").select(preset_key).run()
 
     if at.exception:
@@ -72,22 +77,31 @@ def _check_preset(preset_key: str, drop_le6: bool) -> list:
     got_techs = list(at.multiselect(key="selected_techs").value)
     if got_techs != list(preset["techs"]):
         problems.append(f"{tag}: selected_techs = {got_techs} (프리셋 값 {preset['techs']})")
-    if drop_le6 and any(TRL.get(t, 7) <= 6 for t in preset["techs"]):
-        if le6 not in at.multiselect(key="trl_filter").value:
-            problems.append(f"{tag}: TRL ≤6 필터가 다시 켜지지 않음")
+    if not pilot_on and any(TRL.get(t, 7) <= 6 for t in preset["techs"]):
+        if LE6 not in at.multiselect(key="trl_filter").value:
+            problems.append(f"{tag}: TRL ≤6 필터가 자동으로 켜지지 않음")
         if not any("≤6" in str(c.value) for c in at.caption):
             problems.append(f"{tag}: TRL 필터 자동 추가 안내가 표시되지 않음")
     return problems
 
 
 def test_presets_default_filter():
-    problems = [p for k in PRESETS for p in _check_preset(k, drop_le6=False)]
+    problems = [p for k in PRESETS for p in _check_preset(k, pilot_on=False)]
     assert not problems, "\n".join(problems)
 
 
-def test_presets_with_trl_le6_unchecked():
-    problems = [p for k in PRESETS for p in _check_preset(k, drop_le6=True)]
+def test_presets_with_pilot_on():
+    problems = [p for k in PRESETS for p in _check_preset(k, pilot_on=True)]
     assert not problems, "\n".join(problems)
+
+
+def test_default_view_hides_pilot():
+    """첫 화면은 상용·실증만 — 파일럿(TRL ≤6) 기술과 제외된 CAP가 보이지 않아야 함."""
+    at = _new_app()
+    assert LE6 not in at.multiselect(key="trl_filter").value
+    techs = list(at.multiselect(key="selected_techs").value)
+    assert techs == ["MEA_baseline", "MHI_KS21", "Cansolv_DC103", "Aker_S26", "TSA_Solid"], techs
+    assert "CAP_B12C" not in TRL
 
 
 def test_min_capture_renders():
@@ -104,7 +118,8 @@ if __name__ == "__main__":
     except Exception:  # noqa: BLE001
         pass
     failed = 0
-    for fn in (test_presets_default_filter, test_presets_with_trl_le6_unchecked, test_min_capture_renders):
+    for fn in (test_presets_default_filter, test_presets_with_pilot_on, test_default_view_hides_pilot,
+               test_min_capture_renders):
         try:
             fn()
             print(f"PASS  {fn.__name__}", flush=True)
