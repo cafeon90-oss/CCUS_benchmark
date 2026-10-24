@@ -1,6 +1,6 @@
 # 🌫️ CO₂ 포집·CCUS 기술·경제성 벤치마크
 
-NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER 등 공식 자료 기반의 9종 CCUS 기술 통합 비교 시뮬레이터.
+NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER 등 공식 자료 기반의 10종 CCUS 기술 통합 비교 시뮬레이터.
 규모의 경제·포집율·프로젝트 시나리오·다중 인센티브 stacking을 모두 반영해 **사업 의사결정 수준**의 분석 가능.
 
 > **🆕 v2.0 핵심 기능**
@@ -23,7 +23,7 @@ NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER 등 공식 자료 기반의 9종 CC
 
 ---
 
-## 🧪 비교 기술 (9종)
+## 🧪 비교 기술 (10종)
 
 ### Advanced Amine (4종, Tier A)
 | 기술 | 흡수제 | SRD [GJ/tCO₂] | 대표 사례 |
@@ -33,13 +33,14 @@ NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER 등 공식 자료 기반의 9종 CC
 | Cansolv DC-103 | Shell 2세대 amine | 2.50 | Boundary Dam, NETL 2022 |
 | Aker S26 | Aker 솔벤트 | 2.80 | Norcem Brevik, Twence |
 
-### 비아민계 (5종)
+### 비아민계 (6종)
 | 기술 | 흡수제/소재 | SRD | 단계 |
 |---|---|---|---|
 | K₂CO₃ / KIERSOL † | K₂CO₃ + 활성화제 | 2.95 | Pilot (Tier C) |
 | Chilled Ammonia (CAP) | NH₃ 28 wt% | 2.40 | Demo (Tier A) |
 | Biphasic DMX™ † | 3차 아민 (상분리) | 2.30 | Pilot (Tier C) |
-| Solid Sorbent TSA | 고체 흡착제 | 2.20 | Demo (Tier B) |
+| Solid Sorbent TSA | 고체 흡착제 (Svante형) | 2.70 | Demo (Tier B) |
+| VPSA (H₂ 합성가스) | 제올라이트·활성탄 (진공·압력 변동) | 0 (전기만) | 상용 — Port Arthur, H₂ SMR 전용 |
 | Calcium Looping (CaL) | CaO ⇌ CaCO₃ | 3.20 | Demo (Tier B) |
 
 `†` = 파일럿/실증 데이터 (±25% 불확실성)
@@ -133,7 +134,7 @@ LIT 수치 (SRD·CAPEX·OPEX·손실 등)는 **`data/ccus_metrics.json`** (schem
 
 ```
 ccus_benchmark repo (master)
-└── data/ccus_metrics.json     ← 9 technologies, schema v1.0
+└── data/ccus_metrics.json     ← 10 technologies, schema v1.0
     │
     ├── ccus_benchmark/app.py        loads (1h cache)
     └── cbam_calculator/app.py       fetches via raw GitHub URL (24h cache)
@@ -169,7 +170,7 @@ MIT License — 자유롭게 사용·수정·배포 가능, 단 **저작자 표�
 
 ### 자매 프로젝트 (Single Source of Truth 연계)
 - 🛡️ **EU CBAM 계산기** — 한국 산업의 CBAM 영향 분석 (시멘트·철강·알루미늄·H₂·전력)
-  - 동일한 9개 CCUS 기술 데이터를 본 도구의 `data/ccus_metrics.json`에서 fetch
+  - 동일한 10개 CCUS 기술 데이터를 본 도구의 `data/ccus_metrics.json`에서 fetch
   - 별도 repo: `github.com/cafeon90-oss/cbam_calculator` (자매 코드)
   - Loader 모듈: `ccus_metrics_loader.py` (24h GitHub raw URL 캐시)
 

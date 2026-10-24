@@ -61,7 +61,7 @@ TRANSLATIONS = {
         ),
         "ssot_indicator": (
             "📦 LIT data: <code style='color:#81C784;'>data/ccus_metrics.json</code> "
-            "v{schema} · 9 technologies · 자매 도구도 동일 JSON fetch (Single Source of Truth)"
+            "v{schema} · {n} technologies · 자매 도구도 동일 JSON fetch (Single Source of Truth)"
         ),
         # ── tabs ────────────────────────────────────────────────
         "tab_overall": "① 종합 비교",
@@ -140,7 +140,7 @@ TRANSLATIONS = {
         ),
         "ssot_indicator": (
             "📦 LIT data: <code style='color:#81C784;'>data/ccus_metrics.json</code> "
-            "v{schema} · 9 technologies · sister tool fetches the same JSON (Single Source of Truth)"
+            "v{schema} · {n} technologies · sister tool fetches the same JSON (Single Source of Truth)"
         ),
         # ── tabs ────────────────────────────────────────────────
         "tab_overall": "① Overview",
@@ -556,6 +556,7 @@ def load_ccus_metrics_local(path: str = "data/ccus_metrics.json") -> dict:
             "loss_mech":        ops.get("loss_mechanism"),
             "notes":            v.get("notes"),
             "sorbent":          v.get("sorbent"),   # 건식 흡착제만 (충전량·단가·수명)
+            "applicable_sectors": v.get("applicable_sectors"),   # 없으면 전 업종 (VPSA = h2_smr 전용)
         }
         short_names[k]    = v.get("short_name", k)
         materials[k]      = v.get("material", "")
@@ -995,7 +996,32 @@ REFS = {
         "cite": "DOE/NETL Carbon Capture Program (2018). Solid Sorbent Process Designs "
                 "for CO₂ Capture from Coal-Fired Power Plants. NETL Carbon Capture R&D.",
         "url": "https://netl.doe.gov/coal/carbon-capture",
-        "used_for": "TSA SRD 2.2 GJ/t, attrition rate, blower fluidization 부하",
+        "used_for": "TSA attrition rate, blower fluidization 부하 (SRD는 2026-10 Svante 자료로 2.7 GJ/t 갱신)",
+    },
+    "DOE_PortArthur_EA_2011": {
+        "cat": "report",
+        "cite": "U.S. DOE (2011). EA-1846: Demonstration of CO₂ Capture and Sequestration of Steam "
+                "Methane Reforming Process Gas Used for Large-Scale Hydrogen Production, Port Arthur, "
+                "Texas (Air Products). Project cost ≈ $431M (DOE share ≈ $284M); ~1 Mt CO₂/yr by "
+                "vacuum swing adsorption on shifted syngas, in operation since 2013.",
+        "url": "https://www.energy.gov/nepa/ea-1846-demonstration-carbon-dioxide-capture-and-sequestration-steam-methane-reforming-process",
+        "used_for": "VPSA CAPEX 역산 기준 (H₂ SMR · 1 Mt/yr), TRL 9 상업 사례",
+    },
+    "Edinburgh_VPSA_SMR": {
+        "cat": "paper",
+        "cite": "University of Edinburgh. Feasibility Study of Vacuum Pressure Swing Adsorption for CO₂ "
+                "Capture From an SMR Hydrogen Plant: Comparison Between Synthesis Gas Capture and Tail Gas "
+                "Capture. Syngas case specific power 1.1 → 0.4 MJ/kg CO₂ as desorption pressure rises; "
+                "comparable to conventional MDEA.",
+        "url": "https://www.research.ed.ac.uk/en/publications/feasibility-study-of-vacuum-pressure-swing-adsorption-for-co2-cap",
+        "used_for": "VPSA 진공·재순환 전력 We_aux 0.70 GJe/t (0.4~1.1 중간값)",
+    },
+    "GCCSI_2025_TechCosts": {
+        "cat": "report",
+        "cite": "Global CCS Institute (2025). Advancements in CCS Technologies and Costs. "
+                "TRL: PSA/VSA 9 (Port Arthur SMR VPSA), TSA 6–7 (Kern River pilot).",
+        "url": "https://www.globalccsinstitute.com/wp-content/uploads/2025/08/Advancements-in-CCS-Technologies-and-Costs-Report-2.pdf",
+        "used_for": "VPSA TRL 9 · TSA TRL 6~7 근거",
     },
     "Svante_DOE_TEA_2023": {
         "cat": "report",
@@ -1003,7 +1029,8 @@ REFS = {
                 "TEA vs NETL B12B (coal, excl. T&S): amine $45.5/t vs Svante CALF-20 beds $38.1–43.1/t; "
                 "capital charge $22.8–24.6 vs $25.4/t. Sorbent lifetime target 5+ yr.",
         "url": "https://netl.doe.gov/sites/default/files/netl-file/23CM_PSCC30_Fagundo.pdf",
-        "used_for": "TSA CAPEX = B12B 아민의 0.90배(자본비 비율), 흡착제 교체비 ~$3/t 근거 (업체 추정)",
+        "used_for": "TSA CAPEX = B12B 아민의 0.90배(자본비 비율), 흡착제 교체비 ~$3/t 근거 (업체 추정), "
+                    "설계 증기비 1.5 kg/kg (SRD 상한 참고)",
     },
     "NETL_Svante_Linde_2023": {
         "cat": "report",
@@ -1011,7 +1038,8 @@ REFS = {
                 "CO₂ Capture Technology at a Linde SMR H₂ Plant (DOE/NETL). 1.436 Mt/yr, "
                 "CAPEX $512–656M (2023$), capture cost $124–146/t incl. T&S, filter replacement every 5 yr.",
         "url": "https://netl.doe.gov/projects/files/Engineering%20Study%20of%20Svantes%20Solid%20Sorbent%20Post-Combustion%20CO2%20Capture%20Technology%20at%20a%20Linde%20Steam%20Methane%20Reforming%20H2%20Plant.pdf",
-        "used_for": "TSA 적정 규모 상한 1.5 Mt/yr, CAPEX 교차 확인, 흡착제 수명 5년 설계값",
+        "used_for": "TSA SRD 2.7 GJ/t (증기비 1.22 kg/kg × 2.2 MJ/kg), 적정 규모 상한 1.5 Mt/yr, "
+                    "CAPEX 교차 확인, 흡착제 수명 5년 설계값",
     },
     "KIER_KIERSOL_2013": {
         "cat": "report",
@@ -2156,7 +2184,7 @@ def calc_We(tech: dict, T_cool_C: float, p_final_bar: float,
     return {
         "SRD_scaled": srd_scaled,
         "SRD_base": tech["SRD"],
-        "srd_scale_pct": (srd_scaled / tech["SRD"] - 1) * 100,
+        "srd_scale_pct": (srd_scaled / tech["SRD"] - 1) * 100 if tech["SRD"] > 0 else 0,  # VPSA는 증기 0
         "srd_capture_factor": srd_capture_factor,
         "srd_capture_pct": (srd_capture_factor - 1) * 100,
         "We_comp_scale_pct": (we_comp_scaled / tech["We_comp"] - 1) * 100 if tech["We_comp"] > 0 else 0,
@@ -3316,7 +3344,7 @@ st.caption(T("main_caption"))
 # Single Source of Truth 표시 (작은 인디케이터)
 _meta = _ccus_data.get("metadata", {})
 _schema = _ccus_data.get("schema_version", "1.0")
-_ssot_html = T("ssot_indicator", schema=_schema)
+_ssot_html = T("ssot_indicator", schema=_schema, n=len(LIT))
 st.markdown(
     f"<div style='font-size:0.7rem; color:#6e7888; margin-top:-8px; margin-bottom:6px;'>"
     f"{_ssot_html}"
@@ -3451,7 +3479,7 @@ CO₂ 포집·CCUS 기술의 **기술 성능·경제성·Lifecycle CO₂·정책
 ## 📚 자세한 방법론·출처
 
 - **탭 ⑧ 방법론**: 13개 섹션 (지표 정의·규모 효과·LCA·K-ETS 등)
-- **탭 ⑨ 참고문헌**: 73개 출처 (NETL/IEAGHG/IRS 45Q/IPCC/peer-reviewed)
+- **탭 ⑨ 참고문헌**: 76개 출처 (NETL/IEAGHG/IRS 45Q/IPCC/peer-reviewed)
 """)
 
 if not selected:
@@ -3464,6 +3492,18 @@ if pilot_techs:
         f"<div class='pilot-warning'>⚠️ <strong>파일럿/실증 데이터 포함:</strong> "
         f"{', '.join(pilot_techs)} — 상용 스케일에서 수치가 변할 수 있습니다.</div>",
         unsafe_allow_html=True,
+    )
+
+# 적용 업종이 정해진 기술(VPSA = 고압 합성가스 전용)을 다른 업종에서 고르면 경고
+_sector_mismatch = [
+    (LIT[k]["name"], ", ".join(SOURCE_SECTORS[s]["label"] for s in LIT[k]["applicable_sectors"]))
+    for k in selected
+    if LIT[k].get("applicable_sectors") and source_sector_key not in LIT[k]["applicable_sectors"]
+]
+for _name, _labels in _sector_mismatch:
+    st.warning(
+        f"⚠️ **{_name}**은(는) {_labels} 전용 기술입니다. 현재 업종에서는 결과가 의미 없으니 "
+        "사이드바 Sector를 바꿔 보세요."
     )
 
 # ======================================================================
@@ -3689,7 +3729,7 @@ with tab_overall:
 
 | 단순화 항목 | 무엇이 빠져있는가 |
 |---|---|
-| **Sector × 솔벤트 best-fit 매핑 없음** | 시멘트·철강·NGCC 등 sector 선택해도 9개 기술 모두 동일 multiplier 적용. 실제로는 솔벤트마다 sector 적합도가 크게 다름 (예: CaL = 시멘트 강점, MEA = NGCC, KIERSOL = 저농도, KS-21 = 고황) |
+| **Sector × 솔벤트 best-fit 매핑 없음** | 시멘트·철강·NGCC 등 sector 선택해도 모든 기술에 동일 multiplier 적용(VPSA만 H₂ SMR 전용 경고). 실제로는 솔벤트마다 sector 적합도가 크게 다름 (예: CaL = 시멘트 강점, MEA = NGCC, KIERSOL = 저농도, KS-21 = 고황) |
 | **NOx/SOx/입자 농도 미반영** | "pretreat 필요" note만 있고 ppm 단위 입력·OPEX 반영 없음 |
 | **솔벤트별 impurity 내성 차이 없음** | MEA의 SOx 취약성, 2세대 솔벤트의 안정성 같은 본질적 차이 무시 |
 | **Pretreatment CAPEX 분리 안 됨** | sector_capex_mult에 묶여 있어 어디서 비싸지는지 별도 표시 안 됨 |
@@ -5770,7 +5810,9 @@ with tab_refs:
         {"기술": LIT["CaL"]["name"], "Tier": "B — Demo",
          "기준": "1.7 MWe La Pereda 파일럿 + IEAGHG", "불확실성": "± 15%"},
         {"기술": LIT["TSA_Solid"]["name"], "Tier": "B — Demo",
-         "기준": "DOE 0.5~1 MWe 파일럿 (RTI, SRI)", "불확실성": "± 20%"},
+         "기준": "Svante TEA·Linde SMR 사전 설계(2023, 업체 추정) + DOE 파일럿", "불확실성": "± 20%"},
+        {"기술": LIT["VPSA_Syngas"]["name"], "Tier": "B — 상용 1건",
+         "기준": "Air Products Port Arthur (2013~, 약 1 Mt/yr) — H₂ SMR 전용", "불확실성": "± 25%"},
         {"기술": LIT["K2CO3_KIERSOL"]["name"] + " †", "Tier": "C — Pilot",
          "기준": "KIER 0.5 MWe 파일럿", "불확실성": "± 25%"},
         {"기술": LIT["Biphasic_DMX"]["name"] + " †", "Tier": "C — Pilot",
@@ -6335,7 +6377,7 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
         st.markdown(
             "**왜 SSOT인가**\n\n"
             f"본 CCUS 도구와 자매 도구 ([🛡️ EU CBAM 계산기]({CBAM_TOOL_URL}))는 동일한 "
-            "9개 기술 LIT 데이터 (SRD·CAPEX·OPEX·손실 등)를 참조합니다. "
+            "기술별 LIT 데이터 (SRD·CAPEX·OPEX·손실 등)를 참조합니다. "
             "두 도구가 각자 hardcoding하면:\n"
             "- 한쪽 업데이트 시 다른 쪽 누락 위험\n"
             "- 인용 일관성 깨짐\n"
@@ -6344,7 +6386,7 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
         )
         _ssot_diagram_lines = [
             "ccus_benchmark repo (master)",
-            "  data/ccus_metrics.json   <- 9 technologies, schema v" + str(_schema),
+            "  data/ccus_metrics.json   <- " + str(len(LIT)) + " technologies, schema v" + str(_schema),
             "    |",
             "    +-- ccus_benchmark/app.py     loads (1h cache)",
             "    +-- cbam_calculator/app.py    fetches via raw GitHub URL (24h cache)",
@@ -6722,9 +6764,9 @@ st.markdown(
             🌫️ CO₂ 포집·CCUS 기술·경제성 벤치마크 v1.4
         </div>
         <div style='font-size:0.78rem; color:#8b95a7; margin-bottom:14px;'>
-            Advanced Amine + 🇰🇷 KIERSOL + 비아민계 · 9종 · TRL 그룹화 ·
+            Advanced Amine + 🇰🇷 KIERSOL + 비아민계 · 10종 · TRL 그룹화 ·
             NPV·IRR·Payback · Tornado Sensitivity · CO₂ Breakeven ·
-            LCA/Net CO₂ (CRCF·ICVCM) · 73개 출처
+            LCA/Net CO₂ (CRCF·ICVCM) · 76개 출처
         </div>
         <div style='font-size:0.85rem; color:#B0BEC5; margin-bottom:4px;'>
             👤 Built by

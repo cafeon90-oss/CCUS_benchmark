@@ -370,7 +370,7 @@
       "is_pilot": false,
 
       "performance": {
-        "SRD_GJ_per_tCO2": 2.20,
+        "SRD_GJ_per_tCO2": 2.70,
         "T_regen_C": 110,
         "T_abs_C": 40,
         "p_regen_bar": 1.2,
@@ -412,7 +412,56 @@
         "Svante_DOE_TEA_2023", "NETL_Svante_Linde_2023"
       ],
 
-      "notes": "고체 흡착제, 무수계, 사이클 시간 변수 영향 大. CAPEX는 Svante TEA의 NETL B12B 아민 대비 자본비 0.90배(2023)로 갱신, 흡착제 교체비는 단가·수명 입력으로 계산."
+      "notes": "고체 흡착제, 무수계, 사이클 시간 변수 영향 大. CAPEX는 Svante TEA의 NETL B12B 아민 대비 자본비 0.90배(2023)로 갱신, 흡착제 교체비는 단가·수명 입력으로 계산. SRD 2.7 GJ/t = Svante·Linde 상업 규모 연구의 증기비 1.22 kg/kg × 저압증기 잠열 약 2.2 MJ/kg (설계 기준 1.5 kg/kg이면 3.3, 파일럿 1.7~1.9 kg/kg이면 3.7~4.2)."
+    },
+
+    "VPSA_Syngas": {
+      "name": "VPSA (H₂ 합성가스)",
+      "short_name": "VPSA",
+      "category": "Solid Sorbent (VPSA)",
+      "material": "제올라이트·활성탄 흡착제 (진공·압력 변동, 증기 없음)",
+      "source": "Air Products Port Arthur (2013~) · Edinburgh VPSA 타당성 연구 · GCCSI 2025",
+      "status": "commercial",
+      "TRL": 9,
+      "is_pilot": false,
+      "applicable_sectors": ["h2_smr"],
+
+      "performance": {
+        "SRD_GJ_per_tCO2": 0.0,
+        "T_regen_C": 40,
+        "T_abs_C": 40,
+        "p_regen_bar": 1.0,
+        "capture_rate_default": 0.90
+      },
+
+      "energy_components_GJe_per_tCO2": {
+        "We_pump": 0.0,
+        "We_comp": 0.40,
+        "We_chill": 0.0,
+        "We_aux": 0.70
+      },
+
+      "economics": {
+        "CAPEX_USD_per_tCO2_yr": 340,
+        "OPEX_solvent_USD_per_tCO2": 0.5,
+        "OPEX_other_USD_per_tCO2": 10.0
+      },
+
+      "operations": {
+        "capacity_range_mt_yr": [0.1, 1.5],
+        "loss_kg_per_tCO2": 0.1,
+        "loss_mechanism": "흡착제 장수명(수년), 미세 마모·수분 피독"
+      },
+
+      "lca": {
+        "solvent_emission_factor_kgCO2_per_kg": 2.0
+      },
+
+      "references": [
+        "DOE_PortArthur_EA_2011", "Edinburgh_VPSA_SMR", "GCCSI_2025_TechCosts"
+      ],
+
+      "notes": "고압 shift 합성가스(H₂ SMR·ATR) 전용 — 상압 배가스에는 부적합. 증기 없이 전기(진공·재순환)만 사용: We_aux 0.70 GJe/t는 Edinburgh 연구 0.4~1.1 MJ/kg의 중간값, CO₂ 압축은 상압 기준. CAPEX 340은 H₂ SMR 업종(×0.90)·1 Mt/yr에서 Port Arthur 사업비(2011년 약 $4.31억 → 2018$ 약 $4.8억)가 재현되도록 역산한 1차 근사(연결 배관 등 포함 가능성). 흡착제 교체비·O&M은 1차 근사."
     },
 
     "CaL": {
