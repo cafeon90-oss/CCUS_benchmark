@@ -1387,7 +1387,7 @@ FORMULA_REFS = {
     "IRR: bisection 수치해법 (NPV=0 할인율)":                                                ["NETL_QGESS", "PetersTimmerhaus"],
     "Payback Period: 단순/할인 누적 cash flow가 CAPEX 도달":                                  ["NETL_QGESS"],
     "Profitability Index = Σ PV(inflow) / CAPEX_total":                                  ["PetersTimmerhaus"],
-    "Tornado Sensitivity: ±20% 변동 시 Net COCA 영향 (분석적 근사)":                          ["NETL_QGESS"],
+    "Tornado Sensitivity: 입력 ±20% 등 변동 시 Net COCA 재계산":                          ["NETL_QGESS"],
     "Breakeven 인센티브 = max(0, Net COCA) / yield_ratio":                                  ["NETL_QGESS", "EU_CRCF_2024"],
     "Capacity range: 기술별 실용 규모 (GCCSI 운영 사례 기반)":                                  ["GCCSI_2023", "IEAGHG_2014_Solvents"],
     "TRL (Technology Readiness Level): 1~9 (NASA·EU·IEA 표준)":                              ["IPCC_AR6_WG3_2022"],
@@ -3105,14 +3105,49 @@ for _name, _labels in _sector_mismatch:
 # ======================================================================
 # 결과 계산
 # ======================================================================
-results = []
-for k in selected:
+def evaluate_tech(k: str, p: dict) -> dict:
+    """기술 k를 시나리오 p(BASE_P 형식)로 계산한 결과 dict.
+
+    민감도(Tornado)·Monte Carlo가 입력 하나를 바꿔 같은 계산을 다시 돌리도록 함수로 둠.
+    capex_scale·opex_scale·srd_scale은 기술 데이터에 곱하는 배수 (평소 1.0).
+    """
+    sorbent_price = p["sorbent_price"]
+    sorbent_life = p["sorbent_life"]
+    sector = p["sector"]
+    T_cool_C = p["T_cool_C"]
+    p_final_bar = p["p_final_bar"]
+    capture_t_yr = p["capture_t_yr"]
+    capture_eff = p["capture_eff"]
+    cpi_factor = p["cpi_factor"]
+    lifetime = p["lifetime"]
+    discount = p["discount"]
+    elec_price = p["elec_price"]
+    ccu = p["ccu"]
+    ccu_share = p["ccu_share"]
+    ccs_share = p["ccs_share"]
+    ccs_yield = p["ccs_yield"]
+    project_multiplier = p["project_multiplier"]
+    ts_cost_per_t = p["ts_cost_per_t"]
+    facility_mode = p["facility_mode"]
+    ccu_price_krw = p["ccu_price_krw"]
+    carbon_market_usd = p["carbon_market_usd"]
+    subsidy_usd = p["subsidy_usd"]
+    extra_revenue_usd = p["extra_revenue_usd"]
+    fx_krw_per_usd = p["fx_krw_per_usd"]
+    rev_growth_rate = p["rev_growth_rate"]
+    heat_factor = p["heat_factor"]
+    grid_factor = p["grid_factor"]
+    include_embodied = p["include_embodied"]
+
     t = LIT[k]
+    capex_scale, opex_scale, srd_scale = p["capex_scale"], p["opex_scale"], p["srd_scale"]
     # 건식 흡착제: 사이드바 단가·수명으로 교체비(OPEX)와 손실(LCA)을 다시 계산
     if t.get("sorbent") and sorbent_life:
         _sb_loss, _sb_opex = calc_sorbent_replacement(
             t["sorbent"]["inventory_kg_per_tpy"], sorbent_price, sorbent_life)
         t = {**t, "OPEX_solvent": _sb_opex, "loss_kg_per_tCO2": _sb_loss}
+    if srd_scale != 1.0:
+        t = {**t, "SRD": t["SRD"] * srd_scale}
     # Sector 보정을 SRD/CAPEX에 반영
     sector_srd_mult = sector["srd_mult"]
     sector_capex_mult = sector["capex_mult"]
@@ -3127,9 +3162,9 @@ for k in selected:
     specca = calc_SPECCA(we["SRD_scaled"], we["We_elec"], capture_eff)
 
     # CAPEX에 CPI(인플레이션) + Sector 보정 동시 적용
-    capex_adjusted = t["CAPEX_per_t"] * cpi_factor * sector_capex_mult
+    capex_adjusted = t["CAPEX_per_t"] * cpi_factor * sector_capex_mult * capex_scale
     cost = calc_COCA(
-        capex_adjusted, t["OPEX_solvent"], t["OPEX_other"],
+        capex_adjusted, t["OPEX_solvent"] * opex_scale, t["OPEX_other"] * opex_scale,
         we["We_elec"], capture_t_yr, lifetime, discount, elec_price,
         capex_mult=ccu["capex_mult"], ccu_share=ccu_share,
         project_multiplier=project_multiplier,
@@ -3223,7 +3258,7 @@ for k in selected:
 
     # (annual_profit_usd 등은 위에서 이미 계산됨 — 중복 제거)
 
-    results.append({
+    return {
         "key": k,
         "name": t["name"],
         "category": t["category"],
@@ -3262,7 +3297,41 @@ for k in selected:
         "T_abs": t["T_abs"],
         "source": t["source"],
         "notes": t["notes"],
-    })
+    }
+
+
+# 사이드바 입력 = 기준 시나리오
+BASE_P = {
+    "sorbent_price": sorbent_price,
+    "sorbent_life": sorbent_life,
+    "sector": sector,
+    "T_cool_C": T_cool_C,
+    "p_final_bar": p_final_bar,
+    "capture_t_yr": capture_t_yr,
+    "capture_eff": capture_eff,
+    "cpi_factor": cpi_factor,
+    "lifetime": lifetime,
+    "discount": discount,
+    "elec_price": elec_price,
+    "ccu": ccu,
+    "ccu_share": ccu_share,
+    "ccs_share": ccs_share,
+    "ccs_yield": ccs_yield,
+    "project_multiplier": project_multiplier,
+    "ts_cost_per_t": ts_cost_per_t,
+    "facility_mode": facility_mode,
+    "ccu_price_krw": ccu_price_krw,
+    "carbon_market_usd": carbon_market_usd,
+    "subsidy_usd": subsidy_usd,
+    "extra_revenue_usd": extra_revenue_usd,
+    "fx_krw_per_usd": fx_krw_per_usd,
+    "rev_growth_rate": rev_growth_rate,
+    "heat_factor": heat_factor,
+    "grid_factor": grid_factor,
+    "include_embodied": include_embodied,
+    "capex_scale": 1.0, "opex_scale": 1.0, "srd_scale": 1.0,
+}
+results = [evaluate_tech(k, BASE_P) for k in selected]
 
 df = pd.DataFrame(results)
 
@@ -4638,75 +4707,95 @@ with sub_profit:
     )
     st.plotly_chart(f_cf, width="stretch", config=PLOTLY_CONFIG)
 
-    # ───────────────────────────────────────
-    # 🌪️ Tornado Sensitivity (어떤 변수가 가장 영향?)
-    # ───────────────────────────────────────
 # ---------- ③ 사업성 › 민감도·불확실성 ----------
 with sub_risk:
     st.markdown("### 🌪️ 민감도 분석 (Tornado) — Net COCA 영향도")
     st.caption(
-        "각 입력 ±20% (포집율은 ±5%p) 변동 시 Net COCA 변화량. "
-        "막대가 길수록 결과에 큰 영향 → 의사결정 시 핵심 검토 변수"
+        "입력을 하나씩 바꿔 모델을 다시 계산한 Net COCA 변화 (나머지 입력은 사이드바 값 그대로). "
+        "막대가 길수록 결과를 크게 흔드는 가정 → 실제 사업에서 먼저 확인할 값. "
+        "Net COCA는 낮을수록 유리 (음수 = 흑자)."
     )
 
-    # 첫 번째 기술 기준으로 sensitivity 계산
-    _r0 = results[0]
-    base_net = _r0["Net_COCA"]
+    _sens_keys = [r["key"] for r in results]
+    _sens_default = min(results, key=lambda r: r["COCA"])["key"]
+    sens_key = st.selectbox(
+        "분석할 기술",
+        options=_sens_keys,
+        index=_sens_keys.index(_sens_default),
+        format_func=lambda k: LIT[k]["name"],
+        help="기본값: 선택한 기술 중 COCA가 가장 낮은 기술",
+        key="sens_tech",
+    )
+    base_net = next(r for r in results if r["key"] == sens_key)["Net_COCA"]
 
-    # 분석적 근사 (numerical robust)
-    sensitivities = {
-        "💚 시장+보조금 인센티브": 0.20 * _r0["rev_per_capture"],
-        "🏗️ CAPEX (project mult)": 0.20 * _r0["annual_capex"],
-        "📉 포집량 (규모 효과)":     0.063 * _r0["annual_capex"],
-        "🔥 포집율 (±5%p)":          0.05 * (_r0["annual_capex"] + _r0["elec_cost"]),
-        "💰 할인율 (±2%p)":          0.15 * _r0["annual_capex"],
-        "⚡ 전기 가격":              0.20 * _r0["elec_cost"],
-    }
-    # CCU 모드 추가
-    if facility_mode == "CCU" and _r0.get("ccu_revenue", 0) > 0:
-        sensitivities["🥤 액화탄산 판매가"] = 0.20 * _r0["ccu_revenue"] / capture_t_yr
+    _b = BASE_P
 
-    # 절대값 큰 순으로 정렬
-    sorted_sens = sorted(sensitivities.items(), key=lambda x: -abs(x[1]))
-    labels = [x[0] for x in sorted_sens]
-    values = [x[1] for x in sorted_sens]
+    def _inc(f):
+        return {"carbon_market_usd": _b["carbon_market_usd"] * f,
+                "subsidy_usd": _b["subsidy_usd"] * f,
+                "extra_revenue_usd": _b["extra_revenue_usd"] * f}
+
+    # (라벨, 입력을 낮춘 경우, 높인 경우)
+    sens_cases = [
+        ("💚 인센티브 (시장+보조금+추가) ±20%", _inc(0.8), _inc(1.2)),
+        ("🏗️ CAPEX ±20%", {"capex_scale": 0.8}, {"capex_scale": 1.2}),
+        ("🧾 OPEX (용매·기타) ±20%", {"opex_scale": 0.8}, {"opex_scale": 1.2}),
+        ("🔥 재생 열 SRD ±20%", {"srd_scale": 0.8}, {"srd_scale": 1.2}),
+        ("⚡ 전기 가격 ±20%", {"elec_price": _b["elec_price"] * 0.8}, {"elec_price": _b["elec_price"] * 1.2}),
+        ("📉 포집량 ±20% (규모 효과)", {"capture_t_yr": _b["capture_t_yr"] * 0.8},
+         {"capture_t_yr": _b["capture_t_yr"] * 1.2}),
+        ("🎯 포집률 ±5%p", {"capture_eff": max(0.50, _b["capture_eff"] - 0.05)},
+         {"capture_eff": min(0.99, _b["capture_eff"] + 0.05)}),
+        ("💰 할인율 ±2%p", {"discount": max(0.005, _b["discount"] - 0.02)}, {"discount": _b["discount"] + 0.02}),
+        ("⏳ 플랜트 수명 ±5년", {"lifetime": max(5, _b["lifetime"] - 5)}, {"lifetime": _b["lifetime"] + 5}),
+    ]
+    if facility_mode == "CCU":
+        sens_cases.append(("🥤 액화탄산 판매가 ±20%", {"ccu_price_krw": _b["ccu_price_krw"] * 0.8},
+                           {"ccu_price_krw": _b["ccu_price_krw"] * 1.2}))
+    if facility_mode == "CCS" and _b["ts_cost_per_t"] > 0:
+        sens_cases.append(("🚢 T&S 비용 ±20%", {"ts_cost_per_t": _b["ts_cost_per_t"] * 0.8},
+                           {"ts_cost_per_t": _b["ts_cost_per_t"] * 1.2}))
+
+    sens_rows = []
+    for _label, _lo, _hi in sens_cases:
+        _d_lo = evaluate_tech(sens_key, {**BASE_P, **_lo})["Net_COCA"] - base_net
+        _d_hi = evaluate_tech(sens_key, {**BASE_P, **_hi})["Net_COCA"] - base_net
+        if max(abs(_d_lo), abs(_d_hi)) >= 0.05:  # 영향 없는 항목(예: 인센티브 0, VPSA의 SRD)은 생략
+            sens_rows.append((_label, _d_lo, _d_hi))
+    sens_rows.sort(key=lambda x: -max(abs(x[1]), abs(x[2])))
+    labels = [x[0] for x in sens_rows]
 
     f_tornado = go.Figure()
     f_tornado.add_trace(go.Bar(
-        name="+ 변동",
-        x=values,
-        y=labels,
-        orientation="h",
-        marker_color="#E57373",
-        text=[f"+{v:,.1f} $/t" for v in values],
-        textposition="outside",
+        name="입력 낮춤 (−)", x=[x[1] for x in sens_rows], y=labels, orientation="h",
+        marker_color="#4FC3F7",
+        text=[f"{x[1]:+,.1f}" for x in sens_rows], textposition="outside",
     ))
     f_tornado.add_trace(go.Bar(
-        name="− 변동",
-        x=[-v for v in values],
-        y=labels,
-        orientation="h",
-        marker_color="#81C784",
-        text=[f"−{v:,.1f} $/t" for v in values],
-        textposition="outside",
+        name="입력 높임 (+)", x=[x[2] for x in sens_rows], y=labels, orientation="h",
+        marker_color="#FFB74D",
+        text=[f"{x[2]:+,.1f}" for x in sens_rows], textposition="outside",
     ))
     f_tornado.add_vline(x=0, line_color="white", line_width=1.5)
     f_tornado.update_layout(
-        title=f"Tornado: {SHORT_NAMES.get(_r0['key'], _r0['name'])} 기준 · "
+        title=f"Tornado: {SHORT_NAMES.get(sens_key, LIT[sens_key]['name'])} · "
               f"Base Net COCA = {base_net:+,.1f} $/t",
-        template="plotly_dark", height=400,
+        template="plotly_dark", height=120 + 46 * len(sens_rows),
         margin=dict(l=10, r=80, t=60, b=40),
-        barmode="overlay",
-        xaxis_title="Net COCA 변동 [USD/t]",
+        barmode="group",
+        xaxis_title="Net COCA 변화 [USD/t] (− 쪽이 유리)",
         yaxis=dict(autorange="reversed"),
-        legend=dict(orientation="h", y=-0.18),
+        legend=dict(orientation="h", y=-0.12),
     )
     st.plotly_chart(f_tornado, width="stretch", config=PLOTLY_CONFIG)
 
-    st.caption(
-        f"💡 **{labels[0]}** 가 가장 큰 영향 (±{abs(values[0]):,.1f} $/tCO₂). "
-        f"의사결정 시 우선 정밀화 필요. (분석적 근사 — Tier B)"
-    )
+    if sens_rows:
+        _top = sens_rows[0]
+        st.caption(
+            f"💡 **{_top[0]}** 가 가장 크게 흔듦: 낮추면 Net COCA {_top[1]:+,.1f}, "
+            f"높이면 {_top[2]:+,.1f} $/t. "
+            "의사결정 전에 이 값부터 견적·실측으로 좁힐 것."
+        )
 
     # ───────────────────────────────────────
     # 🎯 CO₂ 가격 breakeven 자동 탐지
@@ -4797,120 +4886,88 @@ with sub_profit:
     # ───────────────────────────────────────
 with sub_risk:
     st.markdown("---")
-    st.markdown("### 🎲 Monte Carlo 분석 — 불확실성 정량화")
+    st.markdown("### 🎲 Monte Carlo — 기술 간 차이가 불확실성보다 큰가")
     st.caption(
-        "Tier별 불확실성(±5% A / ±15% B / ±25% C)을 정규분포로 가정해 1,000회 시뮬. "
-        "NPV·Net COCA 분포로 사업성 confidence interval 산출."
+        "데이터 신뢰도 Tier별 불확실성(A ±5% · B ±15% · C ±25%, 95% 범위)을 기술마다 CAPEX·OPEX·SRD에 주고, "
+        "전기 가격(±10%)은 모든 기술에 같은 값을 써서 모델을 반복 계산. "
+        "상자 = P25~P75, 선 = P10~P90."
     )
 
+    MC_N = 500
     mc_run = st.checkbox(
-        "🎲 Monte Carlo 실행 (1,000 iterations · ~3초)",
+        f"🎲 Monte Carlo 실행 (선택 기술 {len(results)}개 × {MC_N}회)",
         value=False,
-        help="불확실성 분포 분석. 첫 번째 선택 기술 기준.",
+        help="체크하면 계산 (몇 초). 결과는 같은 입력이면 항상 같음 (seed 고정).",
+        key="mc_run",
     )
 
     if mc_run and results:
-        import random as _random
-        _random.seed(42)
-        r0 = results[0]
-        # Tier에 따른 ±% 불확실성
-        tier_unc = {"A": 0.05, "B": 0.15, "C": 0.25}
-        # MEA·KS-21·DC-103·Aker S26 = A, TSA·CaL·VPSA = B, KIERSOL·DMX = C
-        if r0["key"] in ("MEA_baseline", "MHI_KS21", "Cansolv_DC103", "Aker_S26"):
-            unc = tier_unc["A"]
-        elif r0["key"] in ("TSA_Solid", "CaL", "VPSA_Syngas"):
-            unc = tier_unc["B"]
-        else:
-            unc = tier_unc["C"]
+        # Tier = 참고문헌 탭 '데이터 신뢰도' 표와 같은 분류 (나머지 파일럿 † = C)
+        TECH_TIER = {"MEA_baseline": "A", "MHI_KS21": "A", "Cansolv_DC103": "A", "Aker_S26": "A",
+                     "TSA_Solid": "B", "CaL": "B", "VPSA_Syngas": "B"}
+        TIER_UNC = {"A": 0.05, "B": 0.15, "C": 0.25}
 
-        # 1000 iterations: 핵심 변수들 ±unc 정규분포
-        n_iter = 1000
-        mc_npvs = []
-        mc_net_cocas = []
-        for _ in range(n_iter):
-            # ±unc 정규분포 (3-sigma rule)
-            srd_var      = _random.gauss(1.0, unc / 3)
-            capex_var    = _random.gauss(1.0, unc / 3)
-            opex_var     = _random.gauss(1.0, unc / 2)  # OPEX는 절반 변동성
-            elec_var     = _random.gauss(1.0, 0.10 / 3) # 전기 가격 ±10%
-            # 변동된 값으로 빠르게 계산 (선형 근사)
-            mc_capex_t = r0["eff_capex_per_t"] * capex_var
-            mc_annual_capex = mc_capex_t * (discount * (1 + discount) ** lifetime) / ((1 + discount) ** lifetime - 1)
-            mc_elec = r0["elec_cost"] * elec_var
-            mc_opex = (r0["opex_solvent"] + r0["opex_other"]) * opex_var
-            mc_coca = mc_annual_capex + mc_opex + mc_elec
-            mc_net_coca = mc_coca - r0["rev_per_capture"]
-            mc_npv = -mc_capex_t * capture_t_yr + sum(
-                (r0["rev_per_capture"] - mc_coca) * capture_t_yr / (1 + discount) ** t
-                for t in range(1, lifetime + 1)
-            )
-            mc_npvs.append(mc_npv)
-            mc_net_cocas.append(mc_net_coca)
+        _rng = np.random.default_rng(42)
+        _elec = np.clip(_rng.normal(1.0, 0.10 / 2, MC_N), 0.1, None)  # 모든 기술 공통
+        mc_net, mc_npv = {}, {}
+        with st.spinner("Monte Carlo 계산 중..."):
+            for r in results:
+                k = r["key"]
+                unc = TIER_UNC[TECH_TIER.get(k, "C")]
+                z = np.clip(_rng.normal(1.0, unc / 2, size=(MC_N, 3)), 0.1, None)
+                nets, npvs = [], []
+                for i in range(MC_N):
+                    rr = evaluate_tech(k, {**BASE_P,
+                                           "capex_scale": z[i, 0], "opex_scale": z[i, 1], "srd_scale": z[i, 2],
+                                           "elec_price": BASE_P["elec_price"] * _elec[i]})
+                    nets.append(rr["Net_COCA"])
+                    npvs.append(rr["npv"])
+                mc_net[k] = np.array(nets)
+                mc_npv[k] = np.array(npvs)
 
-        # 통계
-        mc_npvs.sort()
-        mc_net_cocas.sort()
-        npv_p10, npv_p50, npv_p90 = mc_npvs[100], mc_npvs[500], mc_npvs[900]
-        nc_p10, nc_p50, nc_p90 = mc_net_cocas[100], mc_net_cocas[500], mc_net_cocas[900]
-        prob_profit = sum(1 for x in mc_npvs if x > 0) / n_iter * 100
+        _keys = [r["key"] for r in results]
+        _lowest = np.argmin(np.vstack([mc_net[k] for k in _keys]), axis=0)  # 회차별 Net COCA 최저 기술
 
-        # NPV 분포 히스토그램
-        c1, c2 = st.columns(2)
-        with c1:
-            f_npv = go.Figure()
-            f_npv.add_trace(go.Histogram(
-                x=[v / 1e6 for v in mc_npvs], nbinsx=40,
-                marker_color="#4FC3F7",
-                name="NPV 분포",
+        f_mc = go.Figure()
+        mc_rows = []
+        for j, k in enumerate(_keys):
+            p10, p25, p50, p75, p90 = np.percentile(mc_net[k], [10, 25, 50, 75, 90])
+            _short = SHORT_NAMES.get(k, LIT[k]["name"])
+            f_mc.add_trace(go.Box(
+                x=[_short], q1=[p25], median=[p50], q3=[p75], lowerfence=[p10], upperfence=[p90],
+                name=_short, marker_color="#4FC3F7", showlegend=False,
             ))
-            f_npv.add_vline(x=0, line_color="white", line_dash="dash",
-                            annotation_text="Break-even")
-            f_npv.add_vline(x=npv_p50/1e6, line_color="#FFC107", line_dash="dot",
-                            annotation_text="P50")
-            f_npv.update_layout(
-                title=f"NPV 분포 — {SHORT_NAMES.get(r0['key'], r0['name'])} (Tier {('A' if unc==0.05 else 'B' if unc==0.15 else 'C')}, ±{unc*100:.0f}%)",
-                template="plotly_dark", height=350,
-                xaxis_title="NPV [M$]", yaxis_title="Iterations",
-                showlegend=False,
-            )
-            st.plotly_chart(f_npv, width="stretch", config=PLOTLY_CONFIG)
-
-        with c2:
-            f_nc = go.Figure()
-            f_nc.add_trace(go.Histogram(
-                x=mc_net_cocas, nbinsx=40,
-                marker_color="#81C784",
-                name="Net COCA 분포",
-            ))
-            f_nc.add_vline(x=0, line_color="white", line_dash="dash",
-                            annotation_text="흑자/적자 경계")
-            f_nc.add_vline(x=nc_p50, line_color="#FFC107", line_dash="dot",
-                            annotation_text="P50")
-            f_nc.update_layout(
-                title="Net COCA 분포 [USD/t]",
-                template="plotly_dark", height=350,
-                xaxis_title="Net COCA [$/t]", yaxis_title="Iterations",
-                showlegend=False,
-            )
-            st.plotly_chart(f_nc, width="stretch", config=PLOTLY_CONFIG)
-
-        # 통계 요약
-        st.markdown("##### 📊 Monte Carlo 통계 (P10/P50/P90)")
-        mc_df = pd.DataFrame([
-            {"지표": "NPV [M$]",
-             "P10 (보수)": f"{npv_p10/1e6:+,.1f}",
-             "P50 (median)": f"{npv_p50/1e6:+,.1f}",
-             "P90 (낙관)": f"{npv_p90/1e6:+,.1f}"},
-            {"지표": "Net COCA [$/t]",
-             "P10": f"{nc_p10:+,.1f}",
-             "P50": f"{nc_p50:+,.1f}",
-             "P90": f"{nc_p90:+,.1f}"},
-        ])
-        st.dataframe(mc_df, width="stretch", hide_index=True)
-        st.success(
-            f"🎯 **흑자 확률 (NPV > 0): {prob_profit:.1f}%** "
-            f"({n_iter} iterations, ±{unc*100:.0f}% Tier {('A' if unc==0.05 else 'B' if unc==0.15 else 'C')})"
+            mc_rows.append({
+                "기술": LIT[k]["name"],
+                "Tier": TECH_TIER.get(k, "C"),
+                "Net COCA P10 [$/t]": f"{p10:+,.1f}",
+                "P50": f"{p50:+,.1f}",
+                "P90": f"{p90:+,.1f}",
+                "NPV P50 [M$]": f"{np.percentile(mc_npv[k], 50) / 1e6:+,.0f}",
+                "흑자 확률 (NPV>0)": f"{(mc_npv[k] > 0).mean() * 100:.0f}%",
+                "Net COCA 최저일 확률": f"{(_lowest == j).mean() * 100:.0f}%",
+            })
+        f_mc.add_hline(y=0, line_color="white", line_dash="dash", annotation_text="흑자/적자 경계")
+        f_mc.update_layout(
+            title=f"Net COCA 분포 — 선택 기술 {len(_keys)}개 ({MC_N}회)",
+            template="plotly_dark", height=420,
+            yaxis_title="Net COCA [USD/t] (낮을수록 유리)",
+            margin=dict(l=10, r=10, t=60, b=40),
         )
+        st.plotly_chart(f_mc, width="stretch", config=PLOTLY_CONFIG)
+        st.dataframe(pd.DataFrame(mc_rows), width="stretch", hide_index=True)
+
+        _win = np.bincount(_lowest, minlength=len(_keys)) / MC_N
+        _best = int(np.argmax(_win))
+        _best_name = LIT[_keys[_best]]["name"]
+        if len(_keys) == 1:
+            st.info(f"🎯 흑자 확률 (NPV>0): **{(mc_npv[_keys[0]] > 0).mean() * 100:.0f}%**")
+        elif _win[_best] >= 0.8:
+            st.success(f"🎯 **{_best_name}**이(가) {_win[_best] * 100:.0f}% 확률로 Net COCA 최저 — "
+                       "기술 간 차이가 데이터 불확실성보다 큼.")
+        else:
+            st.warning(f"⚖️ **{_best_name}**이(가) Net COCA 최저일 확률은 {_win[_best] * 100:.0f}% — "
+                       "불확실성 안에서 순위가 자주 바뀜. 기술 선정은 견적·실증 데이터로 좁힌 뒤 판단.")
 
 # ---------- ② 비용·에너지 › 소재 손실 ----------
 with sub_loss:
@@ -5877,18 +5934,25 @@ $$\text{PI} = \frac{\sum_{t=1}^{N} CF_t / (1+r)^t}{\text{CAPEX}_\text{total}}$$
         st.markdown("""
 **목적**: 어떤 파라미터가 Net COCA에 가장 큰 영향?
 
-**방법** (분석적 근사 — Tier B):
-| 파라미터 | 변동 범위 | Net COCA 영향 (선형 근사) |
-|---|---|---|
-| 시장+보조금 인센티브 | ±20% | ±0.20 × `rev_per_capture` |
-| CAPEX (project mult) | ±20% | ±0.20 × `annual_capex_per_t` |
-| 포집량 (규모) | ±20% | ±6.3% × `annual_capex_per_t` (scale^0.65) |
-| 포집율 | ±5%p | ±0.05 × (annual_capex + elec_cost) |
-| 할인율 | ±2%p | ±15% × `annual_capex_per_t` (CRF 비선형) |
-| 전기 가격 | ±20% | ±0.20 × `elec_cost` |
-| CCU 판매가 | ±20% | ±0.20 × ccu_revenue/capture (CCU 모드) |
+**방법** (2026-10 개편 — 모델 재계산): 입력 하나만 아래 범위로 낮추고·높여 `evaluate_tech()`로 전체 계산을
+다시 돌린 뒤 Net COCA 차이를 그림. 규모 효과·CRF·포집률처럼 비선형인 항목도 그대로 반영됨.
+분석할 기술은 선택 가능 (기본값 = COCA 최저 기술).
 
-**Tier B 명시**: 정확한 sensitivity는 numerical 재계산이 필요. 본 모델은 직관적 ranking 제공.
+| 파라미터 | 변동 범위 |
+|---|---|
+| 인센티브 (시장+보조금+추가) | ±20% |
+| CAPEX · OPEX(용매·기타) · 재생 열 SRD | 각각 ±20% |
+| 전기 가격 · 포집량(규모 효과) | 각각 ±20% |
+| 포집률 | ±5%p (50~99% 범위 안) |
+| 할인율 | ±2%p |
+| 플랜트 수명 | ±5년 |
+| 액화탄산 판매가 (CCU 모드) · T&S 비용 (별도 계산 시) | ±20% |
+
+영향이 0.05 $/t 미만인 항목(예: 인센티브 0, SRD 0인 VPSA)은 생략.
+
+**Monte Carlo**: 선택 기술 전부를 500회씩 계산. 기술별 CAPEX·OPEX·SRD에 데이터 신뢰도 Tier
+(A ±5% · B ±15% · C ±25%를 95% 범위로 보고 σ = 절반)를 주고, 전기 가격(±10%)은 모든 기술에 같은 난수를 씀.
+"Net COCA 최저일 확률"이 80% 이상이면 기술 간 차이가 데이터 불확실성보다 크다고 봄.
 
 **해석**: 가장 긴 막대 = 가장 critical 변수 → 우선 정밀화 필요.
         """)
