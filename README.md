@@ -51,7 +51,8 @@ NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER 등 공식 자료 기반의 10종 C
 
 ## ✨ 주요 기능
 
-- **10개 탭**: 종합 비교 / 경제성 / Lifecycle·Net CO₂ / 에너지 페널티 / 손실 / 트렌드 / Custom 입력 / **🆚 시나리오 비교** / 방법론 / 참고문헌
+- **5개 탭**: ① 결과 요약 / ② 비용·에너지 (비용·에너지·소재 손실·직접 입력) / ③ 사업성 (손익·NPV·민감도·**🆚 시나리오 비교**) / ④ Net CO₂ (LCA) / ⑤ 근거·사용법 (사용법·방법론·참고문헌·문헌 트렌드)
+- **사이드바 3단계**: 배출원·프로젝트 → 비교할 기술 → 규모·처분 경로 (인센티브·상세 가정·LCA 가정은 접어 둠)
 - **시나리오 프리셋 6종**: 미국 발전소·한국 시멘트·EU 블루수소·DAC+LCFS·식품급 LCO₂·반도체 LCO₂
 - **자동 인사이트 박스** + 추천 메시지
 - **5대 KPI**: 연 손익 (메인) + SRD · We · SPECCA · COCA
@@ -70,7 +71,7 @@ NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER 등 공식 자료 기반의 10종 C
 - **🆚 시나리오 A vs B 비교 모드** — 두 입력 세트를 슬롯에 저장하고 핵심 KPI 10개(연 손익·COCA·Net COCA·SRD·We·NPV·IRR·Payback·CRCF·LCA)를 1:1 그룹 막대로 비교. Δ 표(B−A) + 자동 인사이트 + CSV 다운로드.
 - **📥 PDF 리포트 내보내기** — KPI 배너 / 시나리오 메타 / 결과 표 / 차트 / LCA 분해 / 방법론 요약을 1~3페이지 PDF로 한 번에 생성 (ReportLab + Plotly Kaleido). 이사회·EPC 견적·정부 협상 input용.
 - **📦 Single Source of Truth (SSOT)** — `data/ccus_metrics.json` (schema v1.0) 한 파일이 본 도구 + 자매 도구 [🛡️ CBAM 계산기]의 LIT 데이터 마스터. 한 곳 수정 → 양쪽 자동 동기화 (1h / 24h 캐시).
-- **🌱 Lifecycle / Net CO₂ 탭** — Scope 1+2+3 lifecycle 배출 차감 후 net removed CO₂ + CRCF/ICVCM 등급(A/B/C/D). EU CRCF 2024 의무 대응.
+- **🌱 ④ Net CO₂ (LCA) 탭** — Scope 1+2+3 lifecycle 배출 차감 후 net removed CO₂ + CRCF/ICVCM 등급(A/B/C/D). EU CRCF 2024 의무 대응.
 - **🇰🇷 K-ETS CCU 차감 분석** — 한국 할당대상업체 보고용 (직접 매출 아님 — 할당 부족/균형/잉여별 조건부 가치 시나리오 표시).
 
 ---
@@ -125,7 +126,7 @@ CRF      = i(1+i)ⁿ / [(1+i)ⁿ − 1]                (NETL QGESS)
 - 학술 논문 (Rochelle, Bui, Darde, Raynal, Cullinane, Yoo, Abanades, Grasa, Romeo, Lepaumier, Manzolini, Cousins, Sjostrom & Krutka, Hanak, Rubin/CMU)
 - 방법론 (Bejan, Kotas, ASHRAE, GPSA, Peters & Timmerhaus, EIA AEO, CGA G-6.2, SEMI C3)
 
-전체 51개 출처는 앱 내 **탭 ⑨ 참고문헌**에서 카테고리별로 확인 가능.
+전체 70여 개 출처는 앱 내 **⑤ 근거·사용법 › 참고문헌**에서 카테고리별로 확인 가능.
 
 ---
 
