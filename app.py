@@ -61,20 +61,34 @@ TRANSLATIONS = {
             "v{schema} · {n} technologies · 자매 도구도 동일 JSON fetch (Single Source of Truth)"
         ),
         # ── tabs ────────────────────────────────────────────────
-        "tab_overall": "① 종합 비교",
-        "tab_econ": "② 경제성",
-        "tab_lca": "③ Lifecycle / Net CO₂",
-        "tab_energy": "④ 에너지 페널티",
-        "tab_loss": "⑤ 흡수제/흡착제 손실",
-        "tab_trend": "⑥ 트렌드",
-        "tab_custom": "⑦ Custom 입력",
-        "tab_compare": "🆚 시나리오 비교",
-        "tab_method": "⑧ 방법론",
-        "tab_refs": "⑨ 참고문헌",
+        "tab_overall": "① 결과 요약",
+        "tab_cost": "② 비용·에너지",
+        "tab_biz": "③ 사업성",
+        "tab_lca": "④ Net CO₂ (LCA)",
+        "tab_basis": "⑤ 근거·사용법",
+        "sub_cost": "💵 비용 (COCA)",
+        "sub_energy": "⚡ 에너지",
+        "sub_loss": "🧪 소재 손실",
+        "sub_custom": "✏️ 직접 입력",
+        "sub_profit": "💰 손익·NPV",
+        "sub_risk": "🌪️ 민감도·불확실성",
+        "sub_compare": "🆚 시나리오 비교",
+        "sub_manual": "📖 사용법",
+        "sub_method": "🔬 방법론",
+        "sub_refs": "📚 참고문헌",
+        "sub_trend": "📈 문헌 트렌드",
+        "ov_disclaimer": ("⚠️ 대표값 기반 1차 근사 비교입니다. 투자·EPC·정책 판단 전에는 실측·견적으로 "
+                          "보정하세요. 모델 한계는 ⑤ 근거·사용법 › 방법론 맨 아래."),
         # ── sidebar section headings ────────────────────────────
         "sb_h_quickstart": "### 🚀 빠른 시작 — 시나리오 프리셋",
         "sb_h_currency": "### 💱 표시 통화",
-        "sb_h_inputs": "### ⚙️ 입력 파라미터",
+        "sb_h_source": "### 🏭 ① 배출원·프로젝트",
+        "sb_h_tech": "### 🧪 ② 비교할 기술",
+        "sb_h_scale": "### 📏 ③ 규모·처분 경로",
+        "sb_exp_incentive": "💚 ④ 인센티브·탄소가격",
+        "sb_exp_detail": "⚙️ 상세 가정 (공정·경제성·T&S)",
+        "sb_exp_lca": "🌱 LCA 가정 (열원·전력)",
+        "sb_no_incentive": "💚 적용된 인센티브 없음 — ④를 펼쳐 설정",
         # ── sidebar labels ──────────────────────────────────────
         "sb_preset_label": "프리셋 선택 (자동 설정)",
         "sb_preset_custom": "✏️ Custom (직접 설정)",
@@ -100,6 +114,7 @@ TRANSLATIONS = {
         "ins_summary_title": "🎯 시뮬레이션 결과 요약",
         "ins_label_min_coca": "최저 COCA",
         "ins_label_best_profit": "최고 흑자 기술",
+        "ins_label_least_loss": "손실 최소 기술",
         "ins_label_avg_profit": "평균 연 손익",
         "ins_label_avg_net": "평균 Net 효율 (CRCF)",
         # ── overview tab ────────────────────────────────────────
@@ -140,20 +155,35 @@ TRANSLATIONS = {
             "v{schema} · {n} technologies · sister tool fetches the same JSON (Single Source of Truth)"
         ),
         # ── tabs ────────────────────────────────────────────────
-        "tab_overall": "① Overview",
-        "tab_econ": "② Economics",
-        "tab_lca": "③ Lifecycle / Net CO₂",
-        "tab_energy": "④ Energy Penalty",
-        "tab_loss": "⑤ Solvent / Sorbent Loss",
-        "tab_trend": "⑥ Trends",
-        "tab_custom": "⑦ Custom Input",
-        "tab_compare": "🆚 Scenario Comparison",
-        "tab_method": "⑧ Methodology",
-        "tab_refs": "⑨ References",
+        "tab_overall": "① Summary",
+        "tab_cost": "② Cost & Energy",
+        "tab_biz": "③ Business Case",
+        "tab_lca": "④ Net CO₂ (LCA)",
+        "tab_basis": "⑤ Basis & Guide",
+        "sub_cost": "💵 Cost (COCA)",
+        "sub_energy": "⚡ Energy",
+        "sub_loss": "🧪 Material Loss",
+        "sub_custom": "✏️ Custom Input",
+        "sub_profit": "💰 Profit & NPV",
+        "sub_risk": "🌪️ Sensitivity & Uncertainty",
+        "sub_compare": "🆚 Scenario Comparison",
+        "sub_manual": "📖 Guide",
+        "sub_method": "🔬 Methodology",
+        "sub_refs": "📚 References",
+        "sub_trend": "📈 Literature Trend",
+        "ov_disclaimer": ("⚠️ First-order comparison on representative values — calibrate with plant data "
+                          "or EPC quotes before investment, EPC or policy decisions. Limitations: "
+                          "⑤ Basis & Guide › Methodology (bottom)."),
         # ── sidebar section headings ────────────────────────────
         "sb_h_quickstart": "### 🚀 Quick Start — Scenario Presets",
         "sb_h_currency": "### 💱 Display Currency",
-        "sb_h_inputs": "### ⚙️ Input Parameters",
+        "sb_h_source": "### 🏭 ① Source & Project",
+        "sb_h_tech": "### 🧪 ② Technologies",
+        "sb_h_scale": "### 📏 ③ Scale & Disposal",
+        "sb_exp_incentive": "💚 ④ Incentives & Carbon Price",
+        "sb_exp_detail": "⚙️ Detailed Assumptions (process · economics · T&S)",
+        "sb_exp_lca": "🌱 LCA Assumptions (heat · grid)",
+        "sb_no_incentive": "💚 No incentive applied — open ④ to set one",
         # ── sidebar labels ──────────────────────────────────────
         "sb_preset_label": "Preset (auto-fills inputs)",
         "sb_preset_custom": "✏️ Custom (manual)",
@@ -179,6 +209,7 @@ TRANSLATIONS = {
         "ins_summary_title": "🎯 Simulation Result Summary",
         "ins_label_min_coca": "Lowest COCA",
         "ins_label_best_profit": "Best profit tech",
+        "ins_label_least_loss": "Smallest loss",
         "ins_label_avg_profit": "Avg annual profit",
         "ins_label_avg_net": "Avg Net efficiency (CRCF)",
         # ── overview tab ────────────────────────────────────────
@@ -2236,7 +2267,7 @@ def calc_revenue(capture_t_yr, ccs_share, ccs_yield, ccu_share, ccu_yield,
     ccu_revenue_usd = sold_lco2_t * ccu_price_krw_t / fx_krw_per_usd
 
     # 2) 배출권 시장 (compliance) — CCS 격리량만 (gross stored)
-    #    K-ETS CCU 차감은 직접 매출 아님 (조건부 가치 — 탭 ⑨ 별도 표시)
+    #    K-ETS CCU 차감은 직접 매출 아님 (조건부 가치 — 탭 ④ 별도 표시)
     market_revenue_usd = stored_t * carbon_market_usd_t
 
     # 3) 정부 보조금 (45Q-CCS, 45Q-EOR, NL SDE++, UK CfD 등) — 직접 매출
@@ -2309,7 +2340,6 @@ with st.sidebar:
     # ──────────────────────────────────────────────
     # 💱 통화 표시 toggle (전역)
     # ──────────────────────────────────────────────
-    st.markdown(T("sb_h_currency"))
     display_currency = st.radio(
         T("sb_currency_label"),
         options=["Both", "USD", "KRW"],
@@ -2323,8 +2353,59 @@ with st.sidebar:
         key="display_currency",
     )
 
+    fx_krw_per_usd = st.number_input(
+        "💱 환율 [KRW/USD]",
+        min_value=800.0, max_value=2000.0, value=1370.0, step=10.0,
+        format="%.0f",
+        help="default: 1,370 (2026-09-24 기준)",
+    )
+
     st.markdown("---")
-    st.markdown(T("sb_h_inputs"))
+    st.markdown(T("sb_h_source"))
+    st.caption("CO₂ 농도·flue gas 특성에 따라 SRD/CAPEX 추가 보정 (IEAGHG 산업별)")
+    source_sector_key = st.selectbox(
+        "Sector 선택",
+        options=list(SOURCE_SECTORS.keys()),
+        format_func=lambda k: SOURCE_SECTORS[k]["label"],
+        index=0,  # power_subc default
+        key="source_sector",
+        help="배출원 sector별 CO₂ 농도와 pretreat 요구가 다름",
+    )
+    sector = SOURCE_SECTORS[source_sector_key]
+    st.caption(
+        f"→ CO₂ 농도 **{sector['co2_conc']*100:.0f}%** · "
+        f"SRD ×**{sector['srd_mult']:.2f}** · CAPEX ×**{sector['capex_mult']:.2f}** · "
+        f"{sector['note']}"
+    )
+
+    st.caption("Retrofit/Greenfield/산업별 CAPEX 차이 반영 (IEAGHG 2011/02, NETL QGESS)")
+
+    project_scenario_key = st.selectbox(
+        "프로젝트 유형",
+        options=list(PROJECT_SCENARIOS.keys()),
+        format_func=lambda k: PROJECT_SCENARIOS[k]["label"],
+        index=0,  # retrofit_power default
+        help="LIT CAPEX는 발전소 retrofit 기준(1.0×). 다른 유형은 multiplier 적용.",
+        key="project_scenario",
+    )
+    project = PROJECT_SCENARIOS[project_scenario_key]
+    project_multiplier = project["multiplier"]
+
+    # 시나리오 카드 표시
+    st.markdown(
+        f"<div style='background:#1E2128; border-left:3px solid {project['color']}; "
+        f"padding:8px 10px; border-radius:4px; margin:4px 0;'>"
+        f"<b style='color:{project['color']};'>CAPEX 배수: ×{project['multiplier']:.2f}</b>"
+        f"<span style='color:#8b95a7; font-size:0.78rem;'> "
+        f"(예: MEA $950 × {project['multiplier']:.2f} = ${950*project['multiplier']:,.0f}/(t/yr))</span><br>"
+        f"<span style='font-size:0.75rem; color:#B0BEC5;'><b>적용 범위</b>: {project['scope']}</span><br>"
+        f"<span style='font-size:0.72rem; color:#8b95a7;'><b>실제 사례</b>: {project['examples']}</span>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
+    st.markdown(T("sb_h_tech"))
 
     # TRL 필터 (낮은 TRL일수록 데이터가 idealized 경향 — 주의)
     # NOTE: TRL option labels are also used as keys into TECH classification → keep
@@ -2364,8 +2445,9 @@ with st.sidebar:
         key="selected_techs",
     )
 
-    st.caption(T("sb_input_hint"))
 
+    st.markdown("---")
+    st.markdown(T("sb_h_scale"))
     capture_mt_yr = st.number_input(
         T("sb_capture_amount"),
         # 하한 0.01 = SSOT capacity_range_mt_yr 최소값(TSA). 0.1이면 kr_ultra_lco2(0.05)가 3.7로 되돌아감
@@ -2418,228 +2500,7 @@ with st.sidebar:
     if _out_of_range:
         st.warning("⚠️ 일부 기술이 적정 capacity 범위 밖:\n\n" + "\n\n".join(_out_of_range))
 
-    capture_eff_pct = st.number_input(
-        T("sb_capture_rate"),
-        min_value=50, max_value=99, value=90, step=1,
-        help=(
-            "default: 90 (NETL baseline, 비용 최적점)\n"
-            "포집율 효과 (IEAGHG 2019):\n"
-            "• SRD: 90%→99% +18% (평형 한계)\n"
-            "• CAPEX: 90%→99% +10% (column 크기 ↑)"
-        ),
-    )
-    capture_eff = capture_eff_pct / 100.0
-    # 포집율 효과 자동 표시
-    _srd_capt_pct = (capture_rate_factor(capture_eff, SRD_VS_CAPTURE_COEF) - 1) * 100
-    _capex_capt_pct = (capture_rate_factor(capture_eff, CAPEX_VS_CAPTURE_COEF) - 1) * 100
-    if abs(_srd_capt_pct) > 0.5 or abs(_capex_capt_pct) > 0.5:
-        _arr_s = "↑" if _srd_capt_pct > 0 else "↓"
-        _arr_c = "↑" if _capex_capt_pct > 0 else "↓"
-        st.caption(
-            f"→ 포집율 보정 (90% 기준): SRD **{_arr_s}{abs(_srd_capt_pct):.1f}%** · "
-            f"CAPEX **{_arr_c}{abs(_capex_capt_pct):.1f}%**"
-        )
 
-    T_cool_C = st.number_input(
-        T("sb_cool_temp"),
-        min_value=0, max_value=50, value=25, step=1,
-        help="default: 25",
-    )
-
-    p_final_bar = st.number_input(
-        T("sb_final_pressure"),
-        min_value=5, max_value=300, value=152, step=1,
-        help=(
-            "용도별:\n"
-            "• 식품 액화탄산: 15~20 bar\n"
-            "• 산업용: 5~25 bar\n"
-            "• 파이프라인: 100~150 bar\n"
-            "• EOR/저장: 150~200 bar\n"
-            "default: 152"
-        ),
-    )
-
-    if p_final_bar < 30:
-        _use_label = "🧊 액화탄산 (식품·산업용)"
-    elif p_final_bar < 80:
-        _use_label = "💨 가스 수송"
-    elif p_final_bar < 120:
-        _use_label = "🚰 파이프라인"
-    else:
-        _use_label = "⛏️ EOR / 지중저장"
-    st.caption(f"→ 추정 용도: **{_use_label}**")
-
-    st.markdown("---")
-    st.markdown("### 🏗️ 프로젝트 시나리오")
-    st.caption("Retrofit/Greenfield/산업별 CAPEX 차이 반영 (IEAGHG 2011/02, NETL QGESS)")
-
-    project_scenario_key = st.selectbox(
-        "프로젝트 유형",
-        options=list(PROJECT_SCENARIOS.keys()),
-        format_func=lambda k: PROJECT_SCENARIOS[k]["label"],
-        index=0,  # retrofit_power default
-        help="LIT CAPEX는 발전소 retrofit 기준(1.0×). 다른 유형은 multiplier 적용.",
-        key="project_scenario",
-    )
-    project = PROJECT_SCENARIOS[project_scenario_key]
-    project_multiplier = project["multiplier"]
-
-    # 시나리오 카드 표시
-    st.markdown(
-        f"<div style='background:#1E2128; border-left:3px solid {project['color']}; "
-        f"padding:8px 10px; border-radius:4px; margin:4px 0;'>"
-        f"<b style='color:{project['color']};'>CAPEX 배수: ×{project['multiplier']:.2f}</b>"
-        f"<span style='color:#8b95a7; font-size:0.78rem;'> "
-        f"(예: MEA $950 × {project['multiplier']:.2f} = ${950*project['multiplier']:,.0f}/(t/yr))</span><br>"
-        f"<span style='font-size:0.75rem; color:#B0BEC5;'><b>적용 범위</b>: {project['scope']}</span><br>"
-        f"<span style='font-size:0.72rem; color:#8b95a7;'><b>실제 사례</b>: {project['examples']}</span>"
-        f"</div>",
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("---")
-    st.markdown("### 💰 경제성 가정")
-
-    lifetime = st.number_input("플랜트 수명 [년]", 10, 50, 25, 1, help="default: 25")
-    discount_pct = st.number_input("할인율 [%]", 2.0, 15.0, 8.0, 0.5, format="%.1f", help="default: 8.0")
-    discount = discount_pct / 100.0
-    elec_price = st.number_input("전기 가격 [USD/MWh]", 20, 300, 80, 5, help="default: 80")
-
-    # ─── 건식 흡착제 교체 (흡착 기술을 골랐을 때만) ───
-    _sorbent_techs = [k for k in selected if LIT[k].get("sorbent")]
-    sorbent_price = sorbent_life = None
-    if _sorbent_techs:
-        _sb0 = LIT[_sorbent_techs[0]]["sorbent"]
-        sorbent_price = st.number_input(
-            "🧱 흡착제 단가 [USD/kg]", min_value=1.0, max_value=200.0,
-            value=float(_sb0["price_USD_per_kg"]), step=1.0, format="%.1f",
-            help=("아민 담지 실리카·제올라이트는 약 $5~15/kg, MOF(CALF-20) 구조체는 더 비쌀 수 있음. "
-                  f"default: {_sb0['price_USD_per_kg']:g} (1차 근사)"),
-            key="sorbent_price",
-        )
-        sorbent_life = st.number_input(
-            "🧱 흡착제 수명 [년]", min_value=0.25, max_value=10.0,
-            value=float(_sb0["lifetime_yr"]), step=0.25, format="%.2f",
-            help=("Svante 설계값 5년(아직 실증 전), 오염물이 많으면 1~2년. "
-                  f"default: {_sb0['lifetime_yr']:g} (중간값, 1차 근사)"),
-            key="sorbent_life",
-        )
-        _sb_loss, _sb_opex = calc_sorbent_replacement(
-            _sb0["inventory_kg_per_tpy"], sorbent_price, sorbent_life)
-        st.caption(
-            f"→ 흡착제 교체비 ≈ ${_sb_opex:.1f}/tCO₂ · 손실 {_sb_loss:.2f} kg/tCO₂ "
-            f"(충전량 {_sb0['inventory_kg_per_tpy']:g} kg/(t/yr) ÷ 수명 × 단가)"
-        )
-
-    fx_krw_per_usd = st.number_input(
-        "💱 환율 [KRW/USD]",
-        min_value=800.0, max_value=2000.0, value=1370.0, step=10.0,
-        format="%.0f",
-        help="default: 1,370 (2026-09-24 기준)",
-    )
-
-    # ─── 비용 기준 연도 (인플레이션 조정) ───
-    cost_basis_year = st.selectbox(
-        "📅 비용 기준 연도 (인플레이션)",
-        options=list(US_CPI.keys()),
-        index=list(US_CPI.keys()).index(2026),
-        help=(
-            f"LIT CAPEX는 {LIT_BASE_YEAR}년 USD basis (NETL Rev4a era).\n"
-            "선택 연도 기준으로 US CPI 자동 조정.\n"
-            "출처: BLS CPI-U (Consumer Price Index)"
-        ),
-        key="cost_basis_year",
-    )
-    cpi_factor = US_CPI[cost_basis_year] / US_CPI[LIT_BASE_YEAR]
-    if abs(cpi_factor - 1.0) > 0.01:
-        _direction = "↑" if cpi_factor > 1 else "↓"
-        st.caption(
-            f"→ {LIT_BASE_YEAR} → {cost_basis_year} CPI 조정: "
-            f"**{_direction}{abs(cpi_factor-1)*100:.1f}%** (배수 {cpi_factor:.3f})"
-        )
-
-    # ─── 탄소가격 시나리오 (시간 흐름) ───
-    price_scenario_key = st.selectbox(
-        "📈 탄소가격 시나리오 (시간 흐름)",
-        options=list(PRICE_SCENARIOS.keys()),
-        index=0,  # constant default
-        format_func=lambda k: PRICE_SCENARIOS[k]["label"],
-        help="lifetime 동안 carbon market·subsidy 가격 변동률. NPV/IRR에 직접 영향.",
-        key="price_scenario",
-    )
-    rev_growth_rate = PRICE_SCENARIOS[price_scenario_key]["growth"]
-    st.caption(
-        f"→ 연 매출 성장률 **{rev_growth_rate*100:+.1f}%/yr** · "
-        f"{PRICE_SCENARIOS[price_scenario_key]['note']}"
-    )
-    st.caption(f"→ 현재 환율: **{fx_krw_per_usd:,.0f} KRW/USD**")
-
-    st.markdown("---")
-    st.markdown("### 🏭 배출원 Sector")
-    st.caption("CO₂ 농도·flue gas 특성에 따라 SRD/CAPEX 추가 보정 (IEAGHG 산업별)")
-    source_sector_key = st.selectbox(
-        "Sector 선택",
-        options=list(SOURCE_SECTORS.keys()),
-        format_func=lambda k: SOURCE_SECTORS[k]["label"],
-        index=0,  # power_subc default
-        key="source_sector",
-        help="배출원 sector별 CO₂ 농도와 pretreat 요구가 다름",
-    )
-    sector = SOURCE_SECTORS[source_sector_key]
-    st.caption(
-        f"→ CO₂ 농도 **{sector['co2_conc']*100:.0f}%** · "
-        f"SRD ×**{sector['srd_mult']:.2f}** · CAPEX ×**{sector['capex_mult']:.2f}** · "
-        f"{sector['note']}"
-    )
-
-    st.markdown("---")
-    st.markdown("### 🚢 T&S (Transport & Storage) 옵션")
-    st.caption("CCS 모드에만 적용 — 격리량 기준 추가 OPEX")
-    ts_enabled = st.checkbox(
-        "T&S 비용 별도 계산",
-        value=False,
-        help="default OPEX_other에 포함된 일반 T&S 비용 외에 별도 정밀 산정",
-        key="ts_enabled",
-    )
-    if ts_enabled:
-        ts_pipeline_km = st.number_input(
-            "파이프라인 거리 [km]",
-            min_value=0, max_value=2000, value=100, step=10,
-            help="default: 100 km (mid-range onshore)",
-            key="ts_pipeline_km",
-        )
-        ts_storage_type = st.selectbox(
-            "저장소 유형",
-            options=["storage_saline", "storage_depleted_og", "storage_basalt"],
-            format_func=lambda k: {
-                "storage_saline": "🌊 Saline aquifer ($10/t default)",
-                "storage_depleted_og": "🛢️ 폐 oil&gas reservoir ($6/t)",
-                "storage_basalt": "🗿 Basalt mineralization ($15/t, CarbFix)",
-            }[k],
-            index=0,
-            key="ts_storage_type",
-        )
-        ts_cluster = st.checkbox(
-            "🤝 Cluster 공유 (T&S 비용 -30%)",
-            value=False,
-            help="다수 capture 시설이 T&S 인프라 공유 (Northern Lights, Porthos 모델)",
-            key="ts_cluster",
-        )
-        # T&S 비용 계산
-        _ts_pipe_cost = ts_pipeline_km * TS_COSTS["pipeline_per_km"]
-        _ts_storage_cost = TS_COSTS[ts_storage_type]
-        ts_cost_per_t = _ts_pipe_cost + _ts_storage_cost
-        if ts_cluster:
-            ts_cost_per_t *= TS_COSTS["cluster_discount"]
-        st.caption(
-            f"→ 파이프라인 ${_ts_pipe_cost:.1f} + 저장 ${_ts_storage_cost:.0f} = "
-            f"**${ts_cost_per_t:.1f}/t** (cluster: ×{TS_COSTS['cluster_discount']:.2f})"
-        )
-    else:
-        ts_cost_per_t = 0.0
-
-    st.markdown("---")
-    st.markdown("### ♻️ CCUS 시설 모드")
     st.caption("⚠️ 실제 시설은 CCS/CCU 중 하나로 commit")
 
     facility_mode = st.radio(
@@ -2696,160 +2557,160 @@ with st.sidebar:
         )
         st.caption(f"→ 입력값: **{ccu_price_krw:,} KRW/t**")
 
-    # ──────────────────────────────────────────────
-    # 다중 인센티브 stacking (옵션 B)
-    # ──────────────────────────────────────────────
     st.markdown("---")
-    st.markdown("### 💚 인센티브 (다중 적용 — Stacking)")
-    st.caption(
-        "🇺🇸 미국 CCS는 **45Q + 주별 시장 + LCFS** 동시 적용 (정책 도구 다름 — 중복지원 ✗). "
-        "🇪🇺 EU는 SDE++ 단독, 🇰🇷 한국은 K-ETS + K-CCUS stack 가능."
-    )
-    # 지역 색상 범례 (정적)
-    st.markdown(
-        "<div style='font-size:0.78rem; padding:6px 10px; background:#1E2128; "
-        "border-radius:4px; margin:6px 0;'>"
-        "<b>📍 지역 색상</b> &nbsp;"
-        "🟦 미국 &nbsp; 🟨 유럽 &nbsp; 🟪 영국 &nbsp; 🟧 한국 &nbsp; ⚪ 없음/Custom<br>"
-        "<span style='color:#8b95a7;'>같은 색끼리 stack 가능 · 다른 색은 지역 불일치</span>"
-        "</div>",
-        unsafe_allow_html=True,
-    )
+    with st.expander(T("sb_exp_incentive"), expanded=False):
+        # ──────────────────────────────────────────────
+        # 다중 인센티브 stacking (옵션 B)
+        # ──────────────────────────────────────────────
+        st.caption(
+            "🇺🇸 미국 CCS는 **45Q + 주별 시장 + LCFS** 동시 적용 (정책 도구 다름 — 중복지원 ✗). "
+            "🇪🇺 EU는 SDE++ 단독, 🇰🇷 한국은 K-ETS + K-CCUS stack 가능."
+        )
+        # 지역 색상 범례 (정적)
+        st.markdown(
+            "<div style='font-size:0.78rem; padding:6px 10px; background:#1E2128; "
+            "border-radius:4px; margin:6px 0;'>"
+            "<b>📍 지역 색상</b> &nbsp;"
+            "🟦 미국 &nbsp; 🟨 유럽 &nbsp; 🟪 영국 &nbsp; 🟧 한국 &nbsp; ⚪ 없음/Custom<br>"
+            "<span style='color:#8b95a7;'>같은 색끼리 stack 가능 · 다른 색은 지역 불일치</span>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
 
-    # 1️⃣ 배출권 시장 (compliance trading)
-    credit_market_keys = (
-        ["None"]
-        + [k for k, v in CARBON_MARKETS.items() if v["type"] == "credit" and k != "Custom"]
-        + ["Custom"]
-    )
+        # 1️⃣ 배출권 시장 (compliance trading)
+        credit_market_keys = (
+            ["None"]
+            + [k for k, v in CARBON_MARKETS.items() if v["type"] == "credit" and k != "Custom"]
+            + ["Custom"]
+        )
 
-    if facility_mode == "CCS":
-        st.markdown("##### 1️⃣ 배출권 시장 (compliance)")
-        st.caption("CCS 격리량 기준 거래 (CCU는 격리 안 됨). 색깔로 지역 그룹 식별")
+        if facility_mode == "CCS":
+            st.markdown("##### 1️⃣ 배출권 시장 (compliance)")
+            st.caption("CCS 격리량 기준 거래 (CCU는 격리 안 됨). 색깔로 지역 그룹 식별")
 
-        def _fmt_market_static(k):
+            def _fmt_market_static(k):
+                if k == "None":
+                    return "⚪ 없음"
+                if k == "Custom":
+                    return "⚪ ✏️ Custom 입력"
+                return f"{region_icon(k)} {CARBON_MARKETS[k]['label']}"
+
+            carbon_market_key = st.selectbox(
+                "탄소시장 선택",
+                options=credit_market_keys,
+                format_func=_fmt_market_static,
+                index=0,
+                key="cm_select",
+            )
+            if carbon_market_key == "None":
+                carbon_market_usd = 0.0
+            elif carbon_market_key == "Custom":
+                # 정적 label — 동적 값 변경 시에도 widget 재초기화 방지
+                carbon_market_usd = st.number_input(
+                    "Custom 시장가 [USD/t]",
+                    min_value=0.0, max_value=500.0, value=30.0, step=1.0, format="%.1f",
+                    key="cm_custom",
+                )
+                st.caption("→ 사용자 정의 단가")
+            else:
+                mkt = CARBON_MARKETS[carbon_market_key]
+                # 정적 label "탄소시장 단가 [USD/t]" 고정 — native 표시는 caption으로 분리
+                carbon_market_usd = st.number_input(
+                    "탄소시장 단가 [USD/t]",
+                    min_value=0.0, max_value=500.0,
+                    value=float(mkt["price_usd_t"]), step=1.0, format="%.1f",
+                    key=f"cm_price_{carbon_market_key}",  # 시장별 별도 key → 충돌 방지
+                )
+                st.caption(f"→ 표준값: {mkt['native']}")
+        else:
+            # CCU 모드 — 한국 K-ETS CCU 차감 보고 (정보용, 매출 아님)
+            st.markdown("##### 1️⃣ 배출권 시장 (CCU 모드)")
+            st.caption(
+                "🇰🇷 한국 할당대상업체는 CCU 출하량을 K-ETS 배출량에서 차감 가능. "
+                "**단, 직접 매출 아님 — 배출권 수급 상황에 따라 조건부 가치**. "
+                "탭 ④ Net CO₂에서 톤수·조건부 가치 별도 분석."
+            )
+            apply_kets_ccu = st.checkbox(
+                "🇰🇷 K-ETS CCU 차감 보고 (할당대상업체, 정보용)",
+                value=False,
+                help="체크 시: 탭 ④에서 배출량 차감 톤수 + 조건부 경제 가치 표시 "
+                     "(매출 계산에는 미반영)",
+                key="kets_ccu_deduction",
+            )
+            if apply_kets_ccu:
+                kets_ccu_price_info = st.number_input(
+                    "K-ETS 단가 [USD/t] — 조건부 가치 산정용",
+                    min_value=0.0, max_value=100.0, value=7.0, step=0.5,
+                    format="%.1f",
+                    help="배출권 매입 회피 시나리오 산정용. **실제 매출 아님**.",
+                    key="kets_ccu_price",
+                )
+                st.caption(
+                    f"ℹ️ {kets_ccu_price_info:.1f}$/t × 출하량 = 조건부 가치 (탭 ④ 표시)"
+                )
+            else:
+                kets_ccu_price_info = 0.0
+            # CCU 모드는 carbon_market 매출 항상 0
+            carbon_market_key = "None"
+            carbon_market_usd = 0.0
+
+        # 2️⃣ 정부 보조금 (federal/state subsidy)
+        st.markdown("##### 2️⃣ 정부 보조금 (federal/state)")
+        st.caption("위 1️⃣ 시장과 **같은 색** 보조금만 stack 현실적")
+        subsidy_keys = (
+            ["None"]
+            + [k for k, v in CARBON_MARKETS.items() if v["type"] == "subsidy"]
+            + ["Custom_subsidy"]
+        )
+        default_sub_idx = (subsidy_keys.index("45Q-CCS") if facility_mode == "CCS"
+                           else subsidy_keys.index("45Q-EOR"))
+
+        def _fmt_subsidy_static(k):
             if k == "None":
                 return "⚪ 없음"
-            if k == "Custom":
+            if k == "Custom_subsidy":
                 return "⚪ ✏️ Custom 입력"
             return f"{region_icon(k)} {CARBON_MARKETS[k]['label']}"
 
-        carbon_market_key = st.selectbox(
-            "탄소시장 선택",
-            options=credit_market_keys,
-            format_func=_fmt_market_static,
-            index=0,
-            key="cm_select",
+        subsidy_key = st.selectbox(
+            "보조금 제도",
+            options=subsidy_keys,
+            format_func=_fmt_subsidy_static,
+            index=default_sub_idx,
+            key="sub_select",
         )
-        if carbon_market_key == "None":
-            carbon_market_usd = 0.0
-        elif carbon_market_key == "Custom":
-            # 정적 label — 동적 값 변경 시에도 widget 재초기화 방지
-            carbon_market_usd = st.number_input(
-                "Custom 시장가 [USD/t]",
-                min_value=0.0, max_value=500.0, value=30.0, step=1.0, format="%.1f",
-                key="cm_custom",
+        if subsidy_key == "None":
+            subsidy_usd = 0.0
+        elif subsidy_key == "Custom_subsidy":
+            subsidy_usd = st.number_input(
+                "Custom 보조금 [USD/t]",
+                min_value=0.0, max_value=500.0, value=50.0, step=1.0, format="%.1f",
+                key="sub_custom",
             )
             st.caption("→ 사용자 정의 단가")
         else:
-            mkt = CARBON_MARKETS[carbon_market_key]
-            # 정적 label "탄소시장 단가 [USD/t]" 고정 — native 표시는 caption으로 분리
-            carbon_market_usd = st.number_input(
-                "탄소시장 단가 [USD/t]",
+            sub = CARBON_MARKETS[subsidy_key]
+            # 정적 label + 보조금별 별도 key → 보조금 변경 시에만 default값 적용, 같은 보조금 내 +/- 안전
+            subsidy_usd = st.number_input(
+                "보조금 단가 [USD/t]",
                 min_value=0.0, max_value=500.0,
-                value=float(mkt["price_usd_t"]), step=1.0, format="%.1f",
-                key=f"cm_price_{carbon_market_key}",  # 시장별 별도 key → 충돌 방지
+                value=float(sub["price_usd_t"]), step=1.0, format="%.1f",
+                key=f"sub_price_{subsidy_key}",
             )
-            st.caption(f"→ 표준값: {mkt['native']}")
-    else:
-        # CCU 모드 — 한국 K-ETS CCU 차감 보고 (정보용, 매출 아님)
-        st.markdown("##### 1️⃣ 배출권 시장 (CCU 모드)")
-        st.caption(
-            "🇰🇷 한국 할당대상업체는 CCU 출하량을 K-ETS 배출량에서 차감 가능. "
-            "**단, 직접 매출 아님 — 배출권 수급 상황에 따라 조건부 가치**. "
-            "탭 ⑨에서 톤수·조건부 가치 별도 분석."
-        )
-        apply_kets_ccu = st.checkbox(
-            "🇰🇷 K-ETS CCU 차감 보고 (할당대상업체, 정보용)",
-            value=False,
-            help="체크 시: 탭 ⑨에서 배출량 차감 톤수 + 조건부 경제 가치 표시 "
-                 "(매출 계산에는 미반영)",
-            key="kets_ccu_deduction",
-        )
-        if apply_kets_ccu:
-            kets_ccu_price_info = st.number_input(
-                "K-ETS 단가 [USD/t] — 조건부 가치 산정용",
-                min_value=0.0, max_value=100.0, value=7.0, step=0.5,
-                format="%.1f",
-                help="배출권 매입 회피 시나리오 산정용. **실제 매출 아님**.",
-                key="kets_ccu_price",
-            )
-            st.caption(
-                f"ℹ️ {kets_ccu_price_info:.1f}$/t × 출하량 = 조건부 가치 (탭 ⑨ 표시)"
-            )
-        else:
-            kets_ccu_price_info = 0.0
-        # CCU 모드는 carbon_market 매출 항상 0
-        carbon_market_key = "None"
-        carbon_market_usd = 0.0
+            st.caption(f"→ 표준값: {sub['native']}")
 
-    # 2️⃣ 정부 보조금 (federal/state subsidy)
-    st.markdown("##### 2️⃣ 정부 보조금 (federal/state)")
-    st.caption("위 1️⃣ 시장과 **같은 색** 보조금만 stack 현실적")
-    subsidy_keys = (
-        ["None"]
-        + [k for k, v in CARBON_MARKETS.items() if v["type"] == "subsidy"]
-        + ["Custom_subsidy"]
-    )
-    default_sub_idx = (subsidy_keys.index("45Q-CCS") if facility_mode == "CCS"
-                       else subsidy_keys.index("45Q-EOR"))
-
-    def _fmt_subsidy_static(k):
-        if k == "None":
-            return "⚪ 없음"
-        if k == "Custom_subsidy":
-            return "⚪ ✏️ Custom 입력"
-        return f"{region_icon(k)} {CARBON_MARKETS[k]['label']}"
-
-    subsidy_key = st.selectbox(
-        "보조금 제도",
-        options=subsidy_keys,
-        format_func=_fmt_subsidy_static,
-        index=default_sub_idx,
-        key="sub_select",
-    )
-    if subsidy_key == "None":
-        subsidy_usd = 0.0
-    elif subsidy_key == "Custom_subsidy":
-        subsidy_usd = st.number_input(
-            "Custom 보조금 [USD/t]",
-            min_value=0.0, max_value=500.0, value=50.0, step=1.0, format="%.1f",
-            key="sub_custom",
+        # 3️⃣ LCFS / 자발적 크레딧 / 기타
+        st.markdown("##### 3️⃣ LCFS / 자발적 / 기타")
+        extra_revenue_usd = st.number_input(
+            "추가 매출 [$/t]",
+            0.0, 500.0, 0.0, 5.0, format="%.1f",
+            help=(
+                "California LCFS: ~$150/t (DAC pathway, biofuels)\n"
+                "Voluntary credits (Stripe/Frontier): $200~600/t (DAC, removal)\n"
+                "기타 직접 매출: 사용자 정의"
+            ),
+            key="extra_rev",
         )
-        st.caption("→ 사용자 정의 단가")
-    else:
-        sub = CARBON_MARKETS[subsidy_key]
-        # 정적 label + 보조금별 별도 key → 보조금 변경 시에만 default값 적용, 같은 보조금 내 +/- 안전
-        subsidy_usd = st.number_input(
-            "보조금 단가 [USD/t]",
-            min_value=0.0, max_value=500.0,
-            value=float(sub["price_usd_t"]), step=1.0, format="%.1f",
-            key=f"sub_price_{subsidy_key}",
-        )
-        st.caption(f"→ 표준값: {sub['native']}")
-
-    # 3️⃣ LCFS / 자발적 크레딧 / 기타
-    st.markdown("##### 3️⃣ LCFS / 자발적 / 기타")
-    extra_revenue_usd = st.number_input(
-        "추가 매출 [$/t]",
-        0.0, 500.0, 0.0, 5.0, format="%.1f",
-        help=(
-            "California LCFS: ~$150/t (DAC pathway, biofuels)\n"
-            "Voluntary credits (Stripe/Frontier): $200~600/t (DAC, removal)\n"
-            "기타 직접 매출: 사용자 정의"
-        ),
-        key="extra_rev",
-    )
 
     # 지역 호환성 경고
     incompat = []
@@ -2878,6 +2739,8 @@ with st.sidebar:
             f"</span></div>",
             unsafe_allow_html=True,
         )
+    else:
+        st.caption(T("sb_no_incentive"))
 
     # 호환 변수 (기존 표시 코드용)
     market_label = (
@@ -2887,61 +2750,228 @@ with st.sidebar:
     market_type = "stack"
     market_key = subsidy_key if subsidy_usd > 0 else carbon_market_key
 
-    # ──────────────────────────────────────────────
-    # 🌱 LCA / Lifecycle Scope 1+2+3 (CRCF/ICVCM 기준)
-    # ──────────────────────────────────────────────
-    st.markdown("---")
-    st.markdown("### 🌱 Lifecycle / Net CO₂ (Scope 1+2+3)")
-    st.caption(
-        "포집된 CO₂ 1톤 중 lifecycle 배출 차감 후 **실제 줄어든 net CO₂** 계산. "
-        "EU CRCF, ICVCM, voluntary buyer (Stripe Frontier 등) 기준."
-    )
-
-    # 1. 열원 선택
-    heat_source_key = st.selectbox(
-        "열원 (재생탑 steam)",
-        options=list(HEAT_SOURCES.keys()),
-        format_func=lambda k: HEAT_SOURCES[k]["label"],
-        index=0,  # natural_gas default
-        key="heat_source",
-    )
-    heat_info = HEAT_SOURCES[heat_source_key]
-    if heat_source_key == "custom_heat":
-        heat_factor = st.number_input(
-            "열 배출계수 [kgCO₂/GJ]",
-            min_value=0.0, max_value=200.0, value=55.0, step=5.0,
-            key="heat_custom",
+    with st.expander(T("sb_exp_detail"), expanded=False):
+        st.markdown("##### 🔧 공정 조건")
+        capture_eff_pct = st.number_input(
+            T("sb_capture_rate"),
+            min_value=50, max_value=99, value=90, step=1,
+            help=(
+                "default: 90 (NETL baseline, 비용 최적점)\n"
+                "포집율 효과 (IEAGHG 2019):\n"
+                "• SRD: 90%→99% +18% (평형 한계)\n"
+                "• CAPEX: 90%→99% +10% (column 크기 ↑)"
+            ),
         )
-    else:
-        heat_factor = float(heat_info["kgCO2_GJ"])
-        st.caption(f"→ 배출계수: **{heat_factor if heat_factor >= 0 else 'grid 의존':.0f}** kgCO₂/GJ · {heat_info['note']}"
-                   if heat_factor >= 0 else f"→ {heat_info['note']}")
+        capture_eff = capture_eff_pct / 100.0
+        # 포집율 효과 자동 표시
+        _srd_capt_pct = (capture_rate_factor(capture_eff, SRD_VS_CAPTURE_COEF) - 1) * 100
+        _capex_capt_pct = (capture_rate_factor(capture_eff, CAPEX_VS_CAPTURE_COEF) - 1) * 100
+        if abs(_srd_capt_pct) > 0.5 or abs(_capex_capt_pct) > 0.5:
+            _arr_s = "↑" if _srd_capt_pct > 0 else "↓"
+            _arr_c = "↑" if _capex_capt_pct > 0 else "↓"
+            st.caption(
+                f"→ 포집율 보정 (90% 기준): SRD **{_arr_s}{abs(_srd_capt_pct):.1f}%** · "
+                f"CAPEX **{_arr_c}{abs(_capex_capt_pct):.1f}%**"
+            )
 
-    # 2. 전력 grid 선택
-    grid_key = st.selectbox(
-        "전력 grid",
-        options=list(GRID_FACTORS.keys()),
-        format_func=lambda k: GRID_FACTORS[k]["label"],
-        index=0,  # us_avg default
-        key="grid_select",
-    )
-    if grid_key == "custom_grid":
-        grid_factor = st.number_input(
-            "grid 배출계수 [gCO₂/kWh]",
-            min_value=0.0, max_value=1500.0, value=380.0, step=10.0,
-            key="grid_custom",
+        T_cool_C = st.number_input(
+            T("sb_cool_temp"),
+            min_value=0, max_value=50, value=25, step=1,
+            help="default: 25",
         )
-    else:
-        grid_factor = float(GRID_FACTORS[grid_key]["gCO2_kWh"])
-        st.caption(f"→ {grid_factor:.0f} gCO₂/kWh")
 
-    # 3. Embodied CAPEX 포함 여부
-    include_embodied = st.checkbox(
-        "Embodied CAPEX 배출 포함 (CAPEX × 0.20 kgCO₂/$)",
-        value=True,
-        help="Equipment·구조물 제조 시 embodied carbon. lifetime amortized.",
-        key="include_embodied",
-    )
+        p_final_bar = st.number_input(
+            T("sb_final_pressure"),
+            min_value=5, max_value=300, value=152, step=1,
+            help=(
+                "용도별:\n"
+                "• 식품 액화탄산: 15~20 bar\n"
+                "• 산업용: 5~25 bar\n"
+                "• 파이프라인: 100~150 bar\n"
+                "• EOR/저장: 150~200 bar\n"
+                "default: 152"
+            ),
+        )
+
+        if p_final_bar < 30:
+            _use_label = "🧊 액화탄산 (식품·산업용)"
+        elif p_final_bar < 80:
+            _use_label = "💨 가스 수송"
+        elif p_final_bar < 120:
+            _use_label = "🚰 파이프라인"
+        else:
+            _use_label = "⛏️ EOR / 지중저장"
+        st.caption(f"→ 추정 용도: **{_use_label}**")
+
+        st.markdown("##### 💰 경제성")
+
+        lifetime = st.number_input("플랜트 수명 [년]", 10, 50, 25, 1, help="default: 25")
+        discount_pct = st.number_input("할인율 [%]", 2.0, 15.0, 8.0, 0.5, format="%.1f", help="default: 8.0")
+        discount = discount_pct / 100.0
+        elec_price = st.number_input("전기 가격 [USD/MWh]", 20, 300, 80, 5, help="default: 80")
+
+        # ─── 건식 흡착제 교체 (흡착 기술을 골랐을 때만) ───
+        _sorbent_techs = [k for k in selected if LIT[k].get("sorbent")]
+        sorbent_price = sorbent_life = None
+        if _sorbent_techs:
+            _sb0 = LIT[_sorbent_techs[0]]["sorbent"]
+            sorbent_price = st.number_input(
+                "🧱 흡착제 단가 [USD/kg]", min_value=1.0, max_value=200.0,
+                value=float(_sb0["price_USD_per_kg"]), step=1.0, format="%.1f",
+                help=("아민 담지 실리카·제올라이트는 약 $5~15/kg, MOF(CALF-20) 구조체는 더 비쌀 수 있음. "
+                      f"default: {_sb0['price_USD_per_kg']:g} (1차 근사)"),
+                key="sorbent_price",
+            )
+            sorbent_life = st.number_input(
+                "🧱 흡착제 수명 [년]", min_value=0.25, max_value=10.0,
+                value=float(_sb0["lifetime_yr"]), step=0.25, format="%.2f",
+                help=("Svante 설계값 5년(아직 실증 전), 오염물이 많으면 1~2년. "
+                      f"default: {_sb0['lifetime_yr']:g} (중간값, 1차 근사)"),
+                key="sorbent_life",
+            )
+            _sb_loss, _sb_opex = calc_sorbent_replacement(
+                _sb0["inventory_kg_per_tpy"], sorbent_price, sorbent_life)
+            st.caption(
+                f"→ 흡착제 교체비 ≈ ${_sb_opex:.1f}/tCO₂ · 손실 {_sb_loss:.2f} kg/tCO₂ "
+                f"(충전량 {_sb0['inventory_kg_per_tpy']:g} kg/(t/yr) ÷ 수명 × 단가)"
+            )
+
+
+        # ─── 비용 기준 연도 (인플레이션 조정) ───
+        cost_basis_year = st.selectbox(
+            "📅 비용 기준 연도 (인플레이션)",
+            options=list(US_CPI.keys()),
+            index=list(US_CPI.keys()).index(2026),
+            help=(
+                f"LIT CAPEX는 {LIT_BASE_YEAR}년 USD basis (NETL Rev4a era).\n"
+                "선택 연도 기준으로 US CPI 자동 조정.\n"
+                "출처: BLS CPI-U (Consumer Price Index)"
+            ),
+            key="cost_basis_year",
+        )
+        cpi_factor = US_CPI[cost_basis_year] / US_CPI[LIT_BASE_YEAR]
+        if abs(cpi_factor - 1.0) > 0.01:
+            _direction = "↑" if cpi_factor > 1 else "↓"
+            st.caption(
+                f"→ {LIT_BASE_YEAR} → {cost_basis_year} CPI 조정: "
+                f"**{_direction}{abs(cpi_factor-1)*100:.1f}%** (배수 {cpi_factor:.3f})"
+            )
+
+        # ─── 탄소가격 시나리오 (시간 흐름) ───
+        price_scenario_key = st.selectbox(
+            "📈 탄소가격 시나리오 (시간 흐름)",
+            options=list(PRICE_SCENARIOS.keys()),
+            index=0,  # constant default
+            format_func=lambda k: PRICE_SCENARIOS[k]["label"],
+            help="lifetime 동안 carbon market·subsidy 가격 변동률. NPV/IRR에 직접 영향.",
+            key="price_scenario",
+        )
+        rev_growth_rate = PRICE_SCENARIOS[price_scenario_key]["growth"]
+        st.caption(
+            f"→ 연 매출 성장률 **{rev_growth_rate*100:+.1f}%/yr** · "
+            f"{PRICE_SCENARIOS[price_scenario_key]['note']}"
+        )
+
+
+        st.markdown("##### 🚢 T&S (Transport & Storage)")
+        st.caption("CCS 모드에만 적용 — 격리량 기준 추가 OPEX")
+        ts_enabled = st.checkbox(
+            "T&S 비용 별도 계산",
+            value=False,
+            help="default OPEX_other에 포함된 일반 T&S 비용 외에 별도 정밀 산정",
+            key="ts_enabled",
+        )
+        if ts_enabled:
+            ts_pipeline_km = st.number_input(
+                "파이프라인 거리 [km]",
+                min_value=0, max_value=2000, value=100, step=10,
+                help="default: 100 km (mid-range onshore)",
+                key="ts_pipeline_km",
+            )
+            ts_storage_type = st.selectbox(
+                "저장소 유형",
+                options=["storage_saline", "storage_depleted_og", "storage_basalt"],
+                format_func=lambda k: {
+                    "storage_saline": "🌊 Saline aquifer ($10/t default)",
+                    "storage_depleted_og": "🛢️ 폐 oil&gas reservoir ($6/t)",
+                    "storage_basalt": "🗿 Basalt mineralization ($15/t, CarbFix)",
+                }[k],
+                index=0,
+                key="ts_storage_type",
+            )
+            ts_cluster = st.checkbox(
+                "🤝 Cluster 공유 (T&S 비용 -30%)",
+                value=False,
+                help="다수 capture 시설이 T&S 인프라 공유 (Northern Lights, Porthos 모델)",
+                key="ts_cluster",
+            )
+            # T&S 비용 계산
+            _ts_pipe_cost = ts_pipeline_km * TS_COSTS["pipeline_per_km"]
+            _ts_storage_cost = TS_COSTS[ts_storage_type]
+            ts_cost_per_t = _ts_pipe_cost + _ts_storage_cost
+            if ts_cluster:
+                ts_cost_per_t *= TS_COSTS["cluster_discount"]
+            st.caption(
+                f"→ 파이프라인 ${_ts_pipe_cost:.1f} + 저장 ${_ts_storage_cost:.0f} = "
+                f"**${ts_cost_per_t:.1f}/t** (cluster: ×{TS_COSTS['cluster_discount']:.2f})"
+            )
+        else:
+            ts_cost_per_t = 0.0
+
+    with st.expander(T("sb_exp_lca"), expanded=False):
+        # ──────────────────────────────────────────────
+        # 🌱 LCA / Lifecycle Scope 1+2+3 (CRCF/ICVCM 기준)
+        # ──────────────────────────────────────────────
+        st.caption(
+            "포집된 CO₂ 1톤 중 lifecycle 배출 차감 후 **실제 줄어든 net CO₂** 계산. "
+            "EU CRCF, ICVCM, voluntary buyer (Stripe Frontier 등) 기준."
+        )
+
+        # 1. 열원 선택
+        heat_source_key = st.selectbox(
+            "열원 (재생탑 steam)",
+            options=list(HEAT_SOURCES.keys()),
+            format_func=lambda k: HEAT_SOURCES[k]["label"],
+            index=0,  # natural_gas default
+            key="heat_source",
+        )
+        heat_info = HEAT_SOURCES[heat_source_key]
+        if heat_source_key == "custom_heat":
+            heat_factor = st.number_input(
+                "열 배출계수 [kgCO₂/GJ]",
+                min_value=0.0, max_value=200.0, value=55.0, step=5.0,
+                key="heat_custom",
+            )
+        else:
+            heat_factor = float(heat_info["kgCO2_GJ"])
+            st.caption(f"→ 배출계수: **{heat_factor if heat_factor >= 0 else 'grid 의존':.0f}** kgCO₂/GJ · {heat_info['note']}"
+                       if heat_factor >= 0 else f"→ {heat_info['note']}")
+
+        # 2. 전력 grid 선택
+        grid_key = st.selectbox(
+            "전력 grid",
+            options=list(GRID_FACTORS.keys()),
+            format_func=lambda k: GRID_FACTORS[k]["label"],
+            index=0,  # us_avg default
+            key="grid_select",
+        )
+        if grid_key == "custom_grid":
+            grid_factor = st.number_input(
+                "grid 배출계수 [gCO₂/kWh]",
+                min_value=0.0, max_value=1500.0, value=380.0, step=10.0,
+                key="grid_custom",
+            )
+        else:
+            grid_factor = float(GRID_FACTORS[grid_key]["gCO2_kWh"])
+            st.caption(f"→ {grid_factor:.0f} gCO₂/kWh")
+
+        # 3. Embodied CAPEX 포함 여부
+        include_embodied = st.checkbox(
+            "Embodied CAPEX 배출 포함 (CAPEX × 0.20 kgCO₂/$)",
+            value=True,
+            help="Equipment·구조물 제조 시 embodied carbon. lifetime amortized.",
+            key="include_embodied",
+        )
 
     st.markdown("---")
     st.caption(
@@ -2996,7 +3026,7 @@ with st.sidebar:
                 <span style='color:{_b_color}; font-weight:600;'>B:</span> {_b_label}
             </div>
             <div style='font-size:0.62rem; color:#6e7888; margin-top:4px;'>
-                탭 🆚 에서 저장·비교 가능
+                ③ 사업성 › 시나리오 비교에서 저장
             </div>
         </div>
         """,
@@ -3046,143 +3076,7 @@ st.caption(T("main_caption"))
 # Single Source of Truth 표시 (작은 인디케이터)
 _meta = _ccus_data.get("metadata", {})
 _schema = _ccus_data.get("schema_version", "1.0")
-_ssot_html = T("ssot_indicator", schema=_schema, n=len(LIT))
-st.markdown(
-    f"<div style='font-size:0.7rem; color:#6e7888; margin-top:-8px; margin-bottom:6px;'>"
-    f"{_ssot_html}"
-    f"</div>",
-    unsafe_allow_html=True,
-)
-
-# ──────────────────────────────────────────────
-# 🔗 자매 도구 — CBAM 계산기 (상단 배너)
-# ──────────────────────────────────────────────
-st.markdown(
-    f"""
-    <div style='background:linear-gradient(135deg, #1E3A5F 0%, #2A4A6F 100%);
-                border-radius:8px; padding:10px 16px; margin: 8px 0;
-                border-left: 4px solid #FFB74D;
-                display:flex; justify-content:space-between; align-items:center;
-                flex-wrap:wrap; gap:8px;'>
-        <div>
-            <span style='color:#B0BEC5; font-size:0.8rem;'>🔗 자매 도구</span>
-            &nbsp;&nbsp;
-            <a href='{CBAM_TOOL_URL}' target='_blank'
-               style='color:#FFB74D; text-decoration:none; font-weight:700; font-size:1.0rem;'>
-                🛡️ EU CBAM 계산기 (한국 산업 영향 분석)
-            </a>
-        </div>
-        <span style='font-size:0.78rem; color:#8b95a7;'>
-            CCS 도입 시 CBAM 회피 효과를 별도 시뮬레이션 →
-        </span>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# ──────────────────────────────────────────────
-# 📖 사용자 매뉴얼 (Industry Expert Guide)
-# ──────────────────────────────────────────────
-with st.expander("📖 **사용자 매뉴얼** — 본 도구의 활용법 (업계 전문가·준전문가용)", expanded=False):
-    st.markdown(f"""
-## 🎯 도구 목적
-
-CO₂ 포집·CCUS 기술의 **기술 성능·경제성·Lifecycle CO₂·정책 인센티브를 통합 비교**하여
-사업 의사결정·정책 분석·R&D 우선순위 검토에 활용.
-
-대상: CCUS 사업개발·EPC·정책분석·연구자
-
-## 🚀 빠른 시작 (3-step)
-
-1. **사이드바 맨 위 "🚀 빠른 시작 — 시나리오 프리셋"** 에서 6개 표준 케이스 중 선택
-   (예: 🇺🇸 Petra Nova형, 🇰🇷 시멘트 retrofit, 🇪🇺 블루수소 등)
-2. 입력 자동 채워짐 → 메인 화면에서 **자동 인사이트 박스** 확인
-3. 필요 시 사이드바 입력 조정 (포집량·시나리오·인센티브 등)
-
-## ⚙️ 입력 파라미터 가이드
-
-### 기본 입력
-- **포집량 [Mt/yr]**: 연간 CO₂ 포집 능력. NETL 기준 3.7 Mt = 550 MWe 발전소 retrofit
-- **포집율 [%]**: 90% = NETL baseline (cost-optimal). 99%↑ 시 SRD/CAPEX 비선형 증가 (IEAGHG 2019)
-- **냉각수 온도 [°C]**: 25°C 표준. 열→전기 환산(Carnot)의 저온 쪽 온도
-- **CO₂ 최종 압력 [bar]**: 152 = NETL 초임계 표준. 액화탄산용 5~25, EOR 100~150
-- **TRL 필터**: 기술 성숙도별 그룹화 (🟢 9 / 🟡 7-8 / 🟠 ≤6)
-
-### 시설 모드
-- **🏔️ CCS** (지중저장): 영구 격리, 배출권·45Q 수익
-- **🥤 CCU** (액화탄산 출하): 직접 매출, K-ETS CCU 차감 옵션 (조건부)
-
-### 프로젝트 시나리오 (CAPEX multiplier)
-- Retrofit 발전소 (×1.0, default) — Boundary Dam, Petra Nova
-- Greenfield 발전소 (×0.75) — 통합 설계
-- Greenfield 산업 (×1.10) — Northern Lights, blue H₂
-- Retrofit 산업 (×1.65) — Norcem Brevik, POSCO 시멘트·철강
-- Brownfield (×0.90) — 부지 재활용
-
-### 인센티브 (3-tier stacking)
-1. **배출권 시장** (compliance): K-ETS, EU ETS, RGGI, CA-CAT
-2. **정부 보조금**: 45Q ($85), NL SDE++ ($120), UK CfD ($180), K-CCUS Act
-3. **LCFS / Voluntary**: California LCFS ($150), Stripe Frontier ($300+)
-
-같은 색(🟦🟨🟪🟧)끼리만 stack 현실적 (지역 호환성).
-
-### LCA / Lifecycle (탭 ③)
-- **열원** (재생탑 steam): 가스보일러 default 55 kgCO₂/GJ
-- **전력 grid**: 한국 470, 미국 380, 노르웨이 30 gCO₂/kWh
-- **Embodied CAPEX** toggle
-
-## 📊 결과 해석 가이드
-
-### 핵심 KPI (탭 ①)
-- **연 손익** [USD/yr 또는 억원/yr]: 메인 — 흑자 여부
-- **SRD** [GJ/tCO₂]: 흡수제 재생열 (낮을수록 우수)
-- **We** [GJe/tCO₂]: 전력등가 일 통합
-- **SPECCA** [MJ/tCO₂]: 1차 에너지 페널티
-- **COCA** [USD/tCO₂]: 단위 CO₂당 비용
-
-### Net COCA = COCA − 매출/보조금
-- **음수** = 흑자 (1톤 잡으면 돈을 받음)
-- **양수** = 적자 (1톤 잡는데 돈 듦)
-
-### NPV / IRR / Payback (탭 ② 경제성)
-- **NPV > 0**: 사업성 있음
-- **IRR > 할인율** (default 8%): 양호
-- **Payback < 10년**: 빠른 회수 (CCUS 평균 12~18년)
-
-### Net CO₂ Removed (탭 ③ Lifecycle)
-- **A 등급 (>80%)**: voluntary credit 적합
-- **B (60-80%)**: 일반 시장 수용
-- **C (<60%)**: 추가 절감 필요
-
-## 💡 의사결정 활용 시나리오
-
-| 질문 | 활용 탭 |
-|---|---|
-| "이 CCS가 흑자 가능?" | 탭 ① 인사이트 + ② 경제성 |
-| "어느 인센티브 stack이 best?" | 사이드바 인센티브 + 탭 ② |
-| "voluntary credit으로 팔 수 있나?" | 탭 ③ Net CO₂ (등급 확인) |
-| "Korean cement에 어떤 기술?" | 프리셋 🇰🇷 시멘트 + ② 경제성 |
-| "CBAM 회피 효과는?" | 자매 도구 [CBAM 계산기]({CBAM_TOOL_URL}) |
-
-## ⚠️ 한계점 & 주의사항
-
-1. **TRL 낮은 기술의 데이터** (KIERSOL·DMX·TSA): idealized 파일럿 값 → 상용 시 +10~20% SRD/CAPEX 페널티 가능
-2. **K-ETS CCU 차감**: 직접 매출 아님 (조건부 가치 — 회사 배출권 수급 상황 의존)
-3. **45Q는 gross 기준**, voluntary credits는 **net removed 기준** (탭 ③ 매출 기준 표 참조)
-4. **CAPEX**는 EPC turnkey owner-perspective. NETL "incremental" 대비 ~2× 높음 (탭 ⑦ 방법론)
-5. **외부 EPC 견적·실증 데이터로 반드시 보정** 필요 (본 모델은 representative values)
-
-## 🔗 자매 도구
-
-- **🛡️ EU CBAM 계산기**: [{CBAM_TOOL_URL}]({CBAM_TOOL_URL})
-  - 한국 산업의 EU 수출 시 CBAM 부담 계산
-  - CCS 도입 시 회피 가능액 분석 (본 도구와 연계)
-
-## 📚 자세한 방법론·출처
-
-- **탭 ⑧ 방법론**: 13개 섹션 (지표 정의·규모 효과·LCA·K-ETS 등)
-- **탭 ⑨ 참고문헌**: 70여 개 출처 (NETL/IEAGHG/IRS 45Q/IPCC/peer-reviewed)
-""")
+_ssot_html = T("ssot_indicator", schema=_schema, n=len(LIT))  # 하단 푸터에 표시
 
 if not selected:
     st.warning("⚠️ 사이드바에서 비교할 기술을 1개 이상 선택해주세요.")
@@ -3375,53 +3269,147 @@ df = pd.DataFrame(results)
 # ======================================================================
 # 탭
 # ======================================================================
-(tab_overall, tab_econ, tab_lca, tab_energy, tab_loss,
- tab_trend, tab_custom, tab_compare, tab_method, tab_refs) = st.tabs([
-    T("tab_overall"),
-    T("tab_econ"),
-    T("tab_lca"),
-    T("tab_energy"),
-    T("tab_loss"),
-    T("tab_trend"),
-    T("tab_custom"),
-    T("tab_compare"),
-    T("tab_method"),
-    T("tab_refs"),
+# 사용자 질문 순서: 결과 → 비용 → 돈이 되나 → 실제 감축량 → 근거
+(tab_overall, tab_cost, tab_biz, tab_lca, tab_basis) = st.tabs([
+    T("tab_overall"), T("tab_cost"), T("tab_biz"), T("tab_lca"), T("tab_basis"),
 ])
+with tab_cost:
+    sub_cost, sub_energy, sub_loss, sub_custom = st.tabs([
+        T("sub_cost"), T("sub_energy"), T("sub_loss"), T("sub_custom"),
+    ])
+with tab_biz:
+    sub_profit, sub_risk, sub_compare = st.tabs([
+        T("sub_profit"), T("sub_risk"), T("sub_compare"),
+    ])
+with tab_basis:
+    sub_manual, sub_method, sub_refs, sub_trend = st.tabs([
+        T("sub_manual"), T("sub_method"), T("sub_refs"), T("sub_trend"),
+    ])
+# 방법론 서브탭: 본문 → KPI 정의 → 모델 한계 순 (KPI 정의·한계는 ① 탭 코드에서 채움)
+with sub_method:
+    meth_body = st.container()
+    meth_defs = st.container()
+    meth_tail = st.container()
 
-# ---------- ① 종합 비교 ----------
+# ──────────────────────────────────────────────
+# 📖 사용자 매뉴얼 (Industry Expert Guide)
+# ──────────────────────────────────────────────
+with sub_manual:
+    st.markdown("### 📖 사용자 매뉴얼 — 업계 전문가·준전문가용")
+    st.markdown(f"""
+## 🎯 도구 목적
+
+CO₂ 포집·CCUS 기술의 **기술 성능·경제성·Lifecycle CO₂·정책 인센티브를 통합 비교**하여
+사업 의사결정·정책 분석·R&D 우선순위 검토에 활용.
+
+대상: CCUS 사업개발·EPC·정책분석·연구자
+
+## 🚀 빠른 시작 (3-step)
+
+1. **사이드바 맨 위 "🚀 빠른 시작 — 시나리오 프리셋"** 에서 6개 표준 케이스 중 선택
+   (예: 🇺🇸 Petra Nova형, 🇰🇷 시멘트 retrofit, 🇪🇺 블루수소 등)
+2. 입력 자동 채워짐 → 메인 화면에서 **자동 인사이트 박스** 확인
+3. 필요 시 사이드바 입력 조정 (포집량·시나리오·인센티브 등)
+
+## ⚙️ 입력 파라미터 가이드
+
+### 기본 입력
+- **포집량 [Mt/yr]**: 연간 CO₂ 포집 능력. NETL 기준 3.7 Mt = 550 MWe 발전소 retrofit
+- **포집율 [%]**: 90% = NETL baseline (cost-optimal). 99%↑ 시 SRD/CAPEX 비선형 증가 (IEAGHG 2019)
+- **냉각수 온도 [°C]**: 25°C 표준. 열→전기 환산(Carnot)의 저온 쪽 온도
+- **CO₂ 최종 압력 [bar]**: 152 = NETL 초임계 표준. 액화탄산용 5~25, EOR 100~150
+- **TRL 필터**: 기술 성숙도별 그룹화 (🟢 9 / 🟡 7-8 / 🟠 ≤6)
+
+### 시설 모드
+- **🏔️ CCS** (지중저장): 영구 격리, 배출권·45Q 수익
+- **🥤 CCU** (액화탄산 출하): 직접 매출, K-ETS CCU 차감 옵션 (조건부)
+
+### 프로젝트 시나리오 (CAPEX multiplier)
+- Retrofit 발전소 (×1.0, default) — Boundary Dam, Petra Nova
+- Greenfield 발전소 (×0.75) — 통합 설계
+- Greenfield 산업 (×1.10) — Northern Lights, blue H₂
+- Retrofit 산업 (×1.65) — Norcem Brevik, POSCO 시멘트·철강
+- Brownfield (×0.90) — 부지 재활용
+
+### 인센티브 (3-tier stacking)
+1. **배출권 시장** (compliance): K-ETS, EU ETS, RGGI, CA-CAT
+2. **정부 보조금**: 45Q ($85), NL SDE++ ($120), UK CfD ($180), K-CCUS Act
+3. **LCFS / Voluntary**: California LCFS ($150), Stripe Frontier ($300+)
+
+같은 색(🟦🟨🟪🟧)끼리만 stack 현실적 (지역 호환성).
+
+### LCA / Lifecycle (탭 ④)
+- **열원** (재생탑 steam): 가스보일러 default 55 kgCO₂/GJ
+- **전력 grid**: 한국 470, 미국 380, 노르웨이 30 gCO₂/kWh
+- **Embodied CAPEX** toggle
+
+## 📊 결과 해석 가이드
+
+### 핵심 KPI (탭 ①)
+- **연 손익** [USD/yr 또는 억원/yr]: 메인 — 흑자 여부
+- **SRD** [GJ/tCO₂]: 흡수제 재생열 (낮을수록 우수)
+- **We** [GJe/tCO₂]: 전력등가 일 통합
+- **SPECCA** [MJ/tCO₂]: 1차 에너지 페널티
+- **COCA** [USD/tCO₂]: 단위 CO₂당 비용
+
+### Net COCA = COCA − 매출/보조금
+- **음수** = 흑자 (1톤 잡으면 돈을 받음)
+- **양수** = 적자 (1톤 잡는데 돈 듦)
+
+### NPV / IRR / Payback (탭 ③ 사업성)
+- **NPV > 0**: 사업성 있음
+- **IRR > 할인율** (default 8%): 양호
+- **Payback < 10년**: 빠른 회수 (CCUS 평균 12~18년)
+
+### Net CO₂ Removed (탭 ④ Net CO₂)
+- **A 등급 (>80%)**: voluntary credit 적합
+- **B (60-80%)**: 일반 시장 수용
+- **C (<60%)**: 추가 절감 필요
+
+## 💡 의사결정 활용 시나리오
+
+| 질문 | 활용 탭 |
+|---|---|
+| "이 CCS가 흑자 가능?" | 탭 ① 결과 요약 + ③ 사업성 |
+| "어느 인센티브 stack이 best?" | 사이드바 ④ 인센티브 + 탭 ③ |
+| "voluntary credit으로 팔 수 있나?" | 탭 ④ Net CO₂ (등급 확인) |
+| "Korean cement에 어떤 기술?" | 프리셋 🇰🇷 시멘트 + ② 경제성 |
+| "CBAM 회피 효과는?" | 자매 도구 [CBAM 계산기]({CBAM_TOOL_URL}) |
+
+## ⚠️ 한계점 & 주의사항
+
+1. **TRL 낮은 기술의 데이터** (KIERSOL·DMX·TSA): idealized 파일럿 값 → 상용 시 +10~20% SRD/CAPEX 페널티 가능
+2. **K-ETS CCU 차감**: 직접 매출 아님 (조건부 가치 — 회사 배출권 수급 상황 의존)
+3. **45Q는 gross 기준**, voluntary credits는 **net removed 기준** (탭 ④ 매출 기준 표 참조)
+4. **CAPEX**는 EPC turnkey owner-perspective. NETL "incremental" 대비 ~2× 높음 (⑤ 근거 › 방법론)
+5. **외부 EPC 견적·실증 데이터로 반드시 보정** 필요 (본 모델은 representative values)
+
+## 🔗 자매 도구
+
+- **🛡️ EU CBAM 계산기**: [{CBAM_TOOL_URL}]({CBAM_TOOL_URL})
+  - 한국 산업의 EU 수출 시 CBAM 부담 계산
+  - CCS 도입 시 회피 가능액 분석 (본 도구와 연계)
+
+## 📚 자세한 방법론·출처
+
+- **⑤ 근거 › 방법론**: 18개 섹션 (지표 정의·규모 효과·LCA·K-ETS 등)
+- **⑤ 근거 › 참고문헌**: 70여 개 출처 (NETL/IEAGHG/IRS 45Q/IPCC/peer-reviewed)
+""")
+
+
+# ---------- ① 결과 요약 ----------
 with tab_overall:
     # ──────────────────────────────────────────────
     # ⚠️ 모델 한계 disclaimer (1차 근사 — 의사결정 참고용 only)
     # 항상 보이는 banner + 상세 expander
     # ──────────────────────────────────────────────
     _is_ko = (st.session_state.get("lang", "ko") == "ko")
-    _disc_banner = (
-        "<div style='background:linear-gradient(135deg, #4a1f0a 0%, #6a2f15 100%); "
-        "border-left:4px solid #FF6B35; border-radius:6px; padding:10px 14px; "
-        "margin-bottom:10px; color:#FFD8C2; font-size:0.82rem; line-height:1.55;'>"
-        "⚠️ <b style='color:#FFB084;'>본 도구는 1차 근사 비교 도구 (1st-order approximation)</b> · "
-        "representative values 기반. <b>이 결과만으로 투자·EPC·정책 의사결정을 내리지 마세요.</b> "
-        "Sector × 솔벤트 best-fit 매핑, NOx/SOx 영향 등은 향후 업데이트 예정. "
-        "<span style='color:#FFB084; font-style:italic;'>↓ 아래 '모델 한계 안내' 박스를 클릭해서 펼치세요</span>"
-        "</div>"
-        if _is_ko else
-        "<div style='background:linear-gradient(135deg, #4a1f0a 0%, #6a2f15 100%); "
-        "border-left:4px solid #FF6B35; border-radius:6px; padding:10px 14px; "
-        "margin-bottom:10px; color:#FFD8C2; font-size:0.82rem; line-height:1.55;'>"
-        "⚠️ <b style='color:#FFB084;'>This tool is a 1st-order approximation</b> using "
-        "representative values. <b>Do NOT base investment / EPC / policy decisions solely "
-        "on these results.</b> Solvent × sector best-fit mapping and NOx/SOx impurity "
-        "modeling are planned for future updates. "
-        "<span style='color:#FFB084; font-style:italic;'>↓ Click the 'Model Limitations' box below to expand</span>"
-        "</div>"
-    )
-    st.markdown(_disc_banner, unsafe_allow_html=True)
+    st.caption(T("ov_disclaimer"))
 
-    _disc_h = ("⚠️ **모델 한계 안내 & 향후 업데이트 Roadmap** — 클릭해서 펼치기"
+    _disc_h = ("⚠️ **모델 한계 안내 & 향후 업데이트 Roadmap**"
                if _is_ko else
-               "⚠️ **Model Limitations & Future Roadmap** — click to expand")
-    with st.expander(_disc_h, expanded=False):
+               "⚠️ **Model Limitations & Future Roadmap**")
+    with meth_tail, st.expander(_disc_h, expanded=False):
         if _is_ko:
             st.markdown("""
 **본 도구는 representative values 기반의 1차 근사 (1st-order approximation) 비교 도구입니다.**
@@ -3556,7 +3544,7 @@ with tab_overall:
         # 자동 인사이트 텍스트
         recommendations = []
         if avg_net_pct < 50:
-            recommendations.append(f"⚠️ 평균 Net 효율 {avg_net_pct:.0f}% — 열원·grid 검토 필요 (탭 ⑨)")
+            recommendations.append(f"⚠️ 평균 Net 효율 {avg_net_pct:.0f}% — 열원·grid 검토 필요 (탭 ④)")
         elif avg_net_pct >= 75:
             recommendations.append(f"✅ 평균 Net 효율 {avg_net_pct:.0f}% — voluntary credit 등급 양호")
         if facility_mode == "CCS" and profit_count == 0:
@@ -3586,8 +3574,8 @@ with tab_overall:
                         <span style='color:#E8EAED;'>${min_coca_r['COCA']:.1f}/t</span>
                     </div>
                     <div>
-                        <span style='font-size:0.7rem; color:#8b95a7;'>{T("ins_label_best_profit")}</span><br>
-                        <b style='color:#81C784; font-size:0.95rem;'>{max_profit_r['name']}</b>
+                        <span style='font-size:0.7rem; color:#8b95a7;'>{T("ins_label_best_profit") if best_profit_usd > 0 else T("ins_label_least_loss")}</span><br>
+                        <b style='color:{"#81C784" if best_profit_usd > 0 else "#FFB74D"}; font-size:0.95rem;'>{max_profit_r['name']}</b>
                         <span style='color:#E8EAED;'>{fmt_money(best_profit_usd, fx_krw_per_usd, display_currency)}/yr</span>
                     </div>
                     <div>
@@ -3676,7 +3664,7 @@ with tab_overall:
 
     st.markdown("---")
 
-    with st.expander("📖 **KPI 지표 정의** — 클릭해서 펼치기/접기", expanded=False):
+    with meth_defs, st.expander("📖 **KPI 지표 정의** (SRD · We · SPECCA · COCA)", expanded=False):
         def_cols = st.columns(4)
         definitions = [
             {"title": "SRD", "full": "Specific Reboiler Duty",
@@ -4225,8 +4213,8 @@ with tab_overall:
                 key="dl_pdf_report",
             )
 
-# ---------- ④ 에너지 페널티 ----------
-with tab_energy:
+# ---------- ② 비용·에너지 › 에너지 ----------
+with sub_energy:
     st.markdown("### 전력등가 일(We) 분해 — 스택 막대")
     st.caption("We_thermal: SRD를 Carnot 효율로 전기등가 환산 (참고). We_elec: 펌프·압축·보조.")
 
@@ -4258,8 +4246,8 @@ with tab_energy:
     st.plotly_chart(f, width="stretch", config=PLOTLY_CONFIG)
 
 
-# ---------- ② 경제성 ----------
-with tab_econ:
+# ---------- ② 비용·에너지 › 비용 ----------
+with sub_cost:
     st.markdown("### CAPEX (별도) + OPEX 스택 + COCA 요약")
 
     col1, col2 = st.columns([1, 1])
@@ -4339,7 +4327,8 @@ with tab_econ:
     st.dataframe(cost_df, width="stretch", hide_index=True)
 
     # ── 매출/보조금/Net COCA ──
-    st.markdown("---")
+# ---------- ③ 사업성 › 손익·NPV ----------
+with sub_profit:
     st.markdown(f"### 💰 매출·보조금 반영 — **Net COCA** ({facility_mode} 모드)")
 
     if facility_mode == "CCS":
@@ -4652,7 +4641,8 @@ with tab_econ:
     # ───────────────────────────────────────
     # 🌪️ Tornado Sensitivity (어떤 변수가 가장 영향?)
     # ───────────────────────────────────────
-    st.markdown("---")
+# ---------- ③ 사업성 › 민감도·불확실성 ----------
+with sub_risk:
     st.markdown("### 🌪️ 민감도 분석 (Tornado) — Net COCA 영향도")
     st.caption(
         "각 입력 ±20% (포집율은 ±5%p) 변동 시 Net COCA 변화량. "
@@ -4721,6 +4711,7 @@ with tab_econ:
     # ───────────────────────────────────────
     # 🎯 CO₂ 가격 breakeven 자동 탐지
     # ───────────────────────────────────────
+with sub_profit:
     st.markdown("---")
     st.markdown("### 🎯 흑자 진입 인센티브 — CO₂ 가격 Breakeven")
     st.caption(
@@ -4804,6 +4795,7 @@ with tab_econ:
     # ───────────────────────────────────────
     # 🎲 Monte Carlo 시뮬레이션 (불확실성 정량화)
     # ───────────────────────────────────────
+with sub_risk:
     st.markdown("---")
     st.markdown("### 🎲 Monte Carlo 분석 — 불확실성 정량화")
     st.caption(
@@ -4920,8 +4912,8 @@ with tab_econ:
             f"({n_iter} iterations, ±{unc*100:.0f}% Tier {('A' if unc==0.05 else 'B' if unc==0.15 else 'C')})"
         )
 
-# ---------- ⑤ 흡수제/흡착제 손실 ----------
-with tab_loss:
+# ---------- ② 비용·에너지 › 소재 손실 ----------
+with sub_loss:
     st.markdown("### 소재 손실 — 메커니즘별 비교")
     st.caption("습식: 분해/휘발 (kg/tCO₂). 고체: 사이클 열화/마모.")
 
@@ -4958,8 +4950,8 @@ with tab_loss:
         "**TSA의 2 kg/tCO₂**는 attrition + 사이클 열화 누적 환산값."
     )
 
-# ---------- ⑥ 트렌드 ----------
-with tab_trend:
+# ---------- ⑤ 근거 › 문헌 트렌드 ----------
+with sub_trend:
     st.markdown("### SRD vs We 산포도 — 문헌 회귀")
     st.caption("선택된 기술 + LIT 전체 데이터의 회귀선.")
 
@@ -5010,8 +5002,8 @@ with tab_trend:
 
     st.markdown("**해석:** 회귀선 아래에 위치하면 동일 SRD 대비 보조전력이 효율적인 기술입니다.")
 
-# ---------- ⑦ Custom 입력 ----------
-with tab_custom:
+# ---------- ② 비용·에너지 › 직접 입력 ----------
+with sub_custom:
     st.markdown("### Custom 기술 입력")
     st.caption("실증 데이터·신규 흡수제를 직접 입력해 비교에 추가할 수 있습니다.")
 
@@ -5080,8 +5072,8 @@ with tab_custom:
         comp_df["COCA"] = comp_df["COCA"].map(lambda x: f"{x:,.1f}")
         st.dataframe(comp_df, width="stretch", hide_index=True)
 
-# ---------- 🆚 시나리오 비교 ----------
-with tab_compare:
+# ---------- ③ 사업성 › 시나리오 비교 ----------
+with sub_compare:
     st.markdown(T("cmp_h_title"))
     _cmp_caption = (
         "사이드바에서 다른 프리셋·입력으로 시나리오를 만들고, 아래 버튼으로 A/B 슬롯에 저장하면 "
@@ -5387,8 +5379,8 @@ with tab_compare:
             )
 
 
-# ---------- ⑨ 참고문헌 ----------
-with tab_refs:
+# ---------- ⑤ 근거 › 참고문헌 ----------
+with sub_refs:
     st.markdown("### 📚 참고문헌 및 계산 근거 (Full Audit Trail)")
     st.caption(f"총 {len(REFS)}개 출처 — 각 LIT 수치, 계산식, 경제성 가정의 근거")
 
@@ -5443,29 +5435,6 @@ with tab_refs:
     st.dataframe(pd.DataFrame(formula_rows), width="stretch", hide_index=True)
 
     st.markdown("---")
-    st.markdown("### 📐 지표 정의 (수식 정리)")
-    st.code("""
-[열역학 1차]
-  Carnot η = (T_h - T_c) / T_h          [Bejan2016]
-  실효 η   = Carnot η × 0.55             [Kotas1985]
-
-[전력등가 일]
-  We_thermal_eq = SRD × Carnot η × 0.55
-  We_pump   = LIT 고정값
-  We_comp   = LIT × log(p_final / p_regen) / log(152 / 1.8)   [Aspen_NETL, Romeo2008]
-  We_chill  = LIT 고정값 (현재 수록 기술은 0, Custom 입력용)
-  We_total  = We_thermal_eq + We_pump + We_comp + We_chill + We_aux
-
-[2차 지표]
-  SPECCA = (SRD × 500 + We_elec × 2,500) / capture              [Manzolini2015 변형]
-
-[경제성]
-  CRF      = i(1+i)^n / [(1+i)^n - 1]                          [NETL_QGESS]
-  연환산 CAPEX = CAPEX × CRF
-  COCA     = 연환산 CAPEX + OPEX
-""", language="python")
-
-    st.markdown("---")
     st.markdown("### 🎯 데이터 신뢰도 (Quality Tier)")
 
     tier_data = pd.DataFrame([
@@ -5496,49 +5465,6 @@ with tab_refs:
         "실제 프로젝트는 EPC 견적·실증 데이터로 보정 필요."
     )
 
-    # ── 데이터 출처 & 갱신 정책 (SSOT) ──
-    st.markdown("---")
-    st.markdown("### 📦 데이터 갱신 정책 (Single Source of Truth)")
-    st.markdown(
-        f"""
-<div style='background:#1A2530; border-left:3px solid #81C784;
-            border-radius:6px; padding:12px 14px; margin:8px 0;'>
-<b>📍 마스터 데이터 위치</b><br>
-<code style='color:#81C784;'>data/ccus_metrics.json</code>
-&nbsp;·&nbsp; schema <code>v{_schema}</code>
-&nbsp;·&nbsp; {len(LIT)} technologies<br>
-<span style='font-size:0.85rem; color:#B0BEC5;'>
-본 도구와 자매 도구 (<a href="{CBAM_TOOL_URL}" target="_blank"
-style="color:#FFB74D;">🛡️ CBAM 계산기</a>)가 동일 JSON 파일을 참조합니다.
-</span>
-</div>
-
-**원칙 (Single Source of Truth)**
-- LIT 수치 (SRD·CAPEX·OPEX·손실 등) 변경 시 `data/ccus_metrics.json` **한 곳만** 수정
-- CCUS 도구: 1시간 캐시 만료 후 자동 반영
-- CBAM 도구: GitHub raw URL 24시간 캐시 만료 후 자동 반영 (`ccus_metrics_loader.py` 사용)
-- 두 도구 모두 schema_version 헤더에 표시 → 동기화 상태 즉시 확인 가능
-
-**갱신 시 체크리스트**
-1. 신규 학술 논문·정부 보고서 출처를 `references_used` 배열에 추가
-2. 영향 받는 기술의 LIT 수치 수정 (예: `economics.CAPEX_USD_per_tCO2_yr`)
-3. `last_updated` 필드를 현재 날짜로 갱신
-4. `schema_version` bump (breaking change 시: 1.0 → 2.0)
-5. commit message: `data: update [TECH] [FIELD] from [REF]`
-6. 두 도구 deployment URL에서 schema 표시 확인 (24시간 내)
-
-**Schema 변경 시 (Breaking)**
-- 필드 이름 변경·삭제 → schema_version major bump
-- CBAM 측 `ccus_metrics_loader.py`도 동기 업데이트 필요
-- 공동 PR 또는 동일 commit으로 양쪽 repo 처리 권장
-
-**역사적 audit (이전 값 추적)**
-- Git history (`git log -p data/ccus_metrics.json`)로 추적
-- 주요 변경은 GitHub release notes에 기록
-        """,
-        unsafe_allow_html=True,
-    )
-
     st.markdown("---")
     st.markdown("### 🔗 자매 도구 & 참고 링크")
     st.markdown(
@@ -5550,8 +5476,8 @@ style="color:#FFB74D;">🛡️ CBAM 계산기</a>)가 동일 JSON 파일을 참�
         """
     )
 
-# ---------- ⑧ 방법론 ----------
-with tab_method:
+# ---------- ⑤ 근거 › 방법론 ----------
+with meth_body:
     st.markdown("### 🔬 방법론 / 추정 근거 (Methodology)")
     st.caption(
         "본 툴의 모든 수치·수식·가정의 근거. 자료 신뢰도 검증·peer review·PDF 리포트 동봉용. "
@@ -5906,7 +5832,7 @@ K-ETS CCU 차감은 **"배출량 보고 시 출하량만큼 차감"**일 뿐, �
 
 **본 모델 처리 방식**:
 - **매출 계산에 미포함** — calc_revenue의 market_revenue는 CCS 격리량만
-- **탭 ⑨에서 별도 표시** — 보고 차감 톤수 + 조건부 가치 시나리오
+- **탭 ④ Net CO₂에서 별도 표시** — 보고 차감 톤수 + 조건부 가치 시나리오
 - **사이드바 toggle**: K-ETS CCU 차감 보고 ON 시 정보용 가격 입력
 
 **예시** (K-ETS $22/t ≈ 30,000원, CCU 0.3 Mt/yr 출하):
@@ -6067,7 +5993,7 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
             "**Fallback 안전장치**\n"
             "- CBAM 측 `ccus_metrics_loader.py`는 fetch 실패 시 minimal stub로 동작\n"
             "- 두 도구 모두 schema_version 표시 → 사용자가 동기화 상태 즉시 확인 가능\n\n"
-            f"**현재 schema_version**: `v{_schema}` (헤더 인디케이터에 항상 표시됨)"
+            f"**현재 schema_version**: `v{_schema}` (페이지 하단에 항상 표시됨)"
         )
 
     # ── 17. 비교 모드 ──
@@ -6085,7 +6011,7 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 
 **워크플로 (4단계)**
 1. **시나리오 A 설정**: 사이드바에서 프리셋·입력값 조정
-2. **A 슬롯 저장**: 탭 🆚 → "📌 시나리오 A로 저장" 클릭 (스냅샷 캡처)
+2. **A 슬롯 저장**: ③ 사업성 › 시나리오 비교 → "📌 시나리오 A로 저장" 클릭 (스냅샷 캡처)
 3. **시나리오 B 설정**: 사이드바 입력 변경 (포집량·인센티브·모드 등)
 4. **B 슬롯 저장**: "📌 시나리오 B로 저장" → 자동 비교 차트·표 표시
 
@@ -6125,7 +6051,7 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 - 한글: ReportLab 기본 폰트 미지원 → 표 헤더는 짧은 한글 그대로, 인사이트는 영문화
 - subscript/superscript: `<sub>` 태그 사용 (Helvetica가 Unicode 첨자 미지원)
 
-**사용법** (탭 ① 종합 비교 하단)
+**사용법** (탭 ① 결과 요약 하단)
 1. "📊 차트 이미지 포함" 체크 (선택)
 2. "📄 PDF 생성" 클릭 → 5초 내 생성
 3. "📥 다운로드: ccus_benchmark_report_YYYYMMDD_HHMM.pdf"
@@ -6143,13 +6069,13 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 
     st.markdown("---")
     st.info(
-        f"📖 **References**: 모든 출처는 탭 ⑨ 참고문헌 (총 {len(REFS)}개) 참조. "
+        f"📖 **References**: 모든 출처는 ⑤ 근거 › 참고문헌 (총 {len(REFS)}개) 참조. "
         f"본 방법론 섹션은 자료 신뢰도 검증 (peer review), sensitivity 분석 input, "
-        f"PDF 리포트 동봉용. 시나리오 A vs B 비교는 탭 🆚 시나리오 비교 참조. "
-        f"데이터 동기화 상태는 헤더 인디케이터 `data/ccus_metrics.json v{_schema}` 확인."
+        f"PDF 리포트 동봉용. 시나리오 A vs B 비교는 ③ 사업성 › 시나리오 비교 참조. "
+        f"데이터 동기화 상태는 페이지 하단 `data/ccus_metrics.json v{_schema}` 확인."
     )
 
-# ---------- ③ Lifecycle / Net CO₂ ----------
+# ---------- ④ Net CO₂ (LCA) ----------
 with tab_lca:
     st.markdown("### 🌱 Lifecycle / Net CO₂ Removed")
     st.caption(
@@ -6447,7 +6373,8 @@ st.markdown(
         <div style='font-size:0.7rem; color:#6e7888; margin-top:10px;
                     border-top:1px solid #3a3f4a; padding-top:8px;'>
             © 2026 Song BK · MIT License · 자유롭게 사용/배포 가능 (저작자 표기 필수)<br>
-            Data: NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER · MHI · Shell Cansolv · Aker CC · KRX
+            Data: NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER · MHI · Shell Cansolv · Aker CC · KRX<br>
+            {_ssot_html}
         </div>
     </div>
     """,
