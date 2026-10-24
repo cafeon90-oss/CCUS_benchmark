@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "last_updated": "2026-04-30",
+  "last_updated": "2026-10-25",
   "source_tool": "CCUS Benchmark v1.4",
   "source_url": "https://github.com/cafeon90-oss/ccus_benchmark",
   "live_demo": "https://ccusbenchmark-rcuf9appppppppykmyeca8nwgk.streamlit.app/",
@@ -364,7 +364,7 @@
       "short_name": "TSA",
       "category": "Solid Sorbent",
       "material": "고체 흡착제 (아민 함침/제올라이트/MOF)",
-      "source": "DOE NETL R&D / SRI / RTI",
+      "source": "DOE NETL R&D / SRI / RTI · Svante TEA·pre-FEED (2023)",
       "status": "demo",
       "TRL": 7,
       "is_pilot": false,
@@ -385,15 +385,22 @@
       },
 
       "economics": {
-        "CAPEX_USD_per_tCO2_yr": 1300,
-        "OPEX_solvent_USD_per_tCO2": 2.5,
+        "CAPEX_USD_per_tCO2_yr": 800,
+        "OPEX_solvent_USD_per_tCO2": 3.3,
         "OPEX_other_USD_per_tCO2": 10.0
       },
 
+      "sorbent": {
+        "inventory_kg_per_tpy": 1.0,
+        "price_USD_per_kg": 10.0,
+        "lifetime_yr": 3.0,
+        "basis": "교체비 = 충전량 × 단가 ÷ 수명 (OPEX_solvent 3.3과 loss 0.33은 이 기본값으로 계산한 값). 충전량은 작업용량 1.5 mol/kg·30분 사이클·연 8,000시간 가정의 1차 추정(빠른 사이클 구조체는 더 작음). 수명은 Svante 설계 5년과 파일럿 단계 단기 수명의 중간값."
+      },
+
       "operations": {
-        "capacity_range_mt_yr": [0.01, 1.0],
-        "loss_kg_per_tCO2": 2.0,
-        "loss_mechanism": "사이클 열화·마모 (attrition)"
+        "capacity_range_mt_yr": [0.01, 1.5],
+        "loss_kg_per_tCO2": 0.33,
+        "loss_mechanism": "사이클 열화·오염물 피독 → 주기적 교체 (충전량 ÷ 수명)"
       },
 
       "lca": {
@@ -401,10 +408,11 @@
       },
 
       "references": [
-        "DOE_NETL_Sorbent_Program", "Sjostrom_Krutka_2010", "Bui2018"
+        "DOE_NETL_Sorbent_Program", "Sjostrom_Krutka_2010", "Bui2018",
+        "Svante_DOE_TEA_2023", "NETL_Svante_Linde_2023"
       ],
 
-      "notes": "고체 흡착제, 무수계, 사이클 시간 변수 영향 大. 분산형 소규모에 유리."
+      "notes": "고체 흡착제, 무수계, 사이클 시간 변수 영향 大. CAPEX는 Svante TEA의 NETL B12B 아민 대비 자본비 0.90배(2023)로 갱신, 흡착제 교체비는 단가·수명 입력으로 계산."
     },
 
     "CaL": {

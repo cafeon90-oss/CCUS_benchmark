@@ -555,6 +555,7 @@ def load_ccus_metrics_local(path: str = "data/ccus_metrics.json") -> dict:
             "loss_kg_per_tCO2": ops.get("loss_kg_per_tCO2"),
             "loss_mech":        ops.get("loss_mechanism"),
             "notes":            v.get("notes"),
+            "sorbent":          v.get("sorbent"),   # 건식 흡착제만 (충전량·단가·수명)
         }
         short_names[k]    = v.get("short_name", k)
         materials[k]      = v.get("material", "")
@@ -995,6 +996,22 @@ REFS = {
                 "for CO₂ Capture from Coal-Fired Power Plants. NETL Carbon Capture R&D.",
         "url": "https://netl.doe.gov/coal/carbon-capture",
         "used_for": "TSA SRD 2.2 GJ/t, attrition rate, blower fluidization 부하",
+    },
+    "Svante_DOE_TEA_2023": {
+        "cat": "report",
+        "cite": "Svante Inc. (2023). Mark II VeloxoTherm™ CO₂ capture — DOE/NETL project review. "
+                "TEA vs NETL B12B (coal, excl. T&S): amine $45.5/t vs Svante CALF-20 beds $38.1–43.1/t; "
+                "capital charge $22.8–24.6 vs $25.4/t. Sorbent lifetime target 5+ yr.",
+        "url": "https://netl.doe.gov/sites/default/files/netl-file/23CM_PSCC30_Fagundo.pdf",
+        "used_for": "TSA CAPEX = B12B 아민의 0.90배(자본비 비율), 흡착제 교체비 ~$3/t 근거 (업체 추정)",
+    },
+    "NETL_Svante_Linde_2023": {
+        "cat": "report",
+        "cite": "Linde / Svante (2023). Engineering Study of Svante's Solid Sorbent Post-Combustion "
+                "CO₂ Capture Technology at a Linde SMR H₂ Plant (DOE/NETL). 1.436 Mt/yr, "
+                "CAPEX $512–656M (2023$), capture cost $124–146/t incl. T&S, filter replacement every 5 yr.",
+        "url": "https://netl.doe.gov/projects/files/Engineering%20Study%20of%20Svantes%20Solid%20Sorbent%20Post-Combustion%20CO2%20Capture%20Technology%20at%20a%20Linde%20Steam%20Methane%20Reforming%20H2%20Plant.pdf",
+        "used_for": "TSA 적정 규모 상한 1.5 Mt/yr, CAPEX 교차 확인, 흡착제 수명 5년 설계값",
     },
     "KIER_KIERSOL_2013": {
         "cat": "report",
@@ -2226,6 +2243,19 @@ def capture_rate_factor(capture_eff: float, coef: float) -> float:
     return max(CAPTURE_FACTOR_CLIP[0], min(factor, CAPTURE_FACTOR_CLIP[1]))
 
 
+def calc_sorbent_replacement(inventory_kg_per_tpy: float, price_usd_per_kg: float,
+                             lifetime_yr: float) -> tuple:
+    """건식 흡착제 주기 교체 → (손실 kg/tCO₂, 교체비 USD/tCO₂).
+
+    충전량[kg per (t/yr)]을 수명마다 통째로 교체한다고 보면
+    연간 교체량 ÷ 연간 포집량 = 충전량 ÷ 수명 = 손실 kg/t, 여기에 단가를 곱하면 교체비.
+    """
+    if lifetime_yr <= 0:
+        return 0.0, 0.0
+    loss = inventory_kg_per_tpy / lifetime_yr
+    return loss, loss * price_usd_per_kg
+
+
 def calc_COCA(
     capex_per_t, opex_solvent, opex_other, we_elec, capture_t_yr,
     lifetime_yr=25, discount=0.08, elec_price_usd_mwh=USD_PER_MWH_GRID,
@@ -2744,6 +2774,32 @@ with st.sidebar:
     discount_pct = st.number_input("할인율 [%]", 2.0, 15.0, 8.0, 0.5, format="%.1f", help="default: 8.0")
     discount = discount_pct / 100.0
     elec_price = st.number_input("전기 가격 [USD/MWh]", 20, 300, 80, 5, help="default: 80")
+
+    # ─── 건식 흡착제 교체 (흡착 기술을 골랐을 때만) ───
+    _sorbent_techs = [k for k in selected if LIT[k].get("sorbent")]
+    sorbent_price = sorbent_life = None
+    if _sorbent_techs:
+        _sb0 = LIT[_sorbent_techs[0]]["sorbent"]
+        sorbent_price = st.number_input(
+            "🧱 흡착제 단가 [USD/kg]", min_value=1.0, max_value=200.0,
+            value=float(_sb0["price_USD_per_kg"]), step=1.0, format="%.1f",
+            help=("아민 담지 실리카·제올라이트는 약 $5~15/kg, MOF(CALF-20) 구조체는 더 비쌀 수 있음. "
+                  f"default: {_sb0['price_USD_per_kg']:g} (1차 근사)"),
+            key="sorbent_price",
+        )
+        sorbent_life = st.number_input(
+            "🧱 흡착제 수명 [년]", min_value=0.25, max_value=10.0,
+            value=float(_sb0["lifetime_yr"]), step=0.25, format="%.2f",
+            help=("Svante 설계값 5년(아직 실증 전), 오염물이 많으면 1~2년. "
+                  f"default: {_sb0['lifetime_yr']:g} (중간값, 1차 근사)"),
+            key="sorbent_life",
+        )
+        _sb_loss, _sb_opex = calc_sorbent_replacement(
+            _sb0["inventory_kg_per_tpy"], sorbent_price, sorbent_life)
+        st.caption(
+            f"→ 흡착제 교체비 ≈ ${_sb_opex:.1f}/tCO₂ · 손실 {_sb_loss:.2f} kg/tCO₂ "
+            f"(충전량 {_sb0['inventory_kg_per_tpy']:g} kg/(t/yr) ÷ 수명 × 단가)"
+        )
 
     fx_krw_per_usd = st.number_input(
         "💱 환율 [KRW/USD]",
@@ -3395,7 +3451,7 @@ CO₂ 포집·CCUS 기술의 **기술 성능·경제성·Lifecycle CO₂·정책
 ## 📚 자세한 방법론·출처
 
 - **탭 ⑧ 방법론**: 13개 섹션 (지표 정의·규모 효과·LCA·K-ETS 등)
-- **탭 ⑨ 참고문헌**: 71개 출처 (NETL/IEAGHG/IRS 45Q/IPCC/peer-reviewed)
+- **탭 ⑨ 참고문헌**: 73개 출처 (NETL/IEAGHG/IRS 45Q/IPCC/peer-reviewed)
 """)
 
 if not selected:
@@ -3416,6 +3472,11 @@ if pilot_techs:
 results = []
 for k in selected:
     t = LIT[k]
+    # 건식 흡착제: 사이드바 단가·수명으로 교체비(OPEX)와 손실(LCA)을 다시 계산
+    if t.get("sorbent") and sorbent_life:
+        _sb_loss, _sb_opex = calc_sorbent_replacement(
+            t["sorbent"]["inventory_kg_per_tpy"], sorbent_price, sorbent_life)
+        t = {**t, "OPEX_solvent": _sb_opex, "loss_kg_per_tCO2": _sb_loss}
     # Sector 보정을 SRD/CAPEX에 반영
     sector_srd_mult = sector["srd_mult"]
     sector_capex_mult = sector["capex_mult"]
@@ -6663,7 +6724,7 @@ st.markdown(
         <div style='font-size:0.78rem; color:#8b95a7; margin-bottom:14px;'>
             Advanced Amine + 🇰🇷 KIERSOL + 비아민계 · 9종 · TRL 그룹화 ·
             NPV·IRR·Payback · Tornado Sensitivity · CO₂ Breakeven ·
-            LCA/Net CO₂ (CRCF·ICVCM) · 71개 출처
+            LCA/Net CO₂ (CRCF·ICVCM) · 73개 출처
         </div>
         <div style='font-size:0.85rem; color:#B0BEC5; margin-bottom:4px;'>
             👤 Built by
