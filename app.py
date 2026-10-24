@@ -1145,10 +1145,11 @@ REFS = {
     },
     "ICE_EUA_2024": {
         "cat": "report",
-        "cite": "EU ETS 배출권(EUA) 시세 — 2026-09-21 €86.89/tCO₂ (Trading Economics; "
-                "자매 도구 CBAM 계산기가 매주 자동 수집). 기준 거래소는 ICE EUA Futures.",
-        "url": "https://tradingeconomics.com/commodity/carbon",
-        "used_for": "EU ETS default 단가 ($99/t = €86.89 × 1.138 USD/EUR)",
+        "cite": "EU ETS 배출권(EUA) 시세 — 자매 도구 CBAM 계산기의 봇이 매주 수집하는 "
+                "data/eua_price.json(Trading Economics 등)을 읽고 ECB 일일 참조환율로 USD 환산 "
+                "(6시간 캐시). 기준 거래소는 ICE EUA Futures.",
+        "url": "https://github.com/cafeon90-oss/CBAM_Calculator/blob/main/data/eua_price.json",
+        "used_for": "EU ETS default 단가 (자동 갱신; 수집 실패 시 $99/t = €86.89 × 1.138)",
     },
     "IRS_45Q_IRA": {
         "cat": "report",
@@ -1928,6 +1929,44 @@ CARBON_MARKETS = {
     "K-CCUS-est": {"label": "🇰🇷 Korea CCUS Act (추정)",   "type": "subsidy",  "price_usd_t": 22.0,  "native": "30,000 KRW/t (placeholder)", "region": "KR"},
     "Custom":     {"label": "✏️ Custom 입력",                "type": "credit",   "price_usd_t": 0.0,   "native": "—",                   "region": "ANY"},
 }
+
+
+# ── EU ETS 기본 단가 자동 갱신 ────────────────────────────────────────
+# EUA: 자매 도구 CBAM 계산기의 GitHub Actions 봇이 매주 수집하는 data/eua_price.json
+# EUR→USD: ECB 일일 참조환율. 하나라도 실패하면 위 고정값($99 = €87)을 그대로 쓴다.
+EUA_JSON_URL = ("https://raw.githubusercontent.com/cafeon90-oss/CBAM_Calculator/"
+                "main/data/eua_price.json")
+ECB_FX_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+
+
+@st.cache_data(ttl=21600, show_spinner=False)   # 6시간
+def load_live_eua_usd():
+    """{'eur', 'eua_date', 'usd_per_eur', 'fx_date'} 또는 실패 시 None."""
+    import re
+    import urllib.request
+    try:
+        with urllib.request.urlopen(EUA_JSON_URL, timeout=5) as r:
+            eua = _json.loads(r.read().decode("utf-8"))
+        with urllib.request.urlopen(ECB_FX_URL, timeout=5) as r:
+            xml = r.read().decode("utf-8")
+        eur = float(eua["price_eur_per_tco2"])
+        usd_per_eur = float(re.search(r"currency='USD' rate='([0-9.]+)'", xml).group(1))
+        fx_date = re.search(r"time='([0-9-]+)'", xml)
+        if not (10 <= eur <= 300 and 0.8 <= usd_per_eur <= 1.6):
+            return None
+        return {"eur": eur, "eua_date": str(eua.get("date", "")), "usd_per_eur": usd_per_eur,
+                "fx_date": fx_date.group(1) if fx_date else ""}
+    except Exception:
+        return None
+
+
+_eua_live = load_live_eua_usd()
+if _eua_live:
+    CARBON_MARKETS["EU-ETS"]["price_usd_t"] = round(_eua_live["eur"] * _eua_live["usd_per_eur"], 1)
+    CARBON_MARKETS["EU-ETS"]["native"] = (
+        f"€{_eua_live['eur']:.2f}/t ({_eua_live['eua_date']}) × "
+        f"${_eua_live['usd_per_eur']:.4f}/€ (ECB {_eua_live['fx_date']}) — 자동 갱신"
+    )
 
 
 # 지역별 정적 색상 그룹 (양 dropdown 동일 — 같은 색끼리만 stack 가능)
@@ -5927,7 +5966,7 @@ $$\text{{CRF}} = \frac{{i(1+i)^n}}{{(1+i)^n - 1}}$$
 | 시장 | Default ($USD/t) | 환산 | 변동성 | 출처 |
 |---|---|---|---|---|
 | K-ETS | 22 | 30,000 KRW/t (KAU26) | 高 (최근 1년 6~22) | KRX 2026-09 |
-| EU ETS | 99 | €87 | 中 (최근 1년 80~100) | Trading Economics 2026-09-21 |
+| EU ETS | 자동 (실패 시 99) | 주간 EUA × ECB 환율 | 中 (최근 1년 80~100) | CBAM 계산기 봇 수집 + ECB |
 | RGGI (US east) | 20 | — | 低 | RGGI Inc. 2024 |
 | CA Cap-Trade | 30 | — | 低 | CARB 2024 |
 
