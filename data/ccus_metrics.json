@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "last_updated": "2026-10-25",
+  "last_updated": "2026-10-31",
   "source_tool": "CCUS Benchmark v1.4",
   "source_url": "https://github.com/cafeon90-oss/ccus_benchmark",
   "live_demo": "https://ccusbenchmark-rcuf9appppppppykmyeca8nwgk.streamlit.app/",
@@ -33,6 +33,7 @@
       "is_pilot": false,
 
       "performance": {
+        "capture_rate_max": 0.99,
         "SRD_GJ_per_tCO2": 3.60,
         "T_regen_C": 120,
         "T_abs_C": 40,
@@ -63,6 +64,15 @@
         "solvent_emission_factor_kgCO2_per_kg": 1.4
       },
 
+      "sector_fit": {
+        "power_subc": ["ok", "범용 기준 솔벤트 — 불순물 전처리 필요"],
+        "ngcc": ["ok", "범용 기준 솔벤트 — 불순물 전처리 필요"],
+        "cement": ["ok", "범용 기준 솔벤트 — 불순물 전처리 필요"],
+        "steel_bf": ["ok", "범용 기준 솔벤트 — 불순물 전처리 필요"],
+        "h2_smr": ["ok", "범용 기준 솔벤트 — 불순물 전처리 필요"],
+        "refinery": ["ok", "범용 기준 솔벤트 — 불순물 전처리 필요"]
+      },
+
       "references": [
         "NETL_Rev4a", "NETL_2022_Baseline", "Rochelle2009",
         "IEAGHG_Solvents_2014", "Lepaumier2009", "Bui2018", "Cousins_2011"
@@ -82,6 +92,7 @@
       "is_pilot": false,
 
       "performance": {
+        "capture_rate_max": 0.99,
         "SRD_GJ_per_tCO2": 2.80,
         "T_regen_C": 120,
         "T_abs_C": 40,
@@ -112,6 +123,15 @@
         "solvent_emission_factor_kgCO2_per_kg": 2.2
       },
 
+      "sector_fit": {
+        "power_subc": ["good", "Petra Nova(석탄, 1.4 Mt) 운영"],
+        "ngcc": ["good", "MHI 가스 배가스 실적"],
+        "cement": ["ok", "전처리 필요"],
+        "steel_bf": ["ok", "전처리 필요"],
+        "h2_smr": ["good", "MHI 비료·메탄올 개질로 배가스 다수 실적"],
+        "refinery": ["ok", "다중 배출원"]
+      },
+
       "references": [
         "MHI_KS21_2020", "GCCSI_Boundary_Petra", "Cousins_2011"
       ],
@@ -130,6 +150,7 @@
       "is_pilot": false,
 
       "performance": {
+        "capture_rate_max": 0.99,
         "SRD_GJ_per_tCO2": 2.50,
         "T_regen_C": 110,
         "T_abs_C": 40,
@@ -160,6 +181,15 @@
         "solvent_emission_factor_kgCO2_per_kg": 2.0
       },
 
+      "sector_fit": {
+        "power_subc": ["good", "Boundary Dam(석탄) 운영, SO₂ 통합 처리"],
+        "ngcc": ["ok", "저농도 — 흡수탑 커짐"],
+        "cement": ["ok", "전처리 필요"],
+        "steel_bf": ["ok", "SO₂ 통합 처리 가능"],
+        "h2_smr": ["ok", "적용 가능"],
+        "refinery": ["good", "정유·SO₂ 처리 실적"]
+      },
+
       "references": [
         "NETL_2022_Baseline", "Cansolv_DC103_Tech", "GCCSI_Boundary_Petra"
       ],
@@ -178,6 +208,7 @@
       "is_pilot": false,
 
       "performance": {
+        "capture_rate_max": 0.99,
         "SRD_GJ_per_tCO2": 2.80,
         "T_regen_C": 120,
         "T_abs_C": 40,
@@ -208,6 +239,15 @@
         "solvent_emission_factor_kgCO2_per_kg": 2.2
       },
 
+      "sector_fit": {
+        "power_subc": ["ok", "Twence(폐기물 발전) 운영"],
+        "ngcc": ["ok", "적용 가능"],
+        "cement": ["good", "Norcem Brevik(시멘트, 0.4 Mt) 운영"],
+        "steel_bf": ["ok", "전처리 필요"],
+        "h2_smr": ["ok", "적용 가능"],
+        "refinery": ["ok", "적용 가능"]
+      },
+
       "references": [
         "Aker_S26_2023", "Norcem_Brevik_2024"
       ],
@@ -226,6 +266,7 @@
       "is_pilot": true,
 
       "performance": {
+        "capture_rate_max": 0.95,
         "SRD_GJ_per_tCO2": 2.95,
         "T_regen_C": 105,
         "T_abs_C": 70,
@@ -256,6 +297,15 @@
         "solvent_emission_factor_kgCO2_per_kg": 1.2
       },
 
+      "sector_fit": {
+        "power_subc": ["ok", "석탄 발전 파일럿"],
+        "ngcc": ["poor", "저농도 + 느린 반응 → 흡수탑 과대"],
+        "cement": ["ok", "파일럿 근거 없음"],
+        "steel_bf": ["ok", "고농도 유리"],
+        "h2_smr": ["good", "고압·고농도 합성가스에 탄산칼륨 공정 실적(Benfield)"],
+        "refinery": ["ok", "적용 가능"]
+      },
+
       "references": [
         "KIER_KIERSOL_2013", "Yoo2013", "Cullinane2004"
       ],
@@ -274,6 +324,7 @@
       "is_pilot": true,
 
       "performance": {
+        "capture_rate_max": 0.95,
         "SRD_GJ_per_tCO2": 2.30,
         "T_regen_C": 155,
         "T_abs_C": 40,
@@ -304,6 +355,15 @@
         "solvent_emission_factor_kgCO2_per_kg": 2.5
       },
 
+      "sector_fit": {
+        "power_subc": ["ok", "적용 가능"],
+        "ngcc": ["ok", "적용 가능"],
+        "cement": ["ok", "적용 가능"],
+        "steel_bf": ["good", "Dunkirk 제철소 파일럿(3D)"],
+        "h2_smr": ["ok", "적용 가능"],
+        "refinery": ["ok", "적용 가능"]
+      },
+
       "references": [
         "TotalEnergies_3D", "Raynal2011"
       ],
@@ -322,6 +382,7 @@
       "is_pilot": false,
 
       "performance": {
+        "capture_rate_max": 0.95,
         "SRD_GJ_per_tCO2": 2.70,
         "T_regen_C": 110,
         "T_abs_C": 40,
@@ -333,7 +394,7 @@
         "We_pump": 0.005,
         "We_comp": 0.40,
         "We_chill": 0.0,
-        "We_aux": 0.10
+        "We_aux": 0.75
       },
 
       "economics": {
@@ -350,7 +411,7 @@
       },
 
       "operations": {
-        "capacity_range_mt_yr": [0.01, 1.5],
+        "capacity_range_mt_yr": [0.01, 3.7],
         "loss_kg_per_tCO2": 0.33,
         "loss_mechanism": "사이클 열화·오염물 피독 → 주기적 교체 (충전량 ÷ 수명)"
       },
@@ -359,12 +420,21 @@
         "solvent_emission_factor_kgCO2_per_kg": 3.5
       },
 
+      "sector_fit": {
+        "power_subc": ["ok", "Svante TEA(석탄 B12B)"],
+        "ngcc": ["poor", "CO₂ 4% — 흡착 용량 낮아 흡착기 커짐"],
+        "cement": ["good", "시멘트 파일럿·FEED(Lafarge 등)"],
+        "steel_bf": ["ok", "전처리 필요"],
+        "h2_smr": ["good", "Linde SMR FEED(1.4 Mt)"],
+        "refinery": ["ok", "적용 가능"]
+      },
+
       "references": [
         "DOE_NETL_Sorbent_Program", "Sjostrom_Krutka_2010", "Bui2018",
         "Svante_DOE_TEA_2023", "NETL_Svante_Linde_2023"
       ],
 
-      "notes": "고체 흡착제, 무수계, 사이클 시간 변수 영향 大. CAPEX는 Svante TEA의 NETL B12B 아민 대비 자본비 0.90배(2023)로 갱신, 흡착제 교체비는 단가·수명 입력으로 계산. SRD 2.7 GJ/t = Svante·Linde 상업 규모 연구의 증기비 1.22 kg/kg × 저압증기 잠열 약 2.2 MJ/kg (설계 기준 1.5 kg/kg이면 3.3, 파일럿 1.7~1.9 kg/kg이면 3.7~4.2)."
+      "notes": "고체 흡착제, 무수계, 사이클 시간 변수 영향 大. CAPEX는 Svante TEA의 NETL B12B 아민 대비 자본비 0.90배(2023)로 갱신, 흡착제 교체비는 단가·수명 입력으로 계산. SRD 2.7 GJ/t = Svante·Linde 상업 규모 연구의 증기비 1.22 kg/kg × 저압증기 잠열 약 2.2 MJ/kg (설계 기준 1.5 kg/kg이면 3.3, 파일럿 1.7~1.9 kg/kg이면 3.7~4.2). 전력은 Svante·Linde 상업 규모 연구 322 kWh/t(1.16 GJe/t, 압축 포함)에 맞춰 보조 전력 We_aux 0.10 → 0.75 (2026-10). 규모 상한 3.7 Mt는 Svante TEA의 B12B 규모 설계."
     },
 
     "VPSA_Syngas": {
@@ -379,6 +449,7 @@
       "applicable_sectors": ["h2_smr"],
 
       "performance": {
+        "capture_rate_max": 0.9,
         "SRD_GJ_per_tCO2": 0.0,
         "T_regen_C": 40,
         "T_abs_C": 40,
@@ -400,6 +471,7 @@
       },
 
       "operations": {
+        "max_train_mt_yr": 1.0,
         "capacity_range_mt_yr": [0.1, 1.5],
         "loss_kg_per_tCO2": 0.1,
         "loss_mechanism": "흡착제 장수명(수년), 미세 마모·수분 피독"
@@ -407,6 +479,10 @@
 
       "lca": {
         "solvent_emission_factor_kgCO2_per_kg": 2.0
+      },
+
+      "sector_fit": {
+        "h2_smr": ["good", "Port Arthur(SMR 합성가스) 운영"]
       },
 
       "references": [
@@ -427,6 +503,7 @@
       "is_pilot": false,
 
       "performance": {
+        "capture_rate_max": 0.95,
         "SRD_GJ_per_tCO2": 3.20,
         "T_regen_C": 900,
         "T_abs_C": 650,
@@ -455,6 +532,15 @@
 
       "lca": {
         "solvent_emission_factor_kgCO2_per_kg": 0.10
+      },
+
+      "sector_fit": {
+        "power_subc": ["ok", "La Pereda(석탄) 파일럿"],
+        "ngcc": ["poor", "저농도·고온 순환 비효율"],
+        "cement": ["good", "석회석 공정과 통합(CLEANKER)"],
+        "steel_bf": ["ok", "연구 단계"],
+        "h2_smr": ["poor", "고압 합성가스엔 부적합"],
+        "refinery": ["ok", "연구 단계"]
       },
 
       "references": [

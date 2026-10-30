@@ -234,7 +234,7 @@ def _build_meta_card(meta: dict, styles) -> Table:
 
 
 def _build_kpi_summary_row(results: list[dict], styles) -> Table:
-    """4-column KPI banner: best profit, best COCA, best Net COCA, best CRCF"""
+    """4-column KPI banner: best profit, best LCOC, best Net LCOC, best CRCF"""
     if not results:
         return Spacer(1, 1)
 
@@ -247,10 +247,10 @@ def _build_kpi_summary_row(results: list[dict], styles) -> Table:
         ("Best Annual Profit",
          _fmt_money_usd(_safe_num(best_profit.get("annual_profit_usd"))),
          best_profit.get("name", "—"), ACCENT_GREEN),
-        ("Lowest COCA [USD/tCO<sub>2</sub>]",
+        ("Lowest LCOC [USD/tCO<sub>2</sub>]",
          f"${_safe_num(best_coca.get('COCA')):,.1f}",
          best_coca.get("name", "—"), ACCENT_BLUE),
-        ("Lowest Net COCA [USD/tCO<sub>2</sub>]",
+        ("Lowest Net LCOC [USD/tCO<sub>2</sub>]",
          f"${_safe_num(best_net.get('Net_COCA')):,.1f}",
          best_net.get("name", "—"), ACCENT_ORANGE),
         ("Highest CRCF Eff. [%]",
@@ -294,8 +294,8 @@ def _build_results_table(results: list[dict], styles, fx_krw: float) -> Table:
         "TRL",
         "SRD\n[GJ/tCO<sub>2</sub>]",
         "We<sub>elec</sub>\n[GJe/tCO<sub>2</sub>]",
-        "COCA\n[USD/tCO<sub>2</sub>]",
-        "Net COCA\n[USD/tCO<sub>2</sub>]",
+        "LCOC\n[USD/tCO<sub>2</sub>]",
+        "Net LCOC\n[USD/tCO<sub>2</sub>]",
         "Annual Profit\n[USD/yr]",
         "NPV\n[USD]",
         "Payback\n[yr]",
@@ -531,9 +531,9 @@ def build_pdf_report(
             ("profit_bars",
              "Annual profit by technology (positive = profit, negative = loss)."),
             ("coca_bars",
-             "COCA — capture cost per tCO<sub>2</sub>. Lower is better."),
+             "LCOC — capture cost per tCO<sub>2</sub>. Lower is better."),
             ("net_coca_bars",
-             "Net COCA — incentive-adjusted cost per tCO<sub>2</sub>."),
+             "Net LCOC — incentive-adjusted cost per tCO<sub>2</sub>."),
             ("energy_bars",
              "Energy penalty breakdown — SRD (thermal) and We (electric equivalent)."),
         ]:
@@ -627,7 +627,7 @@ if __name__ == "__main__":
     }
     fake_insights = [
         "Cansolv DC-103 leads with $12.5M/yr profit at TRL 9 — most bankable option.",
-        "CaL reaches positive Net COCA (-$18/t) but TRL 7 carries +/-25% uncertainty.",
+        "CaL reaches positive Net LCOC (-$18/t) but TRL 7 carries +/-25% uncertainty.",
         "MEA baseline operates at loss ($5.5M/yr) without 45Q stack — used as reference only.",
     ]
     pdf_bytes = build_pdf_report(

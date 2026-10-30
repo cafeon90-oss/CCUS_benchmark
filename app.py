@@ -16,7 +16,7 @@
 지표 정의 (사용자 정의식, 아민 툴과 동일 기준):
   We     [GJe/tCO₂]  = We_thermal(Carnot) + We_elec(펌프·압축·보조)
   SPECCA [MJ/tCO₂]   = (SRD×500 + We_elec×2500) / capture
-  COCA   [USD/tCO₂]  = (연간 CAPEX + OPEX) / 연간 CO₂ 포집량
+  LCOC   [USD/tCO₂]  = (연간 CAPEX + OPEX) / 연간 CO₂ 포집량
 
 실행:
   streamlit run app.py
@@ -66,7 +66,7 @@ TRANSLATIONS = {
         "tab_biz": "③ 사업성",
         "tab_lca": "④ Net CO₂ (LCA)",
         "tab_basis": "⑤ 근거·사용법",
-        "sub_cost": "💵 비용 (COCA)",
+        "sub_cost": "💵 비용 (LCOC)",
         "sub_energy": "⚡ 에너지",
         "sub_loss": "🧪 소재 손실",
         "sub_custom": "✏️ 직접 입력",
@@ -77,6 +77,7 @@ TRANSLATIONS = {
         "sub_method": "🔬 방법론",
         "sub_refs": "📚 참고문헌",
         "sub_trend": "📈 문헌 트렌드",
+        "sub_valid": "✅ 실측 검증",
         "ov_disclaimer": ("⚠️ 대표값 기반 1차 근사 비교입니다. 투자·EPC·정책 판단 전에는 실측·견적으로 "
                           "보정하세요. 모델 한계는 ⑤ 근거·사용법 › 방법론 맨 아래."),
         # ── sidebar section headings ────────────────────────────
@@ -86,8 +87,8 @@ TRANSLATIONS = {
         "sb_h_tech": "### 🧪 ② 비교할 기술",
         "sb_h_scale": "### 📏 ③ 규모·처분 경로",
         "sb_exp_incentive": "💚 ④ 인센티브·탄소가격",
-        "sb_exp_detail": "⚙️ 상세 가정 (공정·경제성·T&S)",
-        "sb_exp_lca": "🌱 LCA 가정 (열원·전력)",
+        "sb_exp_detail": "⚙️ 상세 가정 (공정·경제성·열·T&S)",
+        "sb_exp_lca": "🌱 LCA 가정 (전력 배출계수·내재 배출)",
         "sb_no_incentive": "💚 적용된 인센티브 없음 — ④를 펼쳐 설정",
         # ── sidebar labels ──────────────────────────────────────
         "sb_preset_label": "프리셋 선택 (자동 설정)",
@@ -112,7 +113,7 @@ TRANSLATIONS = {
         "ins_status_all_loss": "전체 {n}/{n} 적자 — 인센티브 부족",
         "ins_status_mixed": "{p}/{n} 흑자",
         "ins_summary_title": "🎯 시뮬레이션 결과 요약",
-        "ins_label_min_coca": "최저 COCA",
+        "ins_label_min_coca": "최저 LCOC",
         "ins_label_best_profit": "최고 흑자 기술",
         "ins_label_least_loss": "손실 최소 기술",
         "ins_label_avg_profit": "평균 연 손익",
@@ -160,7 +161,7 @@ TRANSLATIONS = {
         "tab_biz": "③ Business Case",
         "tab_lca": "④ Net CO₂ (LCA)",
         "tab_basis": "⑤ Basis & Guide",
-        "sub_cost": "💵 Cost (COCA)",
+        "sub_cost": "💵 Cost (LCOC)",
         "sub_energy": "⚡ Energy",
         "sub_loss": "🧪 Material Loss",
         "sub_custom": "✏️ Custom Input",
@@ -171,6 +172,7 @@ TRANSLATIONS = {
         "sub_method": "🔬 Methodology",
         "sub_refs": "📚 References",
         "sub_trend": "📈 Literature Trend",
+        "sub_valid": "✅ Plant Validation",
         "ov_disclaimer": ("⚠️ First-order comparison on representative values — calibrate with plant data "
                           "or EPC quotes before investment, EPC or policy decisions. Limitations: "
                           "⑤ Basis & Guide › Methodology (bottom)."),
@@ -181,8 +183,8 @@ TRANSLATIONS = {
         "sb_h_tech": "### 🧪 ② Technologies",
         "sb_h_scale": "### 📏 ③ Scale & Disposal",
         "sb_exp_incentive": "💚 ④ Incentives & Carbon Price",
-        "sb_exp_detail": "⚙️ Detailed Assumptions (process · economics · T&S)",
-        "sb_exp_lca": "🌱 LCA Assumptions (heat · grid)",
+        "sb_exp_detail": "⚙️ Detailed Assumptions (process · economics · heat · T&S)",
+        "sb_exp_lca": "🌱 LCA Assumptions (grid factor · embodied)",
         "sb_no_incentive": "💚 No incentive applied — open ④ to set one",
         # ── sidebar labels ──────────────────────────────────────
         "sb_preset_label": "Preset (auto-fills inputs)",
@@ -207,7 +209,7 @@ TRANSLATIONS = {
         "ins_status_all_loss": "All {n}/{n} loss — insufficient incentives",
         "ins_status_mixed": "{p}/{n} profitable",
         "ins_summary_title": "🎯 Simulation Result Summary",
-        "ins_label_min_coca": "Lowest COCA",
+        "ins_label_min_coca": "Lowest LCOC",
         "ins_label_best_profit": "Best profit tech",
         "ins_label_least_loss": "Smallest loss",
         "ins_label_avg_profit": "Avg annual profit",
@@ -403,6 +405,7 @@ CBAM_TOOL_URL = "https://cbamcalculator-w2nbczeiccwtj7fepeqjlj.streamlit.app/"
 # ──────────────────────────────────────────────
 LIT_BASE_YEAR = 2018
 US_CPI = {
+    2014: 94.3, 2015: 94.4, 2016: 95.6, 2017: 97.6,   # 실측 플랜트 검증용 (BLS CPI-U 연평균)
     2018: 100.0, 2019: 101.8, 2020: 102.7, 2021: 107.6, 2022: 116.3,
     2023: 121.1, 2024: 124.4, 2025: 127.5, 2026: 130.5,  # 2025-26 추정
 }
@@ -461,6 +464,11 @@ TS_COSTS = {
     "storage_depleted_og": 6.0,    # USD/t — depleted oil&gas reservoir
     "storage_basalt":      15.0,   # USD/t — mineralization (CarbFix 등)
     "cluster_discount":    0.70,   # multiplier — cluster 공유 시 70% 비용
+    # 선박 수출 저장 (국내 저장소가 없는 한국·일본형): 액화·선적 + 해상 운송 + 하역·주입·저장
+    "ship_liquefaction":   15.0,   # USD/t — 액화·임시 저장·선적
+    "ship_per_1000km":     6.0,    # USD/t per 1,000 km — 선박 운송
+    "ship_storage":        15.0,   # USD/t — 하역·해상 주입·저장
+    "ship_default_km":     5500,  # 기본 거리 (한국 → 호주·말레이시아 해상 저장소 수준)
 }
 
 # ──────────────────────────────────────────────────────────
@@ -509,6 +517,44 @@ HEAT_SOURCES = {
     "custom_heat":     {"label": "✏️ Custom",                     "kgCO2_GJ": 55,
                          "note": "사용자 직접 입력"},
 }
+
+# ──────────────────────────────────────────────
+# 지역 기본값 — 전기·연료 단가, 건설비 계수(미국 걸프 = 1.00), 법인세율, 전력 배출계수
+# 사이드바 '사업 지역'을 바꾸면 이 값이 각 입력칸의 기본값이 됨 (출처는 REFS의 REGION_* 항목)
+# ──────────────────────────────────────────────
+REGIONS = {
+    "US": {"label": "🇺🇸 미국 (NETL 기준)", "elec_usd_mwh": 90.0, "gas_usd_gj": 4.5,
+           "coal_usd_gj": 2.3, "location_factor": 1.00, "tax_rate": 0.256, "grid": "us_avg"},
+    "KR": {"label": "🇰🇷 한국", "elec_usd_mwh": 133.0, "gas_usd_gj": 15.8,
+           "coal_usd_gj": 4.5, "location_factor": 1.00, "tax_rate": 0.275, "grid": "kr_avg"},
+    "EU": {"label": "🇪🇺 유럽 (서유럽)", "elec_usd_mwh": 205.0, "gas_usd_gj": 18.8,
+           "coal_usd_gj": 4.0, "location_factor": 1.15, "tax_rate": 0.258, "grid": "eu_avg"},
+}
+BOILER_EFF = 0.85          # 가스·석탄 보일러 효율 (연료 → 증기)
+STEAM_OM_USD_GJ = 0.5      # 보일러 O&M (1차 근사)
+HEAT_PUMP_COP = 3.0        # LCA의 전기 히트펌프 가정과 동일
+WASTE_HEAT_USD_GJ = 1.0    # 폐열 회수: 열교환·배관·펌프 비용만 (1차 근사)
+RENEWABLE_HEAT_USD_GJ = 10.0  # 바이오매스·태양열 열 (1차 근사)
+
+
+def default_heat_price(heat_source_key: str, region_key: str) -> float:
+    """열원·지역별 재생 증기 단가 기본값 [USD/GJ]."""
+    r = REGIONS[region_key]
+    if heat_source_key == "coal_boiler":
+        return round(r["coal_usd_gj"] / BOILER_EFF + STEAM_OM_USD_GJ, 1)
+    if heat_source_key == "industrial_waste":
+        return WASTE_HEAT_USD_GJ
+    if heat_source_key == "electric_heat":
+        return round(r["elec_usd_mwh"] / 3.6 / HEAT_PUMP_COP, 1)   # 1 MWh = 3.6 GJ
+    if heat_source_key == "renewable_heat":
+        return RENEWABLE_HEAT_USD_GJ
+    return round(r["gas_usd_gj"] / BOILER_EFF + STEAM_OM_USD_GJ, 1)  # 천연가스·Custom
+
+
+# 다계열: 비용 자료가 있는 최대 규모(JSON max_train_mt_yr, 없으면 NETL 기준 3.7 Mt)를 넘으면
+# 그 크기의 계열을 나란히 둠 → 규모의 경제(0.65승)는 계열 안에서만, n계열 총비용 = 1계열 × n^0.9
+# (공용 설비 일부 공유 — 1차 근사). 0.65승을 무한히 늘려 대형 플랜트가 과하게 싸지는 것을 막음
+MULTI_TRAIN_EXP = 0.9
 
 GRID_FACTORS = {
     "us_avg":     {"label": "🇺🇸 US grid 평균 (default)", "gCO2_kWh": 380},
@@ -585,6 +631,9 @@ def load_ccus_metrics_local(path: str = "data/ccus_metrics.json") -> dict:
             "notes":            v.get("notes"),
             "sorbent":          v.get("sorbent"),   # 건식 흡착제만 (충전량·단가·수명)
             "applicable_sectors": v.get("applicable_sectors"),   # 없으면 전 업종 (VPSA = h2_smr 전용)
+            "max_train_mt_yr":  ops.get("max_train_mt_yr"),     # 계열당 최대 규모 (넘으면 다계열)
+            "capture_rate_max": perf.get("capture_rate_max"),   # 실증·설계 근거가 있는 최대 포집률
+            "sector_fit":       v.get("sector_fit", {}),        # 업종별 적합도 (good/ok/poor, 근거)
         }
         short_names[k]    = v.get("short_name", k)
         materials[k]      = v.get("material", "")
@@ -840,6 +889,85 @@ REFS = {
         "url": "https://www.research.ed.ac.uk/en/publications/feasibility-study-of-vacuum-pressure-swing-adsorption-for-co2-cap",
         "used_for": "VPSA 진공·재순환 전력 We_aux 0.70 GJe/t (0.4~1.1 중간값)",
     },
+    "EIA_STEO_2026_10": {
+        "cat": "report",
+        "cite": "U.S. EIA (2026-10). Short-Term Energy Outlook, Table 2. Industrial electricity 8.62 ¢/kWh (2025), "
+                "9.05 ¢/kWh (2026); industrial natural gas $4.95/Mcf ≈ $4.8/MMBtu (2026).",
+        "url": "https://www.eia.gov/outlooks/steo/",
+        "used_for": "미국 기본 전기 $90/MWh · 가스 $4.5/GJ",
+    },
+    "KEPCO_Industrial_2025": {
+        "cat": "report",
+        "cite": "KEPCO 산업용 전력 판매단가 2025년 평균 181.9원/kWh (전력통계월보 인용 보도, 2026-02).",
+        "url": "https://epsis.kepco.co.kr/",
+        "used_for": "한국 기본 전기 $133/MWh (1,370원/$)",
+    },
+    "KOGAS_Industrial_Gas": {
+        "cat": "report",
+        "cite": "한국가스공사 산업용 도매요금 약 19.2원/MJ + 지역 공급비용 약 2.5원/MJ (2026) ≈ 21.7원/MJ. "
+                "연료비 연동으로 매달 바뀜 — 최신값은 가스공사 요금표 확인.",
+        "url": "https://www.kogas.or.kr/",
+        "used_for": "한국 기본 가스 $15.8/GJ",
+    },
+    "Eurostat_NonHousehold_2025": {
+        "cat": "report",
+        "cite": "Eurostat (2026-05). Non-household prices H2 2025: electricity €0.1837/kWh, "
+                "natural gas €60.5/MWh (excl. VAT, standard consumption bands).",
+        "url": "https://ec.europa.eu/eurostat/web/products-eurostat-news/w/ddn-20260508-3",
+        "used_for": "EU 기본 전기 $205/MWh · 가스 $18.8/GJ (1.12 $/€)",
+    },
+    "Corporate_Tax_2026": {
+        "cat": "report",
+        "cite": "EY Global Tax News (2026-01): Korea 2026 tax reform — top CIT 25% from FY2026 (+10% local "
+                "surcharge → 27.5%). Tax Foundation (2025): US combined federal+state 25.6%. "
+                "Deloitte (2026): Netherlands 25.8%.",
+        "url": "https://globaltaxnews.ey.com/news/2026-0126-korea-enacts-2026-tax-reform-bill",
+        "used_for": "법인세율 기본값 — 한국 27.5% · 미국 25.6% · EU(NL) 25.8%",
+    },
+    "Location_Factors_TS": {
+        "cat": "methodology",
+        "cite": "Towler & Sinnott, Chemical Engineering Design (location factors vs US Gulf Coast = 1.00: "
+                "Netherlands 1.19, Germany 1.11, UK 1.02, Japan 1.26). Korea not listed — 1.00 assumed (0.9–1.15).",
+        "url": "",
+        "used_for": "지역 건설비 계수 (한국 1.00 가정 · 서유럽 1.15)",
+    },
+    "GCMD_BCG_Shipping_2024": {
+        "cat": "report",
+        "cite": "GCMD & BCG (2024). Maritime transportation can help carbon capture sail ahead — NE Asia → Australia "
+                "full chain $167–287/t (6,000–11,000 km); shipping ≈ $25–50/t. IEAGHG 2020-10: ship direct "
+                "injection ≈ €32/t.",
+        "url": "https://www.bcg.com/publications/2024/maritime-transportation-can-help-carbon-capture-sail-ahead",
+        "used_for": "선박 수출 저장: 액화 $15 + 운송 $6/1,000 km + 해상 주입·저장 $15 (1차 근사)",
+    },
+    "Subsidy_Durations": {
+        "cat": "report",
+        "cite": "45Q 12 years (IRC §45Q, kept by OBBBA 2025); NL SDE++ CCS 15 years (IEA policy DB 13920); "
+                "UK Industrial Carbon Capture contract 10 years + up to 5 one-year extensions (DESNZ 2022).",
+        "url": "https://www.iea.org/policies/13920-sde-subsidy-fund-for-ccs-projects",
+        "used_for": "보조금 지급 기간 기본값 (45Q 12년 · SDE++ 15년 · UK 15년)",
+    },
+    "Capture_Rate_Limits": {
+        "cat": "paper",
+        "cite": "SINTEF/TCM CESAR-1 tests 97–99% capture; Cansolv guarantees up to 99%; MHI KS-21 95–98% "
+                "(vendor up to 99.8%); Air Products Port Arthur VPSA >90% of CO₂ in SMR process gas (DOE); "
+                "calcium looping pilots >90% (up to ~95%).",
+        "url": "https://sintef.brage.unit.no/sintef-xmlui/handle/11250/2786512",
+        "used_for": "기술별 포집률 상한 (아민 99% · KIERSOL·DMX·TSA·CaL 95% · VPSA 90%)",
+    },
+    "AACE_18R97": {
+        "cat": "methodology",
+        "cite": "AACE International RP 18R-97. Cost estimate classification — process industries. "
+                "Class 5: −20~−50% / +30~+100%; Class 4: −15~−30% / +20~+50%; Class 3: −10~−20% / +10~+30%.",
+        "url": "https://library.aacei.org/pgd01/pgd01.shtml",
+        "used_for": "Monte Carlo CAPEX 견적 정확도 (등급별 중간값을 P10/P90으로)",
+    },
+    "IFRS_IAS16": {
+        "cat": "methodology",
+        "cite": "IFRS Foundation. IAS 16 Property, Plant and Equipment — depreciation begins when the asset is "
+                "available for use; straight-line over useful life (residual value 0 assumed here).",
+        "url": "https://www.ifrs.org/issued-standards/list-of-standards/ias-16-property-plant-and-equipment/",
+        "used_for": "감가상각 정액법 (운영 개시부터 내용연수)",
+    },
     "GCCSI_2025_TechCosts": {
         "cat": "report",
         "cite": "Global CCS Institute (2025). Advancements in CCS Technologies and Costs. "
@@ -890,7 +1018,7 @@ REFS = {
         "cite": "Bui, M. et al. (2018). Carbon capture and storage (CCS): the way forward. "
                 "Energy & Environmental Science, 11(5), 1062-1176.",
         "url": "https://pubs.rsc.org/en/content/articlehtml/2018/ee/c7ee02342a",
-        "used_for": "전기술 SRD 비교 범위, COCA 통합 리뷰",
+        "used_for": "전기술 SRD 비교 범위, LCOC 통합 리뷰",
     },
     "Raynal2011": {
         "cat": "paper",
@@ -1363,7 +1491,13 @@ FORMULA_REFS = {
     "압축 W ∝ log(p_out / p_in) (5단 + 중간냉각)":                                     ["Aspen_NETL", "Romeo2008"],
     "CRF = i(1+i)^n / [(1+i)^n - 1]":                                                 ["NETL_QGESS"],
     "할인율 8%, 수명 25년 (default)":                                                  ["NETL_QGESS"],
-    "전기 가격 80 USD/MWh (default)":                                                   ["EIA_AEO_2024"],
+    "전기·연료 단가: 지역 기본값 (미국 90 · 한국 133 · EU 205 USD/MWh)":                  ["EIA_STEO_2026_10", "KEPCO_Industrial_2025", "Eurostat_NonHousehold_2025"],
+    "재생 열 비용 = SRD × 열 단가 (가스 ÷ 보일러 0.85 + O&M 0.5, 히트펌프 = 전기 ÷ COP 3)":   ["EIA_STEO_2026_10", "KOGAS_Industrial_Gas", "Eurostat_NonHousehold_2025"],
+    "균등화 매출: 보조금 지급 기간 반영 (45Q 12년 등)":                                      ["Subsidy_Durations", "NETL_QGESS"],
+    "현금흐름: 건설 기간 균등 지출 · 첫해 가동률 · 법인세(결손금 이월)":                         ["Corporate_Tax_2026", "NETL_QGESS"],
+    "감가상각: IAS 16 정액법, 운영 개시부터 내용연수, 잔존가치 0":                              ["IFRS_IAS16"],
+    "다계열: 비용 자료 최대 규모 초과 시 n계열 × n^0.9":                                     ["NETL_QGESS", "IEAGHG_2007_PostComb"],
+    "Monte Carlo CAPEX: AACE 견적 등급 × 기술 성숙도, 로그정규":                              ["AACE_18R97"],
     "SPECCA = (SRD×500 + We_elec×2500) / capture":                                    ["Manzolini2015"],
     "CAPEX 규모 효과: ∝ scale^0.65 (CCS specific, ref=3.7 Mt/yr)":                      ["IEAGHG_2007_PostComb", "NETL_QGESS"],
     "SRD 규모 효과: ±10%/decade (파일럿 → 상용 +10%, 메가 +5%)":                         ["IEAGHG_2013_SolventRD"],
@@ -1387,8 +1521,8 @@ FORMULA_REFS = {
     "IRR: bisection 수치해법 (NPV=0 할인율)":                                                ["NETL_QGESS", "PetersTimmerhaus"],
     "Payback Period: 단순/할인 누적 cash flow가 CAPEX 도달":                                  ["NETL_QGESS"],
     "Profitability Index = Σ PV(inflow) / CAPEX_total":                                  ["PetersTimmerhaus"],
-    "Tornado Sensitivity: 입력 ±20% 등 변동 시 Net COCA 재계산":                          ["NETL_QGESS"],
-    "Breakeven 인센티브 = max(0, Net COCA) / yield_ratio":                                  ["NETL_QGESS", "EU_CRCF_2024"],
+    "Tornado Sensitivity: 입력 ±20% 등 변동 시 Net LCOC 재계산":                          ["NETL_QGESS"],
+    "Breakeven 인센티브 = max(0, Net LCOC) / yield_ratio":                                  ["NETL_QGESS", "EU_CRCF_2024"],
     "Capacity range: 기술별 실용 규모 (GCCSI 운영 사례 기반)":                                  ["GCCSI_2023", "IEAGHG_2014_Solvents"],
     "TRL (Technology Readiness Level): 1~9 (NASA·EU·IEA 표준)":                              ["IPCC_AR6_WG3_2022"],
 }
@@ -1410,6 +1544,7 @@ PRESETS = {
         "description": "1.4 Mt/yr 석탄 발전소 retrofit · 45Q-CCS + EOR 매출",
         "techs": ["MEA_baseline", "MHI_KS21", "Cansolv_DC103"],
         "settings": {
+            "region": "US",
             "capture_mt_yr": 1.4, "facility_mode": "CCS",
             "project_scenario": "retrofit_power",
             "cm_select": "None", "sub_select": "45Q-CCS",
@@ -1421,6 +1556,7 @@ PRESETS = {
         "description": "0.5 Mt/yr 시멘트 retrofit · K-ETS + K-CCUS Act",
         "techs": ["MEA_baseline", "Aker_S26", "CaL"],
         "settings": {
+            "region": "KR",
             "capture_mt_yr": 0.5, "facility_mode": "CCS",
             "project_scenario": "retrofit_industrial",
             "cm_select": "K-ETS", "cm_price_K-ETS": 22.0,
@@ -1433,6 +1569,7 @@ PRESETS = {
         "description": "1.5 Mt/yr 신규 산업 + 네덜란드 SDE++ (€110/t)",
         "techs": ["MEA_baseline", "Cansolv_DC103", "VPSA_Syngas"],
         "settings": {
+            "region": "EU",
             "capture_mt_yr": 1.5, "facility_mode": "CCS", "source_sector": "h2_smr",
             "project_scenario": "greenfield_industrial",
             "cm_select": "None", "sub_select": "NL-SDE",
@@ -1444,6 +1581,7 @@ PRESETS = {
         "description": "0.5 Mt/yr DAC급 · 45Q-DAC $180 + LCFS $150",
         "techs": ["MEA_baseline", "MHI_KS21", "TSA_Solid"],
         "settings": {
+            "region": "US",
             "capture_mt_yr": 0.5, "facility_mode": "CCS",
             "project_scenario": "greenfield_industrial",
             "cm_select": "CA-CAT", "cm_price_CA-CAT": 30.0,
@@ -1456,6 +1594,7 @@ PRESETS = {
         "description": "0.3 Mt/yr CCU · 식품급 99.9% · 무보조금",
         "techs": ["MEA_baseline", "K2CO3_KIERSOL"],
         "settings": {
+            "region": "KR",
             "capture_mt_yr": 0.3, "facility_mode": "CCU",
             "project_scenario": "greenfield_industrial",
             "ccu_grade": "food", "ccu_price_krw": 300_000,
@@ -1467,6 +1606,7 @@ PRESETS = {
         "description": "0.05 Mt/yr 소규모 CCU · 초고순도 99.999%",
         "techs": ["MEA_baseline", "TSA_Solid"],
         "settings": {
+            "region": "KR",
             "capture_mt_yr": 0.05, "facility_mode": "CCU",
             "project_scenario": "greenfield_industrial",
             "ccu_grade": "ultra", "ccu_price_krw": 700_000,
@@ -1612,16 +1752,17 @@ TOOLTIPS = {
         "■ 포집율로 정규화 (다른 포집율 기술 간 비교)\n"
         "■ 출처: Manzolini et al. 2015 변형식"
     ),
-    "COCA": (
-        "Cost Of CO₂ Captured — 단위 CO₂당 종합 비용 [USD/tCO₂]\n"
-        "■ 계산: 연환산 CAPEX + OPEX(용매 + 기타 + 전력)\n"
+    "LCOC": (
+        "Levelized Cost Of CO₂ Captured — 포집 CO₂ 1톤당 균등화 비용 [USD/tCO₂]\n"
+        "■ 업계의 COCA(회피 비용)와 다름 — 회피 기준은 'Net CO₂ 톤당 비용'(포집 시 배출 차감)\n"
+        "■ 계산: 연환산 CAPEX + OPEX(용매 + 기타 + 전력 + 재생 열 + T&S)\n"
         "■ CAPEX 적용: LIT × project type × 포집율 × 규모(0.65) × CCU adder\n"
         "■ 연환산 CAPEX = CAPEX × CRF\n"
         "■ CRF = i(1+i)ⁿ/[(1+i)ⁿ-1], default 8%/25년 = 0.0937\n"
         "■ 출처: NETL QGESS 2019, IEAGHG 2007, Peters & Timmerhaus"
     ),
-    "Net COCA": (
-        "Net COCA = COCA − 매출/보조금 [USD/tCO₂]\n"
+    "Net LCOC": (
+        "Net LCOC = LCOC − 매출/보조금 [USD/tCO₂]\n"
         "■ 음수 = 흑자, 양수 = 적자\n"
         "■ 매출 = 배출권 + 정부보조금 + LCFS + CCU 매출(액화탄산)\n"
         "■ 격리량 기준 (CCS) 또는 출하량 기준 (CCU) 적용\n"
@@ -1726,11 +1867,11 @@ CARBON_MARKETS = {
     "EU-ETS":     {"label": "🇪🇺 EU ETS (유럽)",           "type": "credit",   "price_usd_t": 99.0,  "native": "€87/t (2026-09)",               "region": "EU"},
     "RGGI":       {"label": "🇺🇸 RGGI (미 동부)",           "type": "credit",   "price_usd_t": 20.0,  "native": "$20/t",               "region": "US"},
     "CA-CAT":     {"label": "🇺🇸 CA Cap-Trade (캘리포니아)", "type": "credit",   "price_usd_t": 30.0,  "native": "$30/t",               "region": "US"},
-    "45Q-CCS":    {"label": "🇺🇸 US 45Q — CCS 지중저장",    "type": "subsidy",  "price_usd_t": 85.0,  "native": "$85/t (12yr)",        "region": "US"},
-    "45Q-EOR":    {"label": "🇺🇸 US 45Q — CCU/EOR",        "type": "subsidy",  "price_usd_t": 85.0,  "native": "$85/t (12yr, OBBBA 2025)",        "region": "US"},
-    "NL-SDE":     {"label": "🇳🇱 NL SDE++ (네덜란드)",      "type": "subsidy",  "price_usd_t": 120.0, "native": "€110/t",              "region": "EU"},
-    "UK-CfD":     {"label": "🇬🇧 UK CCUS CfD",              "type": "subsidy",  "price_usd_t": 180.0, "native": "£150/t",              "region": "UK"},
-    "K-CCUS-est": {"label": "🇰🇷 Korea CCUS Act (추정)",   "type": "subsidy",  "price_usd_t": 22.0,  "native": "30,000 KRW/t (placeholder)", "region": "KR"},
+    "45Q-CCS":    {"label": "🇺🇸 US 45Q — CCS 지중저장",    "type": "subsidy",  "price_usd_t": 85.0,  "native": "$85/t (12yr)",        "region": "US", "years": 12},
+    "45Q-EOR":    {"label": "🇺🇸 US 45Q — CCU/EOR",        "type": "subsidy",  "price_usd_t": 85.0,  "native": "$85/t (12yr, OBBBA 2025)",        "region": "US", "years": 12},
+    "NL-SDE":     {"label": "🇳🇱 NL SDE++ (네덜란드)",      "type": "subsidy",  "price_usd_t": 120.0, "native": "€110/t (15yr)",       "region": "EU", "years": 15},
+    "UK-CfD":     {"label": "🇬🇧 UK CCUS CfD",              "type": "subsidy",  "price_usd_t": 180.0, "native": "£150/t (ICC 10yr + 연장 최대 5yr)", "region": "UK", "years": 15},
+    "K-CCUS-est": {"label": "🇰🇷 Korea CCUS (가정 — 톤당 지원 제도 없음)", "type": "subsidy",  "price_usd_t": 22.0,  "native": "30,000 KRW/t 가정 · CCUS법(2025-02 시행)은 톤당 지원 없이 설비·융자 지원만", "region": "KR", "years": 10},
     "Custom":     {"label": "✏️ Custom 입력",                "type": "credit",   "price_usd_t": 0.0,   "native": "—",                   "region": "ANY"},
 }
 
@@ -1986,6 +2127,13 @@ def scale_we_comp(we_comp_ref: float, capture_t_yr: float,
     return we_comp_ref * factor
 
 
+def n_trains_for(capture_t_yr: float, max_train_t_yr) -> int:
+    """계열 수 = ⌈포집량 ÷ 계열당 최대 규모⌉ (최대 규모 정보가 없으면 1계열)."""
+    if not max_train_t_yr or capture_t_yr <= max_train_t_yr:
+        return 1
+    return int(np.ceil(capture_t_yr / max_train_t_yr - 1e-9))
+
+
 def capture_rate_factor(capture_eff: float, coef: float) -> float:
     """
     포집율(capture rate) 효과 (IEAGHG 2019, NETL "Beyond 90% capture").
@@ -2021,29 +2169,32 @@ def calc_COCA(
     capex_per_t, opex_solvent, opex_other, we_elec, capture_t_yr,
     lifetime_yr=25, discount=0.08, elec_price_usd_mwh=USD_PER_MWH_GRID,
     capex_mult=1.0, ccu_share=0.0, project_multiplier=1.0,
-    capture_eff=REF_CAPTURE_EFF,
+    capture_eff=REF_CAPTURE_EFF, heat_cost=0.0, max_train_t_yr=None,
 ) -> dict:
     """
     CAPEX 적용 순서:
       1) LIT base × project_multiplier (retrofit/greenfield 시나리오)
       2) × 포집율 효과 (90% 기준, 99% → +10%, 70% → -5%)
-      3) 규모의 경제 (Lang's n=0.65)
+      3) 규모의 경제 (n=0.65) — 계열당 최대 규모를 넘으면 계열별로 적용 후 n계열 × n^0.9
       4) CCU 정제 등급 CAPEX adder
+    OPEX = 용매 + 기타 + 전력 + 재생 열(SRD × 열 단가, heat_cost)
     """
     # 1) 프로젝트 시나리오 보정 (retrofit/greenfield/industrial)
     project_capex_per_t = capex_per_t * project_multiplier
     # 2) 포집율 효과 — 90% baseline, 99% 접근 시 column 크기 ↑
     capture_factor = capture_rate_factor(capture_eff, CAPEX_VS_CAPTURE_COEF)
     project_capex_per_t = project_capex_per_t * capture_factor
-    # 3) 규모의 경제 적용 (NETL B12B 3.7 Mt/yr 대비)
-    scaled_capex_per_t = scale_capex_per_t(project_capex_per_t, capture_t_yr)
+    # 3) 규모의 경제 적용 (NETL B12B 3.7 Mt/yr 대비) — 계열당 규모 기준
+    n_trains = n_trains_for(capture_t_yr, max_train_t_yr)
+    scaled_capex_per_t = (scale_capex_per_t(project_capex_per_t, capture_t_yr / n_trains)
+                          * n_trains ** (MULTI_TRAIN_EXP - 1))
     # 4) CCU 정제 등급 CAPEX adder
     eff_capex_per_t = scaled_capex_per_t * (1 + ccu_share * (capex_mult - 1))
 
     crf = (discount * (1 + discount) ** lifetime_yr) / ((1 + discount) ** lifetime_yr - 1)
     annual_capex_usd_per_t = eff_capex_per_t * crf
     elec_cost = we_elec * 277.78 / 1000 * elec_price_usd_mwh
-    opex_total = opex_solvent + opex_other + elec_cost
+    opex_total = opex_solvent + opex_other + elec_cost + heat_cost
     coca = annual_capex_usd_per_t + opex_total
 
     scale_factor = scaled_capex_per_t / project_capex_per_t if project_capex_per_t > 0 else 1.0
@@ -2061,145 +2212,118 @@ def calc_COCA(
         "opex_solvent":         opex_solvent,
         "opex_other":           opex_other,
         "elec_cost":            elec_cost,
+        "heat_cost":            heat_cost,
+        "n_trains":             n_trains,
         "opex_total":           opex_total,
         "COCA":                 coca,
         "annual_total_usd":     coca * capture_t_yr,
     }
 
 
-def calc_financial_metrics(annual_cf_usd: float, capex_total_usd: float,
-                             lifetime_yr: int = 25, discount: float = 0.08) -> dict:
+def levelized_revenue(rev_parts, lifetime_yr: int, discount: float, growth: float = 0.0) -> float:
+    """균등화 연 매출 [USD/yr] — 운영 개시 기준 연말 할인, 100% 가동.
+
+    rev_parts: [(연 매출 USD, 지급 기간[년] 또는 None)] — 기간이 지나면 0 (예: 45Q 12년).
+    LCOC(CRF로 균등화한 비용)와 같은 기준이라 Net LCOC = LCOC − 균등화 매출/t.
     """
-    프로젝트 금융 지표 — NPV / IRR / Payback / Profitability Index.
+    L = int(lifetime_yr)
+    v = [(1 + discount) ** -o for o in range(1, L + 1)]
+    pv = sum(v[o - 1] * sum(a * (1 + growth) ** (o - 1) for a, d in rev_parts if d is None or o <= d)
+             for o in range(1, L + 1))
+    return pv / sum(v)
 
-    annual_cf_usd: 연간 net cash flow (revenue - opex - tax 등 — 본 모델에선 annual_profit_usd)
-    capex_total_usd: 초기 자본 투자 총액 (USD)
-    lifetime_yr: 프로젝트 수명
-    discount: 할인율 (decimal)
 
-    Returns:
-      npv: 순현재가치
-      irr: 내부수익률 (decimal, 음수면 IRR < 0 또는 N/A)
-      payback_yr: 단순 회수 기간 (None면 회수 불가)
-      payback_disc_yr: 할인 회수 기간
-      pi: Profitability Index (1 초과면 양호)
-    """
-    # Cash flows: t=0 -capex, t=1..N annual_cf
-    cfs = [-capex_total_usd] + [annual_cf_usd] * lifetime_yr
-
-    # NPV
-    npv = sum(cf / (1 + discount) ** t for t, cf in enumerate(cfs))
-
-    # IRR (bisection)
-    if annual_cf_usd <= 0 or capex_total_usd <= 0:
-        irr = None
-    else:
-        low, high = -0.50, 5.0
-        irr = None
-        for _ in range(80):
-            mid = (low + high) / 2
-            try:
-                npv_mid = sum(cf / (1 + mid) ** t for t, cf in enumerate(cfs))
-            except (ValueError, ZeroDivisionError, OverflowError):
-                break
-            if abs(npv_mid) < capex_total_usd * 1e-5:
-                irr = mid
-                break
-            if npv_mid > 0:
-                low = mid
-            else:
-                high = mid
+def _irr(cfs: list):
+    """연말 현금흐름 cfs[t] (t=0..)의 IRR. 부호 변화가 없으면 None."""
+    def npv_at(r):
+        return sum(cf / (1 + r) ** t for t, cf in enumerate(cfs))
+    low, high = -0.95, 1.0
+    f_low, f_high = npv_at(low), npv_at(high)
+    if f_low * f_high > 0:
+        return None
+    for _ in range(100):
+        mid = (low + high) / 2
+        f_mid = npv_at(mid)
+        if f_low * f_mid <= 0:
+            high = mid
         else:
-            irr = mid
-        # 음수 NPV로 끝나면 IRR이 매우 낮음을 의미
-        if npv < -capex_total_usd * 0.9 and irr is None:
-            irr = None  # 회수 불가능 수준
+            low, f_low = mid, f_mid
+    return (low + high) / 2
 
-    # Simple payback
-    cum = 0
-    payback_yr = None
-    for t in range(1, lifetime_yr + 1):
-        cum += annual_cf_usd
-        if cum >= capex_total_usd:
-            payback_yr = t - 1 + (capex_total_usd - (cum - annual_cf_usd)) / annual_cf_usd if annual_cf_usd > 0 else None
-            break
 
-    # Discounted payback
-    cum_disc = 0
-    payback_disc_yr = None
-    for t in range(1, lifetime_yr + 1):
-        disc_cf = annual_cf_usd / (1 + discount) ** t
-        cum_disc += disc_cf
-        if cum_disc >= capex_total_usd:
-            payback_disc_yr = t
-            break
+def calc_project_cashflows(capex_total: float, capture_t_yr: float, opex_per_t: float, rev_parts,
+                           lifetime_yr: int, discount: float, construction_yr: int = 0,
+                           ramp_first: float = 1.0, tax_rate: float = 0.0, dep_life: int = 25,
+                           rev_growth: float = 0.0) -> dict:
+    """연도별 손익·현금흐름 (실질 USD, 무차입).
 
-    # Profitability Index (PV of inflows / PV of outflows)
-    pv_inflows = sum(annual_cf_usd / (1 + discount) ** t for t in range(1, lifetime_yr + 1)) if annual_cf_usd > 0 else 0
-    pi = pv_inflows / capex_total_usd if capex_total_usd > 0 else 0
+    - 건설 C년 동안 CAPEX 균등 지출 (C=0이면 0년차 일시 지출), 운영은 C+1년차부터 L년
+    - 운영 1년차 가동률 = ramp_first, 이후 100%. 매출·현금 OPEX는 가동률에 비례
+    - 매출: rev_parts의 지급 기간이 지나면 해당 매출 0 (45Q 12년 등)
+    - EBITDA = 매출 − 현금 OPEX (용매·기타·전력·열·T&S)
+    - 감가상각: IFRS IAS 16 정액법 — 사용 가능 시점(운영 개시)부터 내용연수, 잔존가치 0
+    - 법인세 = max(0, EBIT − 이월결손금) × 세율 (세무상 감가상각도 회계와 같다고 가정)
+    - FCF = EBITDA − 법인세 (운전자본·유지보수 CAPEX 제외)
+    - NPV는 착공 시점(t=0) 기준 연말 할인, 회수 기간은 운영 개시부터 센 연수
+    """
+    C, L = max(0, int(construction_yr)), int(lifetime_yr)
+    dep_life = max(1, min(int(dep_life), L))
+    cfs = [0.0] * (C + L + 1)
+    if C == 0:
+        cfs[0] = -capex_total
+    else:
+        for i in range(1, C + 1):
+            cfs[i] = -capex_total / C
+    years, nol = [], 0.0
+    for o in range(1, L + 1):
+        u = ramp_first if o == 1 else 1.0
+        g = (1 + rev_growth) ** (o - 1)
+        rev = sum(a * u * g for a, d in rev_parts if d is None or o <= d)
+        opex = opex_per_t * capture_t_yr * u
+        ebitda = rev - opex
+        dep = capex_total / dep_life if o <= dep_life else 0.0
+        ebit = ebitda - dep
+        if ebit > 0:
+            used = min(nol, ebit)
+            nol -= used
+            tax = (ebit - used) * tax_rate
+        else:
+            nol -= ebit
+            tax = 0.0
+        fcf = ebitda - tax
+        cfs[C + o] += fcf
+        years.append({"year": o, "utilization": u, "revenue": rev, "opex": opex, "ebitda": ebitda,
+                      "depreciation": dep, "ebit": ebit, "tax": tax, "net_income": ebit - tax,
+                      "fcf": fcf})
 
+    disc = [(1 + discount) ** -t for t in range(len(cfs))]
+    npv = sum(cf * d for cf, d in zip(cfs, disc))
+    pv_capex = sum(-cf * d for cf, d in zip(cfs[:C + 1], disc[:C + 1]) if cf < 0)
+    pv_ops = sum(cfs[C + o] * disc[C + o] for o in range(1, L + 1))
+
+    def _payback(values):
+        cum = sum(values[:C + 1])
+        for o in range(1, L + 1):
+            prev, cum = cum, cum + values[C + o]
+            if cum >= 0 > prev and values[C + o] > 0:
+                return o - 1 + (-prev) / values[C + o]
+        return None
+
+    cumulative, run = [], 0.0
+    for cf in cfs:
+        run += cf
+        cumulative.append(run)
     return {
         "npv": npv,
-        "irr": irr,
-        "payback_yr": payback_yr,
-        "payback_disc_yr": payback_disc_yr,
-        "profitability_index": pi,
-        "annual_cf": annual_cf_usd,
-        "capex_total": capex_total_usd,
-    }
-
-
-def calc_npv_with_growth(annual_revenue: float, annual_cost: float,
-                          capex_total: float, lifetime_yr: int,
-                          discount: float, rev_growth: float = 0.0) -> dict:
-    """
-    NPV with revenue growth (시간 흐름 시나리오).
-    - revenue grows at `rev_growth` per year (탄소가격 시나리오 반영)
-    - cost is constant (대부분 OPEX 인플레이션 무시)
-    """
-    cfs = [-capex_total]
-    cumulative_cf = [-capex_total]
-    annual_cfs = []
-    for t in range(1, lifetime_yr + 1):
-        rev_t = annual_revenue * (1 + rev_growth) ** (t - 1)
-        cf_t = rev_t - annual_cost
-        cfs.append(cf_t)
-        annual_cfs.append(cf_t)
-        cumulative_cf.append(cumulative_cf[-1] + cf_t)
-    npv = sum(cf / (1 + discount) ** t for t, cf in enumerate(cfs))
-
-    # IRR (bisection)
-    irr = None
-    if any(cf > 0 for cf in cfs[1:]) and capex_total > 0:
-        low, high = -0.50, 5.0
-        for _ in range(80):
-            mid = (low + high) / 2
-            try:
-                npv_mid = sum(cf / (1 + mid) ** t for t, cf in enumerate(cfs))
-            except (ValueError, ZeroDivisionError, OverflowError):
-                break
-            if abs(npv_mid) < capex_total * 1e-5:
-                irr = mid
-                break
-            if npv_mid > 0:
-                low = mid
-            else:
-                high = mid
-        else:
-            irr = mid if abs(npv_mid) < capex_total * 0.1 else None
-
-    # Payback (with growing revenue)
-    cum = -capex_total
-    payback_yr = None
-    for t in range(1, lifetime_yr + 1):
-        cum += annual_cfs[t - 1]
-        if cum >= 0:
-            payback_yr = t
-            break
-
-    return {
-        "npv": npv, "irr": irr, "payback_yr": payback_yr,
-        "cumulative_cf": cumulative_cf, "annual_cfs": annual_cfs,
+        "irr": _irr(cfs) if pv_capex > 0 else None,
+        "payback_yr": _payback(cfs),
+        "payback_disc_yr": _payback([cf * d for cf, d in zip(cfs, disc)]),
+        "profitability_index": pv_ops / pv_capex if pv_capex > 0 else 0,
+        "capex_total": capex_total,
+        "cumulative_cf": cumulative,
+        "annual_cfs": [y["fcf"] for y in years],
+        "years": years,
+        "construction_yr": C,
     }
 
 
@@ -2362,6 +2486,16 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown(T("sb_h_source"))
+    region_key = st.selectbox(
+        "📍 사업 지역",
+        options=list(REGIONS.keys()),
+        format_func=lambda k: REGIONS[k]["label"],
+        index=0,
+        key="region",
+        help="전기·연료 단가, 건설비 계수, 법인세율, 전력 배출계수의 기본값이 지역에 맞춰 바뀜 "
+             "(⚙️ 상세 가정·🌱 LCA 가정에서 직접 수정 가능)",
+    )
+    region = REGIONS[region_key]
     st.caption("CO₂ 농도·flue gas 특성에 따라 SRD/CAPEX 추가 보정 (IEAGHG 산업별)")
     source_sector_key = st.selectbox(
         "Sector 선택",
@@ -2484,7 +2618,7 @@ with st.sidebar:
 
     # Capacity range 경고 — 부적합 규모 시뮬 방지
     _selected_now = st.session_state.get("selected_techs", [])
-    _out_of_range = []
+    _out_of_range, _trains = [], []
     for k in _selected_now:
         rng = CAPACITY_RANGE.get(k, (0.01, 100))
         if capture_mt_yr < rng[0] * 0.5:
@@ -2492,6 +2626,9 @@ with st.sidebar:
                 f"**{LIT[k]['name']}**: 적정 {rng[0]:.2g}~{rng[1]:.0f} Mt/yr "
                 f"(현재 {capture_mt_yr} → 너무 작음)"
             )
+        elif capture_mt_yr > (LIT[k].get("max_train_mt_yr") or REF_CAPTURE_MT_YR):
+            _n = n_trains_for(capture_mt_yr, LIT[k].get("max_train_mt_yr") or REF_CAPTURE_MT_YR)
+            _trains.append(f"{SHORT_NAMES.get(k, k)} {_n}계열 × {capture_mt_yr / _n:.2g} Mt")
         elif capture_mt_yr > rng[1] * 2:
             _out_of_range.append(
                 f"**{LIT[k]['name']}**: 적정 {rng[0]:.2g}~{rng[1]:.0f} Mt/yr "
@@ -2499,6 +2636,8 @@ with st.sidebar:
             )
     if _out_of_range:
         st.warning("⚠️ 일부 기술이 적정 capacity 범위 밖:\n\n" + "\n\n".join(_out_of_range))
+    if _trains:
+        st.caption("🏗️ 비용 자료의 최대 규모를 넘어 다계열로 계산: " + " · ".join(_trains))
 
 
     st.caption("⚠️ 실제 시설은 CCS/CCU 중 하나로 commit")
@@ -2698,6 +2837,17 @@ with st.sidebar:
                 key=f"sub_price_{subsidy_key}",
             )
             st.caption(f"→ 표준값: {sub['native']}")
+        if subsidy_key == "None":
+            subsidy_years = None
+        else:
+            _sub_years_default = CARBON_MARKETS.get(subsidy_key, {}).get("years") or 12
+            subsidy_years = st.number_input(
+                "보조금 지급 기간 [년]",
+                min_value=1, max_value=50, value=int(_sub_years_default), step=1,
+                key=f"sub_years_{subsidy_key}",
+                help="이 기간이 지나면 보조금 매출 0 → NPV·균등화 매출에 반영 "
+                     "(45Q 12년, NL SDE++ 15년 등). 플랜트 수명보다 길면 수명 내내 지급",
+            )
 
         # 3️⃣ LCFS / 자발적 크레딧 / 기타
         st.markdown("##### 3️⃣ LCFS / 자발적 / 기타")
@@ -2808,7 +2958,37 @@ with st.sidebar:
         lifetime = st.number_input("플랜트 수명 [년]", 10, 50, 25, 1, help="default: 25")
         discount_pct = st.number_input("할인율 [%]", 2.0, 15.0, 8.0, 0.5, format="%.1f", help="default: 8.0")
         discount = discount_pct / 100.0
-        elec_price = st.number_input("전기 가격 [USD/MWh]", 20, 300, 80, 5, help="default: 80")
+        elec_price = st.number_input(
+            "전기 가격 [USD/MWh]", min_value=20.0, max_value=400.0,
+            value=float(region["elec_usd_mwh"]), step=5.0, format="%.0f",
+            key=f"elec_price_{region_key}",
+            help=f"산업용 평균 단가 — {region['label']} 기본값 {region['elec_usd_mwh']:g}",
+        )
+        location_factor = st.number_input(
+            "🏗️ 지역 건설비 계수 (미국 걸프 연안 = 1.00)", min_value=0.5, max_value=2.0,
+            value=float(region["location_factor"]), step=0.05, format="%.2f",
+            key=f"loc_factor_{region_key}",
+            help="LIT CAPEX는 미국 걸프 연안 기준. 지역 인건비·자재·생산성 차이를 곱함",
+        )
+        tax_rate = st.number_input(
+            "🧾 법인세율 [%]", min_value=0.0, max_value=50.0,
+            value=float(region["tax_rate"] * 100), step=0.5, format="%.1f",
+            key=f"tax_rate_{region_key}",
+            help="지방세 포함 실효 최고세율. 세전이익(EBIT)에 적용, 결손금은 이월 공제",
+        ) / 100.0
+        construction_yr = st.number_input(
+            "🏗️ 건설 기간 [년]", min_value=0, max_value=6, value=3, step=1, key="construction_yr",
+            help="CAPEX를 이 기간에 균등 지출, 운영은 그 다음 해부터 (0 = 0년차 일시 지출)",
+        )
+        ramp_first = st.number_input(
+            "📈 운영 첫해 가동률 [%]", min_value=30, max_value=100, value=80, step=5, key="ramp_first",
+            help="시운전·초기 안정화. 2년차부터 100%",
+        ) / 100.0
+        dep_life = st.number_input(
+            "📉 감가상각 내용연수 [년] (IFRS 정액법)", min_value=5, max_value=50, value=25, step=1,
+            key="dep_life",
+            help="IAS 16: 운영 개시(사용 가능 시점)부터 정액법, 잔존가치 0. 플랜트 수명보다 길면 수명으로 제한",
+        )
 
         # ─── 건식 흡착제 교체 (흡착 기술을 골랐을 때만) ───
         _sorbent_techs = [k for k in selected if LIT[k].get("sorbent")]
@@ -2873,6 +3053,35 @@ with st.sidebar:
         )
 
 
+        st.markdown("##### 🔥 재생 열 (증기)")
+        heat_source_key = st.selectbox(
+            "열원 (재생탑 steam)",
+            options=list(HEAT_SOURCES.keys()),
+            format_func=lambda k: HEAT_SOURCES[k]["label"],
+            index=0,  # natural_gas default
+            key="heat_source",
+        )
+        heat_info = HEAT_SOURCES[heat_source_key]
+        _heat_default = default_heat_price(heat_source_key, region_key)
+        heat_price = st.number_input(
+            "열(증기) 단가 [USD/GJ]", min_value=0.0, max_value=100.0,
+            value=float(_heat_default), step=0.5, format="%.1f",
+            key=f"heat_price_{heat_source_key}_{region_key}",
+            help=("천연가스·석탄: 연료 단가 ÷ 보일러 효율 0.85 + O&M $0.5 · 히트펌프: 전기 단가 ÷ COP 3 · "
+                  f"폐열 ${WASTE_HEAT_USD_GJ:g} · 재생 열 ${RENEWABLE_HEAT_USD_GJ:g} (1차 근사)"),
+        )
+        st.caption(f"→ 증기비 = SRD × 단가 (예: SRD 3.6 GJ/t → **${3.6 * heat_price:,.1f}/t**)")
+        if heat_source_key == "custom_heat":
+            heat_factor = st.number_input(
+                "열 배출계수 [kgCO₂/GJ]",
+                min_value=0.0, max_value=200.0, value=55.0, step=5.0,
+                key="heat_custom",
+            )
+        else:
+            heat_factor = float(heat_info["kgCO2_GJ"])
+            st.caption(f"→ 배출계수: **{heat_factor if heat_factor >= 0 else 'grid 의존':.0f}** kgCO₂/GJ · {heat_info['note']}"
+                       if heat_factor >= 0 else f"→ {heat_info['note']}")
+
         st.markdown("##### 🚢 T&S (Transport & Storage)")
         st.caption("CCS 모드에만 적용 — 격리량 기준 추가 OPEX")
         ts_enabled = st.checkbox(
@@ -2882,23 +3091,32 @@ with st.sidebar:
             key="ts_enabled",
         )
         if ts_enabled:
-            ts_pipeline_km = st.number_input(
-                "파이프라인 거리 [km]",
-                min_value=0, max_value=2000, value=100, step=10,
-                help="default: 100 km (mid-range onshore)",
-                key="ts_pipeline_km",
-            )
             ts_storage_type = st.selectbox(
                 "저장소 유형",
-                options=["storage_saline", "storage_depleted_og", "storage_basalt"],
+                options=["storage_saline", "storage_depleted_og", "storage_basalt", "ship_export"],
                 format_func=lambda k: {
                     "storage_saline": "🌊 Saline aquifer ($10/t default)",
                     "storage_depleted_og": "🛢️ 폐 oil&gas reservoir ($6/t)",
                     "storage_basalt": "🗿 Basalt mineralization ($15/t, CarbFix)",
+                    "ship_export": "🚢 선박 수출 → 해외 해상 저장 (국내 저장소 없음)",
                 }[k],
                 index=0,
                 key="ts_storage_type",
             )
+            if ts_storage_type == "ship_export":
+                ts_ship_km = st.number_input(
+                    "해상 운송 거리 [km]",
+                    min_value=500, max_value=15000, value=int(TS_COSTS["ship_default_km"]), step=250,
+                    help="편도 해상 거리 (예: 한국 → 말레이시아·호주 북서부 해상 저장소)",
+                    key="ts_ship_km",
+                )
+            else:
+                ts_pipeline_km = st.number_input(
+                    "파이프라인 거리 [km]",
+                    min_value=0, max_value=2000, value=100, step=10,
+                    help="default: 100 km (mid-range onshore)",
+                    key="ts_pipeline_km",
+                )
             ts_cluster = st.checkbox(
                 "🤝 Cluster 공유 (T&S 비용 -30%)",
                 value=False,
@@ -2906,15 +3124,26 @@ with st.sidebar:
                 key="ts_cluster",
             )
             # T&S 비용 계산
-            _ts_pipe_cost = ts_pipeline_km * TS_COSTS["pipeline_per_km"]
-            _ts_storage_cost = TS_COSTS[ts_storage_type]
-            ts_cost_per_t = _ts_pipe_cost + _ts_storage_cost
-            if ts_cluster:
-                ts_cost_per_t *= TS_COSTS["cluster_discount"]
-            st.caption(
-                f"→ 파이프라인 ${_ts_pipe_cost:.1f} + 저장 ${_ts_storage_cost:.0f} = "
-                f"**${ts_cost_per_t:.1f}/t** (cluster: ×{TS_COSTS['cluster_discount']:.2f})"
-            )
+            if ts_storage_type == "ship_export":
+                _ts_ship = TS_COSTS["ship_per_1000km"] * ts_ship_km / 1000
+                ts_cost_per_t = TS_COSTS["ship_liquefaction"] + _ts_ship + TS_COSTS["ship_storage"]
+                if ts_cluster:
+                    ts_cost_per_t *= TS_COSTS["cluster_discount"]
+                st.caption(
+                    f"→ 액화·선적 ${TS_COSTS['ship_liquefaction']:.0f} + 선박 ${_ts_ship:.1f} "
+                    f"+ 해상 주입·저장 ${TS_COSTS['ship_storage']:.0f} = **${ts_cost_per_t:.1f}/t** "
+                    f"(cluster: ×{TS_COSTS['cluster_discount']:.2f})"
+                )
+            else:
+                _ts_pipe_cost = ts_pipeline_km * TS_COSTS["pipeline_per_km"]
+                _ts_storage_cost = TS_COSTS[ts_storage_type]
+                ts_cost_per_t = _ts_pipe_cost + _ts_storage_cost
+                if ts_cluster:
+                    ts_cost_per_t *= TS_COSTS["cluster_discount"]
+                st.caption(
+                    f"→ 파이프라인 ${_ts_pipe_cost:.1f} + 저장 ${_ts_storage_cost:.0f} = "
+                    f"**${ts_cost_per_t:.1f}/t** (cluster: ×{TS_COSTS['cluster_discount']:.2f})"
+                )
         else:
             ts_cost_per_t = 0.0
 
@@ -2927,33 +3156,14 @@ with st.sidebar:
             "EU CRCF, ICVCM, voluntary buyer (Stripe Frontier 등) 기준."
         )
 
-        # 1. 열원 선택
-        heat_source_key = st.selectbox(
-            "열원 (재생탑 steam)",
-            options=list(HEAT_SOURCES.keys()),
-            format_func=lambda k: HEAT_SOURCES[k]["label"],
-            index=0,  # natural_gas default
-            key="heat_source",
-        )
-        heat_info = HEAT_SOURCES[heat_source_key]
-        if heat_source_key == "custom_heat":
-            heat_factor = st.number_input(
-                "열 배출계수 [kgCO₂/GJ]",
-                min_value=0.0, max_value=200.0, value=55.0, step=5.0,
-                key="heat_custom",
-            )
-        else:
-            heat_factor = float(heat_info["kgCO2_GJ"])
-            st.caption(f"→ 배출계수: **{heat_factor if heat_factor >= 0 else 'grid 의존':.0f}** kgCO₂/GJ · {heat_info['note']}"
-                       if heat_factor >= 0 else f"→ {heat_info['note']}")
-
-        # 2. 전력 grid 선택
+        # 열원·열 배출계수는 ⚙️ 상세 가정의 '재생 열'에서 선택 (비용과 함께)
+        # 1. 전력 grid 선택 (지역 기본값)
         grid_key = st.selectbox(
             "전력 grid",
             options=list(GRID_FACTORS.keys()),
             format_func=lambda k: GRID_FACTORS[k]["label"],
-            index=0,  # us_avg default
-            key="grid_select",
+            index=list(GRID_FACTORS.keys()).index(region["grid"]),
+            key=f"grid_select_{region_key}",
         )
         if grid_key == "custom_grid":
             grid_factor = st.number_input(
@@ -2965,7 +3175,7 @@ with st.sidebar:
             grid_factor = float(GRID_FACTORS[grid_key]["gCO2_kWh"])
             st.caption(f"→ {grid_factor:.0f} gCO₂/kWh")
 
-        # 3. Embodied CAPEX 포함 여부
+        # 2. Embodied CAPEX 포함 여부
         include_embodied = st.checkbox(
             "Embodied CAPEX 배출 포함 (CAPEX × 0.20 kgCO₂/$)",
             value=True,
@@ -3102,136 +3312,108 @@ for _name, _labels in _sector_mismatch:
         "사이드바 Sector를 바꿔 보세요."
     )
 
+# 포집률이 기술별 상한(실증·설계 근거)을 넘으면 상한으로 계산
+_capped = [f"{LIT[k]['name']} {LIT[k]['capture_rate_max']*100:.0f}%" for k in selected
+           if LIT[k].get("capture_rate_max") and capture_eff > LIT[k]["capture_rate_max"] + 1e-9]
+if _capped:
+    st.info("ℹ️ 입력한 포집률이 기술별 상한을 넘어 상한으로 계산: " + " · ".join(_capped))
+
+# 업종 적합도 'poor' (VPSA처럼 전용 업종이 따로 있는 경우는 위 경고로 대신)
+for k in selected:
+    _fit = LIT[k].get("sector_fit", {}).get(source_sector_key)
+    if _fit and _fit[0] == "poor" and not LIT[k].get("applicable_sectors"):
+        st.warning(f"⚠️ **{LIT[k]['name']}** — 이 업종에는 잘 맞지 않음: {_fit[1]}")
+
 # ======================================================================
 # 결과 계산
 # ======================================================================
 def evaluate_tech(k: str, p: dict) -> dict:
     """기술 k를 시나리오 p(BASE_P 형식)로 계산한 결과 dict.
 
-    민감도(Tornado)·Monte Carlo가 입력 하나를 바꿔 같은 계산을 다시 돌리도록 함수로 둠.
+    민감도(Tornado)·Monte Carlo·실측 검증이 입력 일부를 바꿔 같은 계산을 다시 돌리도록 함수로 둠.
     capex_scale·opex_scale·srd_scale은 기술 데이터에 곱하는 배수 (평소 1.0).
     """
-    sorbent_price = p["sorbent_price"]
-    sorbent_life = p["sorbent_life"]
     sector = p["sector"]
-    T_cool_C = p["T_cool_C"]
-    p_final_bar = p["p_final_bar"]
     capture_t_yr = p["capture_t_yr"]
-    capture_eff = p["capture_eff"]
-    cpi_factor = p["cpi_factor"]
     lifetime = p["lifetime"]
     discount = p["discount"]
-    elec_price = p["elec_price"]
     ccu = p["ccu"]
-    ccu_share = p["ccu_share"]
-    ccs_share = p["ccs_share"]
     ccs_yield = p["ccs_yield"]
-    project_multiplier = p["project_multiplier"]
-    ts_cost_per_t = p["ts_cost_per_t"]
     facility_mode = p["facility_mode"]
-    ccu_price_krw = p["ccu_price_krw"]
-    carbon_market_usd = p["carbon_market_usd"]
-    subsidy_usd = p["subsidy_usd"]
-    extra_revenue_usd = p["extra_revenue_usd"]
-    fx_krw_per_usd = p["fx_krw_per_usd"]
-    rev_growth_rate = p["rev_growth_rate"]
-    heat_factor = p["heat_factor"]
-    grid_factor = p["grid_factor"]
-    include_embodied = p["include_embodied"]
 
     t = LIT[k]
     capex_scale, opex_scale, srd_scale = p["capex_scale"], p["opex_scale"], p["srd_scale"]
     # 건식 흡착제: 사이드바 단가·수명으로 교체비(OPEX)와 손실(LCA)을 다시 계산
-    if t.get("sorbent") and sorbent_life:
+    if t.get("sorbent") and p["sorbent_life"]:
         _sb_loss, _sb_opex = calc_sorbent_replacement(
-            t["sorbent"]["inventory_kg_per_tpy"], sorbent_price, sorbent_life)
+            t["sorbent"]["inventory_kg_per_tpy"], p["sorbent_price"], p["sorbent_life"])
         t = {**t, "OPEX_solvent": _sb_opex, "loss_kg_per_tCO2": _sb_loss}
     if srd_scale != 1.0:
         t = {**t, "SRD": t["SRD"] * srd_scale}
-    # Sector 보정을 SRD/CAPEX에 반영
-    sector_srd_mult = sector["srd_mult"]
-    sector_capex_mult = sector["capex_mult"]
+    # 포집률은 기술별 상한(실증·설계 근거)을 넘지 않게
+    capture_eff = min(p["capture_eff"], t.get("capture_rate_max") or 0.99)
 
-    we = calc_We(t, T_cool_C, p_final_bar,
-                  capture_t_yr=capture_t_yr, capture_eff=capture_eff)
+    we = calc_We(t, p["T_cool_C"], p["p_final_bar"],
+                 capture_t_yr=capture_t_yr, capture_eff=capture_eff)
     # Sector SRD 보정 추가 적용
-    we["SRD_scaled"] = we["SRD_scaled"] * sector_srd_mult
-    we["We_thermal_eq"] = we["We_thermal_eq"] * sector_srd_mult
+    we["SRD_scaled"] = we["SRD_scaled"] * sector["srd_mult"]
+    we["We_thermal_eq"] = we["We_thermal_eq"] * sector["srd_mult"]
     we["We_total"] = we["We_thermal_eq"] + we["We_elec"]
 
     specca = calc_SPECCA(we["SRD_scaled"], we["We_elec"], capture_eff)
 
-    # CAPEX에 CPI(인플레이션) + Sector 보정 동시 적용
-    capex_adjusted = t["CAPEX_per_t"] * cpi_factor * sector_capex_mult * capex_scale
+    # 재생 열(증기) 비용 = SRD × 열 단가 (VPSA처럼 SRD가 0이면 0)
+    heat_cost = we["SRD_scaled"] * p["heat_price"]
+    # CAPEX = LIT × CPI × 업종 × 지역 건설비 계수 (× 민감도 배수)
+    capex_adjusted = (t["CAPEX_per_t"] * p["cpi_factor"] * sector["capex_mult"]
+                      * p["location_factor"] * capex_scale)
+    # 비용 자료가 있는 최대 규모(기본 NETL 3.7 Mt, VPSA는 Port Arthur 1 Mt)를 넘으면 그 크기 계열을 나란히
+    max_train = t.get("max_train_mt_yr") or REF_CAPTURE_MT_YR
     cost = calc_COCA(
         capex_adjusted, t["OPEX_solvent"] * opex_scale, t["OPEX_other"] * opex_scale,
-        we["We_elec"], capture_t_yr, lifetime, discount, elec_price,
-        capex_mult=ccu["capex_mult"], ccu_share=ccu_share,
-        project_multiplier=project_multiplier,
-        capture_eff=capture_eff,
+        we["We_elec"], capture_t_yr, lifetime, discount, p["elec_price"],
+        capex_mult=ccu["capex_mult"], ccu_share=p["ccu_share"],
+        project_multiplier=p["project_multiplier"],
+        capture_eff=capture_eff, heat_cost=heat_cost,
+        max_train_t_yr=max_train * 1e6,
     )
     # T&S 비용 별도 추가 (CCS 모드만)
-    if ts_cost_per_t > 0 and facility_mode == "CCS":
+    if p["ts_cost_per_t"] > 0 and facility_mode == "CCS":
         # 격리량 기준 → capture 톤당 환산
-        cost["ts_cost"] = ts_cost_per_t * ccs_yield
+        cost["ts_cost"] = p["ts_cost_per_t"] * ccs_yield
         cost["COCA"] = cost["COCA"] + cost["ts_cost"]
         cost["opex_total"] = cost["opex_total"] + cost["ts_cost"]
         cost["annual_total_usd"] = cost["COCA"] * capture_t_yr
     else:
         cost["ts_cost"] = 0.0
     rev = calc_revenue(
-        capture_t_yr, ccs_share, ccs_yield,
-        ccu_share, ccu["yield"], ccu_price_krw,
-        carbon_market_usd, subsidy_usd, extra_revenue_usd,
-        fx_krw_per_usd,
+        capture_t_yr, p["ccs_share"], ccs_yield,
+        p["ccu_share"], ccu["yield"], p["ccu_price_krw"],
+        p["carbon_market_usd"], p["subsidy_usd"], p["extra_revenue_usd"],
+        p["fx_krw_per_usd"],
     )
-    net_coca = cost["COCA"] - rev["rev_per_capture"]
+    # 매출 구성별 지급 기간 (보조금만 기간이 있음 — 45Q 12년 등). 비용(COCA)과 같은 균등화 기준
+    rev_parts = [(rev["ccu_revenue"], None), (rev["market_revenue"], None),
+                 (rev["subsidy"], p["subsidy_years"]), (rev["extra_revenue"], None)]
+    annual_revenue_usd = levelized_revenue(rev_parts, lifetime, discount, p["rev_growth_rate"])
+    rev_per_capture = annual_revenue_usd / capture_t_yr if capture_t_yr > 0 else 0
+    net_coca = cost["COCA"] - rev_per_capture
 
-    # 연간 수익·비용·손익 (financial metrics 호출 전에 미리 계산)
-    annual_cost_usd    = cost["annual_total_usd"]              # = COCA × capture_t_yr
-    annual_revenue_usd = rev["total_revenue"]
-    annual_profit_usd  = annual_revenue_usd - annual_cost_usd  # 양수 = 흑자
-    annual_profit_krw  = annual_profit_usd * fx_krw_per_usd
+    # 균등화 연간 손익 (세전) — 비용 = COCA × 포집량
+    annual_cost_usd = cost["annual_total_usd"]
+    annual_profit_usd = annual_revenue_usd - annual_cost_usd  # 양수 = 흑자
+    annual_profit_krw = annual_profit_usd * p["fx_krw_per_usd"]
 
-    # 금융 지표 (NPV / IRR / Payback) — 탄소가격 시나리오 반영
+    # 연도별 손익·현금흐름 (건설 기간·초기 가동률·보조금 종료·감가상각·법인세)
     capex_total_usd = cost["eff_capex_per_t"] * capture_t_yr
-    if abs(rev_growth_rate) > 1e-6:
-        # 시간 흐름 시나리오 적용 (revenue가 매년 성장)
-        fin_g = calc_npv_with_growth(
-            annual_revenue=annual_revenue_usd,
-            annual_cost=annual_cost_usd,
-            capex_total=capex_total_usd,
-            lifetime_yr=lifetime,
-            discount=discount,
-            rev_growth=rev_growth_rate,
-        )
-        fin = {
-            "npv": fin_g["npv"], "irr": fin_g["irr"],
-            "payback_yr": fin_g["payback_yr"],
-            "payback_disc_yr": fin_g["payback_yr"],  # 근사
-            "profitability_index": (
-                sum(cf / (1 + discount) ** (t+1) for t, cf in enumerate(fin_g["annual_cfs"]))
-                / capex_total_usd if capex_total_usd > 0 else 0
-            ),
-            "annual_cf": annual_profit_usd,
-            "capex_total": capex_total_usd,
-            "cumulative_cf": fin_g["cumulative_cf"],
-            "annual_cfs": fin_g["annual_cfs"],
-        }
-    else:
-        # 고정 가격 시나리오 (기존 함수 사용)
-        fin = calc_financial_metrics(
-            annual_cf_usd=annual_profit_usd,
-            capex_total_usd=capex_total_usd,
-            lifetime_yr=lifetime,
-            discount=discount,
-        )
-        # cumulative cash flow 추가 (시각화용)
-        cum_list = [-capex_total_usd]
-        for tt in range(lifetime):
-            cum_list.append(cum_list[-1] + annual_profit_usd)
-        fin["cumulative_cf"] = cum_list
-        fin["annual_cfs"] = [annual_profit_usd] * lifetime
+    fin = calc_project_cashflows(
+        capex_total_usd, capture_t_yr, cost["opex_total"], rev_parts,
+        lifetime_yr=lifetime, discount=discount, construction_yr=p["construction_yr"],
+        ramp_first=p["ramp_first"], tax_rate=p["tax_rate"], dep_life=p["dep_life"],
+        rev_growth=p["rev_growth_rate"],
+    )
+    # 정상 가동 첫해 (초기 가동률이 100% 미만이면 운영 2년차)
+    _ss = fin["years"][1] if (p["ramp_first"] < 1.0 and len(fin["years"]) > 1) else fin["years"][0]
 
     # LCA / Scope 1+2+3 계산
     solvent_factor = SOLVENT_EMISSION_FACTORS.get(k, 1.5)
@@ -3239,12 +3421,12 @@ def evaluate_tech(k: str, p: dict) -> dict:
         srd_GJ_t=we["SRD_scaled"],
         we_elec_GJe_t=we["We_elec"],
         loss_kg_t=t["loss_kg_per_tCO2"],
-        heat_factor_kgCO2_GJ=heat_factor,
-        grid_factor_gCO2_kWh=grid_factor,
+        heat_factor_kgCO2_GJ=p["heat_factor"],
+        grid_factor_gCO2_kWh=p["grid_factor"],
         solvent_factor_kgCO2_kg=solvent_factor,
         capex_per_t_USD=cost["eff_capex_per_t"],
         lifetime_yr=lifetime,
-        include_embodied=include_embodied,
+        include_embodied=p["include_embodied"],
     )
     # Net removed = stored × (1 - lifecycle emissions)
     if facility_mode == "CCS":
@@ -3255,8 +3437,8 @@ def evaluate_tech(k: str, p: dict) -> dict:
     net_removed_per_t = max(net_removed_per_t, 0)  # 음수 방지 (이론상 가능하지만 표시)
     net_removed_t_yr = net_removed_per_t * capture_t_yr
     crcf_efficiency_pct = (net_removed_per_t / 1.0) * 100  # 1톤 captured → net removed의 %
-
-    # (annual_profit_usd 등은 위에서 이미 계산됨 — 중복 제거)
+    # 실제로 줄어든 CO₂(net) 1톤당 비용 — 업계의 '회피 비용'에 가까운 지표
+    cost_per_net_t = cost["COCA"] / net_removed_per_t if net_removed_per_t > 0 else None
 
     return {
         "key": k,
@@ -3268,28 +3450,44 @@ def evaluate_tech(k: str, p: dict) -> dict:
         "SPECCA": specca,
         **cost,
         **rev,
+        "rev_per_capture_y1":  rev["rev_per_capture"],   # 1년차 (보조금 지급 중)
+        "rev_per_capture":     rev_per_capture,          # 균등화 (보조금 기간 반영)
+        "subsidy_years":       p["subsidy_years"],
         "Net_COCA": net_coca,
         "annual_cost_usd":     annual_cost_usd,
         "annual_revenue_usd":  annual_revenue_usd,
         "annual_profit_usd":   annual_profit_usd,
         "annual_profit_krw":   annual_profit_krw,
-        # 금융 지표 (NPV/IRR/Payback)
+        # 금융 지표 (NPV/IRR/Payback) — 연도별 현금흐름 기준
         "npv":              fin["npv"],
         "irr":              fin["irr"],
         "payback_yr":       fin["payback_yr"],
         "payback_disc_yr":  fin["payback_disc_yr"],
         "profitability_idx": fin["profitability_index"],
         "capex_total":      fin["capex_total"],
-        "cumulative_cf":    fin.get("cumulative_cf", []),
-        "annual_cfs":       fin.get("annual_cfs", []),
+        "cumulative_cf":    fin["cumulative_cf"],
+        "annual_cfs":       fin["annual_cfs"],
+        "pnl_years":        fin["years"],
+        "construction_yr":  fin["construction_yr"],
+        # 정상 가동 첫해 손익 (IFRS)
+        "ss_revenue":       _ss["revenue"],
+        "ss_ebitda":        _ss["ebitda"],
+        "ss_depreciation":  _ss["depreciation"],
+        "ss_ebit":          _ss["ebit"],
+        "ss_tax":           _ss["tax"],
+        "ss_net_income":    _ss["net_income"],
         "TRL":              t.get("TRL", 7),
         "ts_cost":          cost.get("ts_cost", 0.0),
+        "capture_eff_used": capture_eff,
+        "capture_capped":   capture_eff < p["capture_eff"] - 1e-9,
+        "heat_price":       p["heat_price"],
         # LCA / Net CO2 (CRCF/ICVCM)
         **{f"lca_{k_}": v_ for k_, v_ in lca.items()},
         "gross_per_t":         gross_per_t,
         "net_removed_per_t":   net_removed_per_t,
         "net_removed_t_yr":    net_removed_t_yr,
         "crcf_efficiency_pct": crcf_efficiency_pct,
+        "cost_per_net_t":      cost_per_net_t,
         "solvent_emission_factor": solvent_factor,
         "loss_kg_per_tCO2": t["loss_kg_per_tCO2"],
         "loss_mech": t["loss_mech"],
@@ -3329,6 +3527,13 @@ BASE_P = {
     "heat_factor": heat_factor,
     "grid_factor": grid_factor,
     "include_embodied": include_embodied,
+    "heat_price": heat_price,
+    "location_factor": location_factor,
+    "tax_rate": tax_rate,
+    "construction_yr": construction_yr,
+    "ramp_first": ramp_first,
+    "dep_life": dep_life,
+    "subsidy_years": subsidy_years,
     "capex_scale": 1.0, "opex_scale": 1.0, "srd_scale": 1.0,
 }
 results = [evaluate_tech(k, BASE_P) for k in selected]
@@ -3351,8 +3556,8 @@ with tab_biz:
         T("sub_profit"), T("sub_risk"), T("sub_compare"),
     ])
 with tab_basis:
-    sub_manual, sub_method, sub_refs, sub_trend = st.tabs([
-        T("sub_manual"), T("sub_method"), T("sub_refs"), T("sub_trend"),
+    sub_manual, sub_method, sub_refs, sub_trend, sub_valid = st.tabs([
+        T("sub_manual"), T("sub_method"), T("sub_refs"), T("sub_trend"), T("sub_valid"),
     ])
 # 방법론 서브탭: 본문 → KPI 정의 → 모델 한계 순 (KPI 정의·한계는 ① 탭 코드에서 채움)
 with sub_method:
@@ -3419,9 +3624,9 @@ CO₂ 포집·CCUS 기술의 **기술 성능·경제성·Lifecycle CO₂·정책
 - **SRD** [GJ/tCO₂]: 흡수제 재생열 (낮을수록 우수)
 - **We** [GJe/tCO₂]: 전력등가 일 통합
 - **SPECCA** [MJ/tCO₂]: 1차 에너지 페널티
-- **COCA** [USD/tCO₂]: 단위 CO₂당 비용
+- **LCOC** [USD/tCO₂]: 단위 CO₂당 비용
 
-### Net COCA = COCA − 매출/보조금
+### Net LCOC = LCOC − 매출/보조금
 - **음수** = 흑자 (1톤 잡으면 돈을 받음)
 - **양수** = 적자 (1톤 잡는데 돈 듦)
 
@@ -3623,7 +3828,7 @@ with tab_overall:
         if facility_mode == "CCU" and ccu_grade_key == "food":
             recommendations.append("💡 식품급 CCU는 안정 흑자 모델 — 규모 확장에 비례 수익 증가")
         if not recommendations:
-            recommendations.append(f"💡 {min_coca_r['name']}이(가) 가장 효율적 (COCA ${min_coca_r['COCA']:.1f}/t)")
+            recommendations.append(f"💡 {min_coca_r['name']}이(가) 가장 효율적 (LCOC ${min_coca_r['COCA']:.1f}/t)")
 
         st.markdown(
             f"""
@@ -3674,7 +3879,7 @@ with tab_overall:
     # 💰 연 손익 — 메인 KPI (4대 KPI보다 우선 표시)
     # ──────────────────────────────────────────────
     # KPI label is bilingual ("Net COCA / 연 손익" tooltip stays Korean)
-    _kpi_label = tip('Net COCA', '연 손익') if st.session_state.get("lang", "ko") == "ko" else tip('Net COCA', 'Annual Profit')
+    _kpi_label = tip('Net LCOC', '연 손익') if st.session_state.get("lang", "ko") == "ko" else tip('Net LCOC', 'Annual Profit')
     st.markdown(
         f"<h3 style='margin-top:0; margin-bottom:6px;'>"
         f"{T('ov_profit_title', kpi=_kpi_label)}</h3>",
@@ -3704,7 +3909,7 @@ with tab_overall:
                         {money_str}/yr
                     </div>
                     <div style='font-size:0.65rem; color:#8b95a7; margin-top:4px;'>
-                        Net COCA {r['Net_COCA']:+,.1f} $/t
+                        Net LCOC {r['Net_COCA']:+,.1f} $/t
                     </div>
                 </div>
                 """,
@@ -3733,7 +3938,7 @@ with tab_overall:
 
     st.markdown("---")
 
-    with meth_defs, st.expander("📖 **KPI 지표 정의** (SRD · We · SPECCA · COCA)", expanded=False):
+    with meth_defs, st.expander("📖 **KPI 지표 정의** (SRD · We · SPECCA · LCOC)", expanded=False):
         def_cols = st.columns(4)
         definitions = [
             {"title": "SRD", "full": "Specific Reboiler Duty",
@@ -3751,10 +3956,11 @@ with tab_overall:
              "formula": "(SRD × 500 + We<sub>elec</sub> × 2,500) / capture",
              "desc": "포집을 위해 추가로 소모하는 1차 에너지를 포집율로 정규화.",
              "hint": "↓ 낮을수록 1차 에너지 효율 우수"},
-            {"title": "COCA", "full": "Cost Of CO₂ Avoided / Captured",
+            {"title": "LCOC", "full": "Levelized Cost Of CO₂ Captured (균등화 포집 비용)",
              "unit": "USD / tCO₂", "color": "#E57373",
              "formula": "(연환산 CAPEX + OPEX) / 연 포집량",
-             "desc": "단위 CO₂당 종합 비용. CAPEX는 CRF로 연환산.",
+             "desc": "포집 CO₂ 1톤당 비용 (OPEX에 재생 열·전력 포함, CAPEX는 CRF로 연환산). "
+                     "업계의 COCA(회피 비용)와 다름 — 회피 기준은 'Net CO₂ 톤당 비용'.",
              "hint": "↓ 낮을수록 경제성 우수"},
         ]
         for col, d in zip(def_cols, definitions):
@@ -3795,7 +4001,7 @@ with tab_overall:
     st.markdown("")
     st.markdown(
         f"<h3 style='margin-top:8px;'>4대 기술 지표 비교 — "
-        f"{tip('SRD')} · {tip('We')} · {tip('SPECCA')} · {tip('COCA')}</h3>",
+        f"{tip('SRD')} · {tip('We')} · {tip('SPECCA')} · {tip('LCOC')}</h3>",
         unsafe_allow_html=True,
     )
     st.caption("KPI별 순위 정렬 · 🟢 최고 · 🔴 최악 (모든 지표 낮을수록 우수) · 약어에 마우스 올리면 정의")
@@ -3804,7 +4010,7 @@ with tab_overall:
         ("SRD", "SRD", "GJ/tCO₂", "{:,.2f}"),
         ("We_total", "We 총합", "GJe/tCO₂", "{:,.2f}"),
         ("SPECCA", "SPECCA", "MJ/tCO₂", "{:,.0f}"),
-        ("COCA", "COCA", "USD/tCO₂", "{:,.1f}"),
+        ("COCA", "LCOC", "USD/tCO₂", "{:,.1f}"),
     ]
 
     def render_kpi_chart(spec, container):
@@ -3878,7 +4084,7 @@ with tab_overall:
         ])
         _conclusion_kpi = (
             f"📌 <b>결론</b>: 지표별 최고 — {_winner_summary}. "
-            f"단일 winner 없음 → 우선 지표(SRD vs COCA)에 따라 선택."
+            f"단일 winner 없음 → 우선 지표(SRD vs LCOC)에 따라 선택."
         )
     st.markdown(
         f"<div style='font-size:0.8rem; color:#B0BEC5; padding:8px 12px; "
@@ -3893,13 +4099,23 @@ with tab_overall:
     show_df = df[["name", "material", "category", "SRD", "We_total", "We_elec",
                   "SPECCA", "COCA", "T_regen", "T_abs", "source"]].copy()
     show_df.columns = ["기술", "흡수제/소재", "분류", "SRD", "We_total", "We_elec",
-                       "SPECCA", "COCA", "T_regen[°C]", "T_abs[°C]", "출처"]
+                       "SPECCA", "LCOC", "T_regen[°C]", "T_abs[°C]", "출처"]
     show_df["SRD"] = show_df["SRD"].map(lambda x: f"{x:,.2f}")
     show_df["We_total"] = show_df["We_total"].map(lambda x: f"{x:,.2f}")
     show_df["We_elec"] = show_df["We_elec"].map(lambda x: f"{x:,.2f}")
     show_df["SPECCA"] = show_df["SPECCA"].map(lambda x: f"{x:,.0f}")
-    show_df["COCA"] = show_df["COCA"].map(lambda x: f"{x:,.1f}")
+    show_df["LCOC"] = show_df["LCOC"].map(lambda x: f"{x:,.1f}")
+    _fit_label = {"good": "✅ 적합", "ok": "➖ 가능", "poor": "⚠️ 부적합"}
+    show_df.insert(8, "Net CO₂ 톤당 비용",
+                   [f"{r['cost_per_net_t']:,.1f}" if r["cost_per_net_t"] else "—" for r in results])
+    show_df.insert(9, "업종 적합도", [
+        _fit_label.get((LIT[r["key"]].get("sector_fit", {}).get(source_sector_key) or ["", ""])[0], "—")
+        for r in results])
     st.dataframe(show_df, width="stretch", hide_index=True)
+    _fit_notes = [f"**{SHORT_NAMES.get(r['key'], r['name'])}**: {LIT[r['key']]['sector_fit'][source_sector_key][1]}"
+                  for r in results if LIT[r["key"]].get("sector_fit", {}).get(source_sector_key)]
+    if _fit_notes:
+        st.caption("업종 적합도 근거 — " + " · ".join(_fit_notes))
 
     # ── Section Conclusion (TRL · 기술 분포) ──
     _trl_a = sum(1 for r in results if r['TRL'] >= 9)
@@ -3915,7 +4131,7 @@ with tab_overall:
         f"TRL 9 (상용) <b style='color:#81C784;'>{_trl_a}</b> · "
         f"TRL 7-8 (Demo) <b style='color:#FFB74D;'>{_trl_b}</b> · "
         f"TRL ≤6 (Pilot) <b style='color:#E57373;'>{_trl_c}</b>. "
-        f"평균 SRD <b>{_avg_srd:.2f}</b> GJ/t · 평균 COCA <b>${_avg_coca:.1f}</b>/t. "
+        f"평균 SRD <b>{_avg_srd:.2f}</b> GJ/t · 평균 LCOC <b>${_avg_coca:.1f}</b>/t. "
         f"파일럿 데이터(†)는 ±25% 불확실성 — 의사결정 시 보정 필수."
         f"</div>",
         unsafe_allow_html=True,
@@ -4078,10 +4294,10 @@ with tab_overall:
         pdf_col1, pdf_col2 = st.columns([2, 1])
         with pdf_col1:
             _pdf_chart_help = (
-                "체크하면 연 손익·COCA·Net COCA·에너지 차트를 PNG로 PDF에 임베드합니다. "
+                "체크하면 연 손익·LCOC·Net LCOC·에너지 차트를 PNG로 PDF에 임베드합니다. "
                 "차트 변환에는 Chrome/Chromium이 필요하며, 실패하면 차트 없이 생성됩니다."
                 if st.session_state.get("lang", "ko") == "ko" else
-                "If checked, profit / COCA / Net COCA / energy charts are embedded as PNGs. "
+                "If checked, profit / LCOC / Net LCOC / energy charts are embedded as PNGs. "
                 "Chart export needs Chrome/Chromium; if it fails, the PDF is generated without charts."
             )
             include_charts_pdf = st.checkbox(
@@ -4179,7 +4395,7 @@ with tab_overall:
                             text=[f"{v:.1f}" for v in _cocas], textposition="outside",
                         ))
                         fig_c.update_layout(
-                            title="COCA — Cost of CO2 Avoided [USD/tCO2]",
+                            title="LCOC — Cost of CO2 Avoided [USD/tCO2]",
                             height=380, paper_bgcolor="white", plot_bgcolor="white",
                             font=dict(color="#263238", size=11),
                             yaxis=dict(title="USD/tCO2", gridcolor="#CFD8DC"),
@@ -4196,7 +4412,7 @@ with tab_overall:
                             textposition="outside",
                         ))
                         fig_n.update_layout(
-                            title="Net COCA — Incentive-adjusted [USD/tCO2]",
+                            title="Net LCOC — Incentive-adjusted [USD/tCO2]",
                             height=380, paper_bgcolor="white", plot_bgcolor="white",
                             font=dict(color="#263238", size=11),
                             yaxis=dict(title="USD/tCO2", gridcolor="#CFD8DC"),
@@ -4317,7 +4533,7 @@ with sub_energy:
 
 # ---------- ② 비용·에너지 › 비용 ----------
 with sub_cost:
-    st.markdown("### CAPEX (별도) + OPEX 스택 + COCA 요약")
+    st.markdown("### CAPEX (별도) + OPEX 스택 + LCOC 요약")
 
     col1, col2 = st.columns([1, 1])
     names_short = [SHORT_NAMES.get(r["key"], r["name"]) for r in results]
@@ -4365,7 +4581,7 @@ with sub_cost:
         st.plotly_chart(f, width="stretch", config=PLOTLY_CONFIG)
 
     st.markdown("---")
-    st.markdown("### COCA 요약")
+    st.markdown("### LCOC 요약")
 
     f = go.Figure()
     f.add_trace(go.Bar(
@@ -4376,7 +4592,7 @@ with sub_cost:
         textposition="outside",
     ))
     f.update_layout(
-        title=f"COCA [USD/tCO₂] (연간 {capture_mt_yr:.2f} Mt 기준)",
+        title=f"LCOC [USD/tCO₂] (연간 {capture_mt_yr:.2f} Mt 기준)",
         template="plotly_dark", height=400,
         xaxis_tickangle=0, margin=CHART_MARGIN,
     )
@@ -4398,7 +4614,7 @@ with sub_cost:
     # ── 매출/보조금/Net COCA ──
 # ---------- ③ 사업성 › 손익·NPV ----------
 with sub_profit:
-    st.markdown(f"### 💰 매출·보조금 반영 — **Net COCA** ({facility_mode} 모드)")
+    st.markdown(f"### 💰 매출·보조금 반영 — **Net LCOC** ({facility_mode} 모드)")
 
     if facility_mode == "CCS":
         st.caption(
@@ -4420,14 +4636,14 @@ with sub_profit:
 
     f_net = go.Figure()
     f_net.add_trace(go.Bar(
-        name="COCA (비용)",
+        name="LCOC (비용)",
         x=short_x, y=[r["COCA"] for r in results],
         marker_color="#E57373",
         text=[f"{r['COCA']:,.1f}" for r in results], textposition="inside",
         textfont=dict(size=13, color="white"),
     ))
     f_net.add_trace(go.Bar(
-        name="− 매출/보조금",
+        name="− 균등화 매출/보조금",
         x=short_x, y=[-r["rev_per_capture"] for r in results],
         marker_color="#81C784",
         text=[f"−{r['rev_per_capture']:,.1f}" for r in results], textposition="inside",
@@ -4435,7 +4651,7 @@ with sub_profit:
     ))
     # Net COCA — 큰 노란 다이아몬드 + 흰 테두리 + 검은 외곽
     f_net.add_trace(go.Scatter(
-        name="◆ Net COCA",
+        name="◆ Net LCOC",
         x=short_x, y=[r["Net_COCA"] for r in results],
         mode="markers+text",
         marker=dict(
@@ -4445,7 +4661,7 @@ with sub_profit:
         text=[f"<b>{r['Net_COCA']:+,.1f}</b>" for r in results],
         textposition="top center",
         textfont=dict(size=17, color="#FFEB3B"),
-        hovertemplate="<b>%{x}</b><br>Net COCA: %{y:,.1f} USD/t<extra></extra>",
+        hovertemplate="<b>%{x}</b><br>Net LCOC: %{y:,.1f} USD/t<extra></extra>",
     ))
     # Net COCA 라벨 위에 검은 박스 그림자 효과 (가독성)
     for r in results:
@@ -4464,7 +4680,7 @@ with sub_profit:
 
     f_net.add_hline(y=0, line_color="white", line_width=1.5, line_dash="dot")
     f_net.update_layout(
-        title="COCA vs Net COCA [USD/tCO₂포집] — Net 음수 = 흑자",
+        title="LCOC vs Net LCOC [USD/tCO₂포집] — Net 음수 = 흑자",
         template="plotly_dark", height=520, barmode="relative",
         margin=dict(l=10, r=10, t=60, b=80),
         legend=dict(orientation="h", y=-0.12),
@@ -4473,6 +4689,10 @@ with sub_profit:
     # Net COCA 막대 아래에 텍스트가 안잘리도록 우측 여유
     st.plotly_chart(f_net, width="stretch", config=PLOTLY_CONFIG)
 
+    st.caption(
+        "매출은 비용(LCOC, CRF 균등화)과 같은 기준으로 **균등화** — 보조금 지급 기간(예: 45Q 12년)이 "
+        "수명보다 짧으면 그만큼 낮아짐. 아래 표의 연 매출은 운영 1년차(보조금 지급 중) 값"
+    )
     st.markdown("##### 매출/보조금 상세")
     rev_rows = []
     for r in results:
@@ -4487,6 +4707,8 @@ with sub_profit:
             "CCU 매출 [M$/yr]": f"{r['ccu_revenue']/1e6:,.2f}",
             "총 매출 [M$/yr]": f"{r['total_revenue']/1e6:,.2f}",
             "총 매출 (원)": fmt_krw_amt(r['total_revenue'] * fx_krw_per_usd),
+            "보조금 기간": (f"{r['subsidy_years']}년" if r.get("subsidy_years") else "—"),
+            "균등화 매출 [$/t]": f"{r['rev_per_capture']:,.1f}",
             "COCA": f"{r['COCA']:,.1f}",
             "Net COCA": f"{r['Net_COCA']:+,.1f}",
         })
@@ -4507,7 +4729,7 @@ with sub_profit:
     st.markdown("---")
     st.markdown("### 🪙 연간 손익 분석 — 시설 단위 수익성")
     st.caption(
-        f"연간 매출 − 연간 비용 = 연간 손익. "
+        f"균등화 연 매출 − 균등화 연 비용(LCOC × 포집량) = 연간 손익 (세전, 수명 평균). "
         f"포집 {capture_mt_yr:.2f} Mt/yr · 환율 {fx_krw_per_usd:,.0f} KRW/USD"
     )
 
@@ -4587,7 +4809,7 @@ with sub_profit:
         "연 손익 [M$]":   f"{r['annual_profit_usd']/1e6:+,.1f}",
         "연 손익 (원)":   fmt_krw_amt(r['annual_profit_krw'], sign=True),
         "ROI [%]":        f"{r['annual_profit_usd']/r['annual_cost_usd']*100:+,.1f}" if r['annual_cost_usd'] > 0 else "—",
-        "Net COCA [USD/t]": f"{r['Net_COCA']:+,.1f}",
+        "Net LCOC [USD/t]": f"{r['Net_COCA']:+,.1f}",
     } for r in results])
     st.dataframe(profit_df, width="stretch", hide_index=True)
 
@@ -4597,9 +4819,9 @@ with sub_profit:
     for i, r in enumerate(results[:4]):
         with krw_cols[i]:
             st.metric(
-                f"{SHORT_NAMES.get(r['key'], r['name'])} Net COCA",
+                f"{SHORT_NAMES.get(r['key'], r['name'])} Net LCOC",
                 f"{r['Net_COCA']*fx_krw_per_usd:+,.0f} 원/t",
-                delta=f"COCA: {r['COCA']*fx_krw_per_usd:,.0f} 원/t",
+                delta=f"LCOC: {r['COCA']*fx_krw_per_usd:,.0f} 원/t",
                 delta_color="off",
             )
 
@@ -4614,8 +4836,10 @@ with sub_profit:
         unsafe_allow_html=True,
     )
     st.caption(
-        f"수명 {lifetime}년 · 할인율 {discount*100:.1f}% · 초기 CAPEX = 실효 CAPEX × 연 포집량 · "
-        f"연 cash flow = 연 손익 (보조금·매출 stack 반영)"
+        f"착공 시점 기준 할인 · 건설 {construction_yr}년 + 운영 {lifetime}년 · 할인율 {discount*100:.1f}% · "
+        f"첫해 가동률 {ramp_first*100:.0f}% · 법인세 {tax_rate*100:.1f}% · "
+        f"감가상각 IFRS 정액법 {min(dep_life, lifetime)}년 · 보조금 지급 기간 반영 · 무차입. "
+        f"회수 기간은 운영 개시부터 센 연수"
     )
 
     # 카드: 각 기술별 NPV·IRR·Payback
@@ -4626,7 +4850,7 @@ with sub_profit:
             irr_str = f"{r['irr']*100:.1f}%" if r["irr"] is not None else "N/A"
             irr_color = ("#81C784" if (r["irr"] is not None and r["irr"] > discount)
                          else "#E57373")
-            pb_str = f"{r['payback_yr']:.1f}년" if r["payback_yr"] else "회수불가"
+            pb_str = f"운영 {r['payback_yr']:.1f}년" if r["payback_yr"] else "회수불가"
             pb_color = ("#81C784" if (r["payback_yr"] and r["payback_yr"] < 10)
                         else "#FFB74D" if (r["payback_yr"] and r["payback_yr"] < 20)
                         else "#E57373")
@@ -4664,7 +4888,7 @@ with sub_profit:
         "NPV":            fmt_money(r["npv"], fx_krw_per_usd, display_currency),
         "IRR [%]":        f"{r['irr']*100:.1f}" if r["irr"] is not None else "N/A",
         "단순 회수 [yr]": f"{r['payback_yr']:.1f}" if r["payback_yr"] else "N/A",
-        "할인 회수 [yr]": f"{r['payback_disc_yr']}" if r["payback_disc_yr"] else "N/A",
+        "할인 회수 [yr]": f"{r['payback_disc_yr']:.1f}" if r["payback_disc_yr"] else "N/A",
         "PI":             f"{r['profitability_idx']:.2f}",
     } for r in results])
     st.dataframe(fin_df, width="stretch", hide_index=True)
@@ -4676,12 +4900,79 @@ with sub_profit:
         f"PI > 1.5 → 매우 양호 (CCUS 평균 0.7~1.3 수준)"
     )
 
+    # ── 손익계산서 (EBITDA · IFRS 감가상각 · 법인세) ──
+    st.markdown("##### 🧾 손익계산서 — 정상 가동 첫해 (IFRS, 무차입)")
+    st.caption(
+        f"EBITDA = 매출 − 현금 영업비용(용매·기타·전력·열·T&S). 감가상각은 IAS 16 정액법 — "
+        f"운영 개시(사용 가능 시점)부터 {min(dep_life, lifetime)}년, 잔존가치 0. "
+        f"법인세 {tax_rate*100:.1f}% (결손금 이월 공제), 이자 비용 없음. "
+        f"매출에는 배출권·보조금·CCU 판매가 모두 포함 (45Q 같은 세액공제도 매출로 처리 — 1차 근사)"
+    )
+    _pnl_rows = []
+    for r in results:
+        _row = {
+            "기술": r["name"],
+            "매출": fmt_money(r["ss_revenue"], fx_krw_per_usd, display_currency),
+            "EBITDA": fmt_money(r["ss_ebitda"], fx_krw_per_usd, display_currency),
+            "EBITDA 마진": (f"{r['ss_ebitda'] / r['ss_revenue'] * 100:+.0f}%" if r["ss_revenue"] > 0 else "—"),
+            "감가상각": fmt_money(r["ss_depreciation"], fx_krw_per_usd, display_currency),
+            "영업이익 (EBIT)": fmt_money(r["ss_ebit"], fx_krw_per_usd, display_currency),
+            "법인세": fmt_money(r["ss_tax"], fx_krw_per_usd, display_currency),
+            "당기순이익": fmt_money(r["ss_net_income"], fx_krw_per_usd, display_currency),
+        }
+        _sy = r.get("subsidy_years")
+        if _sy and _sy < lifetime:
+            _row[f"보조금 종료 후 EBITDA ({_sy + 1}년차)"] = fmt_money(
+                r["pnl_years"][_sy]["ebitda"], fx_krw_per_usd, display_currency)
+        _pnl_rows.append(_row)
+    st.dataframe(pd.DataFrame(_pnl_rows), width="stretch", hide_index=True)
+
+    _pnl_keys = [r["key"] for r in results]
+    pnl_key = st.selectbox(
+        "연도별 손익을 볼 기술",
+        options=_pnl_keys,
+        index=_pnl_keys.index(min(results, key=lambda r: r["COCA"])["key"]),
+        format_func=lambda k: LIT[k]["name"],
+        key="pnl_tech",
+    )
+    _pr = next(r for r in results if r["key"] == pnl_key)
+    _yrs = [y["year"] for y in _pr["pnl_years"]]
+    f_pnl = go.Figure()
+    f_pnl.add_trace(go.Bar(name="매출", x=_yrs, y=[y["revenue"] / 1e6 for y in _pr["pnl_years"]],
+                           marker_color="#4FC3F7", opacity=0.55))
+    f_pnl.add_trace(go.Bar(name="EBITDA", x=_yrs, y=[y["ebitda"] / 1e6 for y in _pr["pnl_years"]],
+                           marker_color="#81C784"))
+    f_pnl.add_trace(go.Scatter(name="당기순이익", x=_yrs, y=[y["net_income"] / 1e6 for y in _pr["pnl_years"]],
+                               mode="lines+markers", line=dict(color="#FFB74D", width=2)))
+    f_pnl.add_trace(go.Scatter(name="감가상각", x=_yrs, y=[-y["depreciation"] / 1e6 for y in _pr["pnl_years"]],
+                               mode="lines", line=dict(color="#B0BEC5", width=1, dash="dot")))
+    f_pnl.add_hline(y=0, line_color="white", line_width=1)
+    if _pr.get("subsidy_years") and _pr["subsidy_years"] < lifetime:
+        f_pnl.add_vline(x=_pr["subsidy_years"] + 0.5, line_color="#E57373", line_dash="dash",
+                        annotation_text="보조금 종료")
+    f_pnl.update_layout(
+        title=f"연도별 손익 — {_pr['name']} [M$] (운영 연도)",
+        template="plotly_dark", height=400, barmode="overlay",
+        margin=dict(l=10, r=10, t=60, b=40),
+        xaxis_title="운영 연도", yaxis_title="M$",
+        legend=dict(orientation="h", y=-0.18),
+    )
+    st.plotly_chart(f_pnl, width="stretch", config=PLOTLY_CONFIG)
+    with st.expander("📋 연도별 손익 표"):
+        st.dataframe(pd.DataFrame([{
+            "운영 연도": y["year"], "가동률": f"{y['utilization']*100:.0f}%",
+            "매출 [M$]": f"{y['revenue']/1e6:,.1f}", "현금 영업비용 [M$]": f"{y['opex']/1e6:,.1f}",
+            "EBITDA [M$]": f"{y['ebitda']/1e6:,.1f}", "감가상각 [M$]": f"{y['depreciation']/1e6:,.1f}",
+            "EBIT [M$]": f"{y['ebit']/1e6:,.1f}", "법인세 [M$]": f"{y['tax']/1e6:,.1f}",
+            "당기순이익 [M$]": f"{y['net_income']/1e6:,.1f}", "FCF [M$]": f"{y['fcf']/1e6:,.1f}",
+        } for y in _pr["pnl_years"]]), width="stretch", hide_index=True)
+
     # ── 시간 흐름 누적 cash flow 차트 ──
-    st.markdown(f"##### 📈 25년 누적 Cash Flow — 탄소가격 시나리오: **{PRICE_SCENARIOS[price_scenario_key]['label']}**")
+    st.markdown(f"##### 📈 누적 Cash Flow (FCF) — 탄소가격 시나리오: **{PRICE_SCENARIOS[price_scenario_key]['label']}**")
     if rev_growth_rate != 0:
-        st.caption(f"매출 연 {rev_growth_rate*100:+.1f}% 성장 가정 — t=0: -CAPEX, 이후 매년 손익 누적")
+        st.caption(f"매출 연 {rev_growth_rate*100:+.1f}% 성장 가정 — 건설 중 CAPEX 지출, 운영 중 FCF(EBITDA − 법인세) 누적")
     else:
-        st.caption("매출 고정 가정 — 시간 흐름 적용하려면 사이드바에서 시나리오 변경")
+        st.caption("매출 고정 가정 — 건설 중 CAPEX 지출, 운영 중 FCF(EBITDA − 법인세) 누적. 시간 흐름은 사이드바 시나리오에서")
 
     f_cf = go.Figure()
     for r in results:
@@ -4696,12 +4987,15 @@ with sub_profit:
             ))
     f_cf.add_hline(y=0, line_color="white", line_width=1, line_dash="dot",
                     annotation_text="Break-even")
+    if construction_yr > 0:
+        f_cf.add_vline(x=construction_yr, line_color="#FFC107", line_dash="dash",
+                       annotation_text="운영 개시")
     f_cf.update_layout(
-        title=f"누적 Cash Flow [M$/yr] · 수명 {lifetime}년 · "
+        title=f"누적 FCF [M$] · 건설 {construction_yr}년 + 운영 {lifetime}년 · "
               f"성장률 {rev_growth_rate*100:+.1f}%/yr",
         template="plotly_dark", height=400,
         margin=dict(l=10, r=10, t=60, b=40),
-        xaxis_title="연도 (t=0 → CAPEX 투자)",
+        xaxis_title="연도 (0 = 착공)",
         yaxis_title="누적 Cash Flow [M$]",
         legend=dict(orientation="h", y=-0.18),
     )
@@ -4709,11 +5003,11 @@ with sub_profit:
 
 # ---------- ③ 사업성 › 민감도·불확실성 ----------
 with sub_risk:
-    st.markdown("### 🌪️ 민감도 분석 (Tornado) — Net COCA 영향도")
+    st.markdown("### 🌪️ 민감도 분석 (Tornado) — Net LCOC 영향도")
     st.caption(
-        "입력을 하나씩 바꿔 모델을 다시 계산한 Net COCA 변화 (나머지 입력은 사이드바 값 그대로). "
+        "입력을 하나씩 바꿔 모델을 다시 계산한 Net LCOC 변화 (나머지 입력은 사이드바 값 그대로). "
         "막대가 길수록 결과를 크게 흔드는 가정 → 실제 사업에서 먼저 확인할 값. "
-        "Net COCA는 낮을수록 유리 (음수 = 흑자)."
+        "Net LCOC는 낮을수록 유리 (음수 = 흑자)."
     )
 
     _sens_keys = [r["key"] for r in results]
@@ -4723,7 +5017,7 @@ with sub_risk:
         options=_sens_keys,
         index=_sens_keys.index(_sens_default),
         format_func=lambda k: LIT[k]["name"],
-        help="기본값: 선택한 기술 중 COCA가 가장 낮은 기술",
+        help="기본값: 선택한 기술 중 LCOC가 가장 낮은 기술",
         key="sens_tech",
     )
     base_net = next(r for r in results if r["key"] == sens_key)["Net_COCA"]
@@ -4741,6 +5035,7 @@ with sub_risk:
         ("🏗️ CAPEX ±20%", {"capex_scale": 0.8}, {"capex_scale": 1.2}),
         ("🧾 OPEX (용매·기타) ±20%", {"opex_scale": 0.8}, {"opex_scale": 1.2}),
         ("🔥 재생 열 SRD ±20%", {"srd_scale": 0.8}, {"srd_scale": 1.2}),
+        ("♨️ 열(증기) 단가 ±20%", {"heat_price": _b["heat_price"] * 0.8}, {"heat_price": _b["heat_price"] * 1.2}),
         ("⚡ 전기 가격 ±20%", {"elec_price": _b["elec_price"] * 0.8}, {"elec_price": _b["elec_price"] * 1.2}),
         ("📉 포집량 ±20% (규모 효과)", {"capture_t_yr": _b["capture_t_yr"] * 0.8},
          {"capture_t_yr": _b["capture_t_yr"] * 1.2}),
@@ -4779,11 +5074,11 @@ with sub_risk:
     f_tornado.add_vline(x=0, line_color="white", line_width=1.5)
     f_tornado.update_layout(
         title=f"Tornado: {SHORT_NAMES.get(sens_key, LIT[sens_key]['name'])} · "
-              f"Base Net COCA = {base_net:+,.1f} $/t",
+              f"Base Net LCOC = {base_net:+,.1f} $/t",
         template="plotly_dark", height=120 + 46 * len(sens_rows),
         margin=dict(l=10, r=80, t=60, b=40),
         barmode="group",
-        xaxis_title="Net COCA 변화 [USD/t] (− 쪽이 유리)",
+        xaxis_title="Net LCOC 변화 [USD/t] (− 쪽이 유리)",
         yaxis=dict(autorange="reversed"),
         legend=dict(orientation="h", y=-0.12),
     )
@@ -4792,7 +5087,7 @@ with sub_risk:
     if sens_rows:
         _top = sens_rows[0]
         st.caption(
-            f"💡 **{_top[0]}** 가 가장 크게 흔듦: 낮추면 Net COCA {_top[1]:+,.1f}, "
+            f"💡 **{_top[0]}** 가 가장 크게 흔듦: 낮추면 Net LCOC {_top[1]:+,.1f}, "
             f"높이면 {_top[2]:+,.1f} $/t. "
             "의사결정 전에 이 값부터 견적·실측으로 좁힐 것."
         )
@@ -4804,7 +5099,7 @@ with sub_profit:
     st.markdown("---")
     st.markdown("### 🎯 흑자 진입 인센티브 — CO₂ 가격 Breakeven")
     st.caption(
-        "Net COCA = 0 (손익분기) 도달에 필요한 추가 인센티브 단가. "
+        "Net LCOC = 0 (손익분기) 도달에 필요한 추가 인센티브 단가. "
         "현재 매출/보조금 stack에서 얼마나 더 받아야 흑자?"
     )
 
@@ -4834,7 +5129,7 @@ with sub_profit:
             margin = 0
         breakeven_rows.append({
             "기술": r["name"],
-            "현재 Net COCA [$/t]":    f"{r['Net_COCA']:+,.1f}",
+            "현재 Net LCOC [$/t]":    f"{r['Net_COCA']:+,.1f}",
             "상태":                   status,
             f"필요 추가 인센티브 ({yield_label}) [$/t]":
                                       f"{extra_per_qualifying:,.1f}" if extra_per_qualifying > 0 else "0 (불필요)",
@@ -4888,9 +5183,23 @@ with sub_risk:
     st.markdown("---")
     st.markdown("### 🎲 Monte Carlo — 기술 간 차이가 불확실성보다 큰가")
     st.caption(
-        "데이터 신뢰도 Tier별 불확실성(A ±5% · B ±15% · C ±25%, 95% 범위)을 기술마다 CAPEX·OPEX·SRD에 주고, "
-        "전기 가격(±10%)은 모든 기술에 같은 값을 써서 모델을 반복 계산. "
-        "상자 = P25~P75, 선 = P10~P90."
+        "CAPEX = 견적 정확도(AACE 18R-97, 모든 기술 공통) × 기술 성숙도(데이터 신뢰도 Tier, 기술별). "
+        "비용 초과 쪽으로 치우친 로그정규 분포(P10·P90을 범위 양끝으로 맞춤). OPEX·SRD는 성숙도만, "
+        "전기(±10%)·열(±15%) 단가는 모든 기술에 같은 값. 상자 = P25~P75, 선 = P10~P90."
+    )
+
+    # AACE 18R-97 정확도 범위 (중간값, P10/P90로 해석)
+    AACE_CLASSES = {
+        "Class 5 — 개념 검토 (−35% / +65%)": (-0.35, 0.65),
+        "Class 4 — 타당성 검토 (−22% / +35%)": (-0.22, 0.35),
+        "Class 3 — 기본설계 (−15% / +20%)": (-0.15, 0.20),
+    }
+    mc_aace = st.selectbox(
+        "CAPEX 견적 정확도 (AACE)",
+        options=list(AACE_CLASSES.keys()),
+        index=0,
+        help="이 도구 수준의 비교는 Class 5(개념). 부지·설계가 정해질수록 4 → 3",
+        key="mc_aace",
     )
 
     MC_N = 500
@@ -4905,21 +5214,31 @@ with sub_risk:
         # Tier = 참고문헌 탭 '데이터 신뢰도' 표와 같은 분류 (나머지 파일럿 † = C)
         TECH_TIER = {"MEA_baseline": "A", "MHI_KS21": "A", "Cansolv_DC103": "A", "Aker_S26": "A",
                      "TSA_Solid": "B", "CaL": "B", "VPSA_Syngas": "B"}
-        TIER_UNC = {"A": 0.05, "B": 0.15, "C": 0.25}
+        # 기술 성숙도 범위 (P10 / P90) — 상용 실적이 적을수록 위쪽(비용 초과·성능 미달)으로 넓게
+        TIER_RANGE = {"A": (-0.05, 0.10), "B": (-0.10, 0.25), "C": (-0.15, 0.40)}
+
+        def _lognorm(lo, hi, size):
+            """P10 = 1+lo, P90 = 1+hi 가 되는 로그정규 배수."""
+            mu = (np.log(1 + hi) + np.log(1 + lo)) / 2
+            sig = (np.log(1 + hi) - np.log(1 + lo)) / (2 * 1.2816)
+            return np.exp(_rng.normal(mu, sig, size))
 
         _rng = np.random.default_rng(42)
-        _elec = np.clip(_rng.normal(1.0, 0.10 / 2, MC_N), 0.1, None)  # 모든 기술 공통
+        _est = _lognorm(*AACE_CLASSES[mc_aace], MC_N)                    # CAPEX 견적 (공통)
+        _elec = np.clip(_rng.normal(1.0, 0.10 / 2, MC_N), 0.1, None)     # 전기 단가 (공통)
+        _heat = np.clip(_rng.normal(1.0, 0.15 / 2, MC_N), 0.1, None)     # 열 단가 (공통)
         mc_net, mc_npv = {}, {}
         with st.spinner("Monte Carlo 계산 중..."):
             for r in results:
                 k = r["key"]
-                unc = TIER_UNC[TECH_TIER.get(k, "C")]
-                z = np.clip(_rng.normal(1.0, unc / 2, size=(MC_N, 3)), 0.1, None)
+                z = _lognorm(*TIER_RANGE[TECH_TIER.get(k, "C")], (MC_N, 3))
                 nets, npvs = [], []
                 for i in range(MC_N):
                     rr = evaluate_tech(k, {**BASE_P,
-                                           "capex_scale": z[i, 0], "opex_scale": z[i, 1], "srd_scale": z[i, 2],
-                                           "elec_price": BASE_P["elec_price"] * _elec[i]})
+                                           "capex_scale": _est[i] * z[i, 0], "opex_scale": z[i, 1],
+                                           "srd_scale": z[i, 2],
+                                           "elec_price": BASE_P["elec_price"] * _elec[i],
+                                           "heat_price": BASE_P["heat_price"] * _heat[i]})
                     nets.append(rr["Net_COCA"])
                     npvs.append(rr["npv"])
                 mc_net[k] = np.array(nets)
@@ -4940,18 +5259,18 @@ with sub_risk:
             mc_rows.append({
                 "기술": LIT[k]["name"],
                 "Tier": TECH_TIER.get(k, "C"),
-                "Net COCA P10 [$/t]": f"{p10:+,.1f}",
+                "Net LCOC P10 [$/t]": f"{p10:+,.1f}",
                 "P50": f"{p50:+,.1f}",
                 "P90": f"{p90:+,.1f}",
                 "NPV P50 [M$]": f"{np.percentile(mc_npv[k], 50) / 1e6:+,.0f}",
                 "흑자 확률 (NPV>0)": f"{(mc_npv[k] > 0).mean() * 100:.0f}%",
-                "Net COCA 최저일 확률": f"{(_lowest == j).mean() * 100:.0f}%",
+                "Net LCOC 최저일 확률": f"{(_lowest == j).mean() * 100:.0f}%",
             })
         f_mc.add_hline(y=0, line_color="white", line_dash="dash", annotation_text="흑자/적자 경계")
         f_mc.update_layout(
-            title=f"Net COCA 분포 — 선택 기술 {len(_keys)}개 ({MC_N}회)",
+            title=f"Net LCOC 분포 — 선택 기술 {len(_keys)}개 ({MC_N}회)",
             template="plotly_dark", height=420,
-            yaxis_title="Net COCA [USD/t] (낮을수록 유리)",
+            yaxis_title="Net LCOC [USD/t] (낮을수록 유리)",
             margin=dict(l=10, r=10, t=60, b=40),
         )
         st.plotly_chart(f_mc, width="stretch", config=PLOTLY_CONFIG)
@@ -4963,10 +5282,10 @@ with sub_risk:
         if len(_keys) == 1:
             st.info(f"🎯 흑자 확률 (NPV>0): **{(mc_npv[_keys[0]] > 0).mean() * 100:.0f}%**")
         elif _win[_best] >= 0.8:
-            st.success(f"🎯 **{_best_name}**이(가) {_win[_best] * 100:.0f}% 확률로 Net COCA 최저 — "
+            st.success(f"🎯 **{_best_name}**이(가) {_win[_best] * 100:.0f}% 확률로 Net LCOC 최저 — "
                        "기술 간 차이가 데이터 불확실성보다 큼.")
         else:
-            st.warning(f"⚖️ **{_best_name}**이(가) Net COCA 최저일 확률은 {_win[_best] * 100:.0f}% — "
+            st.warning(f"⚖️ **{_best_name}**이(가) Net LCOC 최저일 확률은 {_win[_best] * 100:.0f}% — "
                        "불확실성 안에서 순위가 자주 바뀜. 기술 선정은 견적·실증 데이터로 좁힌 뒤 판단.")
 
 # ---------- ② 비용·에너지 › 소재 손실 ----------
@@ -5276,8 +5595,8 @@ with sub_compare:
             # KPI 선택
             kpi_options = {
                 "annual_profit_usd": ("💰 연 손익 [M USD/yr]", lambda x: x / 1e6),
-                "COCA": ("💵 COCA [USD/tCO₂]", lambda x: x),
-                "Net_COCA": ("🌱 Net COCA [USD/tCO₂]", lambda x: x),
+                "COCA": ("💵 LCOC [USD/tCO₂]", lambda x: x),
+                "Net_COCA": ("🌱 Net LCOC [USD/tCO₂]", lambda x: x),
                 "SRD": ("🔥 SRD [GJ/tCO₂]", lambda x: x),
                 "We_elec": ("⚡ We_elec [GJe/tCO₂]", lambda x: x),
                 "npv": ("📈 NPV [M USD]", lambda x: x / 1e6),
@@ -5344,8 +5663,8 @@ with sub_compare:
                 row = {"기술": SHORT_NAMES.get(k, k)}
                 for fld, label in [
                     ("annual_profit_usd", "연 손익 [M USD/yr]"),
-                    ("COCA", "COCA [USD/t]"),
-                    ("Net_COCA", "Net COCA [USD/t]"),
+                    ("COCA", "LCOC [USD/t]"),
+                    ("Net_COCA", "Net LCOC [USD/t]"),
                     ("npv", "NPV [M USD]"),
                     ("crcf_efficiency_pct", "CRCF 효율 [%]"),
                 ]:
@@ -5363,7 +5682,7 @@ with sub_compare:
             simple_cols = ["기술",
                             "A · 연 손익 [M USD/yr]", "B · 연 손익 [M USD/yr]",
                             "Δ · 연 손익 [M USD/yr]",
-                            "A · COCA [USD/t]", "B · COCA [USD/t]", "Δ · COCA [USD/t]",
+                            "A · LCOC [USD/t]", "B · LCOC [USD/t]", "Δ · LCOC [USD/t]",
                             "A · CRCF 효율 [%]", "B · CRCF 효율 [%]",
                             "Δ · CRCF 효율 [%]"]
             simple_cols = [c for c in simple_cols if c in delta_df.columns]
@@ -5551,7 +5870,8 @@ with meth_body:
         "<b>7~9</b>: 압축 모델·손실 추정·MEA walk-through 검증<br>"
         "<b>10~11</b>: LCA 분해·한국 K-ETS CCU 차감 (직접 매출 아님)<br>"
         "<b>12~15</b>: NPV/IRR/Payback·Tornado·Breakeven·모델 한계<br>"
-        "<b>16~18</b>: <b>🆕 SSOT 데이터 아키텍처 · 🆚 비교 모드 · 📥 PDF 리포트</b>"
+        "<b>16~18</b>: SSOT 데이터 아키텍처 · 🆚 비교 모드 · 📥 PDF 리포트<br>"
+        "<b>19~21</b>: <b>🆕 현금흐름(EBITDA·IFRS 감가상각·법인세) · 열 비용·지역·다계열·선박 저장 · 실측 검증·불확실성</b>"
         "</span></div>",
         unsafe_allow_html=True,
     )
@@ -5587,7 +5907,7 @@ NETL Cost & Performance Baseline은 미 정부가 30년+ 유지·검증해온 �
         """)
 
     # ── 2. KPI별 ──
-    with st.expander("🎯 **2. 4대 KPI 계산 근거 (SRD · We · SPECCA · COCA)**"):
+    with st.expander("🎯 **2. 4대 KPI 계산 근거 (SRD · We · SPECCA · LCOC)**"):
         st.markdown(r"""
 **SRD (Specific Reboiler Duty)**
 - **정의**: 흡수제 재생탑 reboiler가 단위 CO₂당 공급해야 하는 열에너지
@@ -5613,8 +5933,8 @@ NETL Cost & Performance Baseline은 미 정부가 30년+ 유지·검증해온 �
 - 출처: Manzolini 2015 변형 (원본은 reference plant heat rate 차이로 산출)
 - 가중치 500/2500: 기존 아민툴과 호환 위해 유지 (비교 일관성 ↑)
 
-**COCA (Cost Of CO₂ Captured)**
-- **공식**: COCA = (연환산 CAPEX + OPEX) / 연 포집량
+**LCOC (Cost Of CO₂ Captured)**
+- **공식**: LCOC = (연환산 CAPEX + OPEX) / 연 포집량
 - **연환산 CAPEX** = CAPEX × CRF, where CRF = i(1+i)ⁿ / [(1+i)ⁿ−1]
 - **default**: i=8%, n=25 → CRF = 0.0937
 - **OPEX**: 용매·기타·전력 합산
@@ -5710,11 +6030,18 @@ $$\text{{CRF}} = \frac{{i(1+i)^n}}{{(1+i)^n - 1}}$$
 - default i = 8%, n = 25 → CRF = 0.0937 (9.37%/yr)
 - 출처: **NETL QGESS 2019** Standard
 
-**전기 가격 (default $80/MWh)**
-- US 산업 평균: 75~95 USD/MWh (EIA AEO 2024)
-- 한국 산업: ≈ 110~130 USD/MWh (한전 산업용)
-- EU: ≈ 100~150 USD/MWh
-- 출처: **EIA AEO 2024**, **IEA Energy Prices 2023**
+**전기·열 단가 (사이드바 '사업 지역' 기본값, 2026-10 갱신)**
+
+| 지역 | 전기 [USD/MWh] | 가스 [USD/GJ] | 가스 증기 [USD/GJ] | 건설비 계수 | 법인세 |
+|---|---|---|---|---|---|
+| 🇺🇸 미국 | 90 (EIA 2026 산업용 9.05¢) | 4.5 (산업용 $4.8/MMBtu) | 5.8 | 1.00 | 25.6% |
+| 🇰🇷 한국 | 133 (한전 산업용 2025 평균 181.9원) | 15.8 (산업용 약 21.7원/MJ) | 19.1 | 1.00 (가정) | 27.5% |
+| 🇪🇺 서유럽 | 205 (Eurostat 2025 H2 €0.184) | 18.8 (€60.5/MWh) | 22.6 | 1.15 | 25.8% (NL) |
+
+- 증기 단가 = 연료 ÷ 보일러 효율 0.85 + O&M $0.5/GJ (히트펌프는 전기 ÷ COP 3, 폐열 $1, 재생 열 $10 — 1차 근사)
+- 환율 1,370원/$, 1.12 $/€ · 한국 가스는 연료비 연동으로 매달 바뀜
+- 건설비 계수: Towler & Sinnott 표(네덜란드 1.19, 독일 1.11) — 한국은 공개 표가 없어 1.00 가정(0.9~1.15)
+- 출처: **EIA STEO 2026-10**, **KEPCO 전력통계**, **KOGAS 요금표**, **Eurostat 2026-05**, **EY·Tax Foundation·Deloitte**
 
 **탄소시장 가격 (default — K-ETS·EU ETS는 2026-09 갱신, 나머지는 2024 평균)**
 
@@ -5729,12 +6056,15 @@ $$\text{{CRF}} = \frac{{i(1+i)^n}}{{(1+i)^n - 1}}$$
 
 | 제도 | Default | 조건 | 출처 |
 |---|---|---|---|
-| US 45Q-CCS | $85/t | 12yr, 75%+ capture | IRA 2022 · OBBBA 2025 |
+| US 45Q-CCS | $85/t | **12년** 지급, 75%+ capture | IRA 2022 · OBBBA 2025 |
 | US 45Q-EOR·CCU | $85/t | 12yr, 2025-07-04 이후 가동 설비 (이전 설비는 $60) | OBBBA 2025 (H.R. 1) |
 | US 45Q-DAC | $180/t | 12yr, 저장·활용 동일 (OBBBA 이후) | IRA 2022 · OBBBA 2025 |
-| NL SDE++ | $120/t (€110) | CfD 12~15yr | RVO Netherlands 2024 |
-| UK CCUS CfD | $180/t (£150) | Track 1/2 cluster | UK BEIS 2023 |
-| K-CCUS Act | $22/t (30,000 KRW, placeholder) | 시행령 미정 | 산업부 2024 |
+| NL SDE++ | $120/t (€110) | CCS **15년** | RVO · IEA 정책 DB |
+| UK CCUS CfD | $180/t (£150) | ICC 10년 + 최대 5년 연장 → **15년** | DESNZ 2022 |
+| K-CCUS (가정) | $22/t (30,000 KRW) | **톤당 지원 제도 없음** — CCUS법(2025-02)은 설비·융자 지원만. 10년 가정 | 산업부 |
+
+보조금은 지급 기간이 끝나면 매출에서 빠짐 → LCOC와 같은 기준으로 **균등화**해 Net LCOC에 반영
+(예: 45Q $85 × 격리 92% = $78/t, 12년 ÷ 25년 균등화 → 약 $55/t)
 
 **환율**: default 1,370 KRW/USD (2026-09-24 기준, 사용자 조정 가능)
         """)
@@ -5804,23 +6134,25 @@ floor 0.3 (부분 압축 시에도 최소 손실)
 **Step 3**: SPECCA
 - (3.40 × 500 + 0.476 × 2,500) / 0.90 = (1,700 + 1,190) / 0.90 = **3,211 MJ/t**
 
-**Step 4**: COCA
-- CAPEX/t scaled: 950 × (3.7/1)^0.35 = 950 × 1.55 = **1,470 USD/(t/yr)**
+**Step 4**: LCOC (2018 USD 기준 — 앱 기본값은 CPI로 2026 USD 환산, 미국 지역)
+- CAPEX/t scaled: 950 × (3.7/1)^0.35 = 950 × 1.55 = **1,470 USD/(t/yr)** (3.7 Mt 이하라 1계열)
 - 연환산 CAPEX = 1,470 × 0.0937 = **137.7 USD/t**
-- 전력비 = 0.476 × 277.78/1000 × 80 = **10.6 USD/t**
+- 전력비 = 0.476 × 277.78/1000 × 90 = **11.9 USD/t**
+- 재생 열(증기)비 = SRD 3.40 × $5.8/GJ (가스 $4.5 ÷ 0.85 + O&M 0.5) = **19.7 USD/t**
 - OPEX_solvent = 1.5, OPEX_other = 12.0
-- **COCA = 137.7 + 1.5 + 12.0 + 10.6 = 161.8 USD/t**
+- **LCOC = 137.7 + 1.5 + 12.0 + 11.9 + 19.7 = 182.8 USD/t**
 
-**Step 5**: 매출/Net COCA (45Q-CCS $85/t)
+**Step 5**: 매출/Net LCOC (45Q-CCS $85/t, 12년 지급)
 - stored_t = 1.0 × 1.0 × 0.92 = 0.92 Mt
-- subsidy = 0.92e6 × 85 = $78.2M/yr
-- rev/capture = $78.2M / 1.0Mt = $78.2/t
-- **Net COCA = 161.8 − 78.2 = $83.6/t**
+- subsidy = 0.92e6 × 85 = $78.2M/yr (운영 1~12년차)
+- 균등화: 12년 연금계수 7.536 ÷ 25년 10.675 = 0.706 → **$55.2/t**
+- **Net LCOC = 182.8 − 55.2 = $127.6/t**
 
-**Step 6**: 연간 손익
-- 연 비용 = 161.8 × 1.0e6 = $161.8M/yr
-- 연 매출 = $78.2M/yr (보조금만)
-- **연 손익 = +$78.2M − $161.8M = −$83.6M/yr** (적자, 약 −1,170억원/yr)
+**Step 6**: 연간 손익 (균등화, 세전)
+- 연 비용 = 182.8 × 1.0e6 = $182.8M/yr
+- 연 매출 = $55.2M/yr (균등화 보조금)
+- **연 손익 = +$55.2M − $182.8M = −$127.6M/yr** (적자)
+- NPV·IRR은 연도별 현금흐름(건설 3년·첫해 가동률 80%·법인세·IFRS 감가상각)으로 따로 계산 → §19
 
 → MEA를 1 Mt 작은 플랜트로 짓고 45Q-CCS만 받으면 적자. 더 큰 플랜트(scale ↑) 또는 더 강한 인센티브 필요.
         """)
@@ -5932,11 +6264,11 @@ $$\text{PI} = \frac{\sum_{t=1}^{N} CF_t / (1+r)^t}{\text{CAPEX}_\text{total}}$$
     # ── 13. 민감도 분석 ──
     with st.expander("🌪️ **13. Tornado Sensitivity 분석**"):
         st.markdown("""
-**목적**: 어떤 파라미터가 Net COCA에 가장 큰 영향?
+**목적**: 어떤 파라미터가 Net LCOC에 가장 큰 영향?
 
 **방법** (2026-10 개편 — 모델 재계산): 입력 하나만 아래 범위로 낮추고·높여 `evaluate_tech()`로 전체 계산을
-다시 돌린 뒤 Net COCA 차이를 그림. 규모 효과·CRF·포집률처럼 비선형인 항목도 그대로 반영됨.
-분석할 기술은 선택 가능 (기본값 = COCA 최저 기술).
+다시 돌린 뒤 Net LCOC 차이를 그림. 규모 효과·CRF·포집률처럼 비선형인 항목도 그대로 반영됨.
+분석할 기술은 선택 가능 (기본값 = LCOC 최저 기술).
 
 | 파라미터 | 변동 범위 |
 |---|---|
@@ -5952,7 +6284,7 @@ $$\text{PI} = \frac{\sum_{t=1}^{N} CF_t / (1+r)^t}{\text{CAPEX}_\text{total}}$$
 
 **Monte Carlo**: 선택 기술 전부를 500회씩 계산. 기술별 CAPEX·OPEX·SRD에 데이터 신뢰도 Tier
 (A ±5% · B ±15% · C ±25%를 95% 범위로 보고 σ = 절반)를 주고, 전기 가격(±10%)은 모든 기술에 같은 난수를 씀.
-"Net COCA 최저일 확률"이 80% 이상이면 기술 간 차이가 데이터 불확실성보다 크다고 봄.
+"Net LCOC 최저일 확률"이 80% 이상이면 기술 간 차이가 데이터 불확실성보다 크다고 봄.
 
 **해석**: 가장 긴 막대 = 가장 critical 변수 → 우선 정밀화 필요.
         """)
@@ -5960,15 +6292,15 @@ $$\text{PI} = \frac{\sum_{t=1}^{N} CF_t / (1+r)^t}{\text{CAPEX}_\text{total}}$$
     # ── 14. CO₂ 가격 Breakeven ──
     with st.expander("🎯 **14. CO₂ 가격 Breakeven (흑자 진입 인센티브)**"):
         st.markdown(r"""
-**목적**: Net COCA = 0 도달에 필요한 추가 인센티브 단가 자동 탐지
+**목적**: Net LCOC = 0 도달에 필요한 추가 인센티브 단가 자동 탐지
 
 **계산식**:
-$$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net COCA})}{\text{yield ratio}}$$
+$$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net LCOC})}{\text{yield ratio}}$$
 
 - CCS 모드: yield_ratio = ccs_yield (default 0.92)
 - CCU 모드: yield_ratio = ccu_yield (등급별 0.75~0.88)
 
-**예시 (MEA 1 Mt/yr CCS, 현재 Net COCA +$50/t)**:
+**예시 (MEA 1 Mt/yr CCS, 현재 Net LCOC +$50/t)**:
 - 격리량 기준 추가 필요 = $50 / 0.92 = **$54.3 / t격리량**
 - 즉 45Q $85 → $139 까지 올리면 흑자 진입
 
@@ -6081,7 +6413,7 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 
 **표시 내용**
 - **메타 카드**: facility mode, project scenario, 포집량, 인센티브 stack
-- **KPI 그룹 막대**: 10개 지표 중 선택 (연 손익·COCA·Net COCA·SRD·We·NPV·IRR·Payback·CRCF·LCA)
+- **KPI 그룹 막대**: 10개 지표 중 선택 (연 손익·LCOC·Net LCOC·SRD·We·NPV·IRR·Payback·CRCF·LCA)
 - **Δ 표 (B − A)**: 5대 핵심 지표 차이 + CSV 다운로드
 - **자동 인사이트**: 격차 최대 기술, 평균 우위 시나리오, 모드/규모 차이 경고
 
@@ -6102,11 +6434,11 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 **리포트 구조** (2~3 페이지)
 1. **Page 1**:
    - 제목 + 생성일시 + schema 버전
-   - 4-카드 KPI 배너 (Best Profit · Best COCA · Best Net COCA · Best CRCF)
+   - 4-카드 KPI 배너 (Best Profit · Best LCOC · Best Net LCOC · Best CRCF)
    - 시나리오 메타 표 (mode·scenario·포집량·인센티브·환율)
    - 자동 인사이트 (영문, 본문에서 추출)
-   - 기술별 결과 표 (TRL·SRD·We·COCA·Net COCA·연 손익·NPV·Payback·CRCF)
-2. **Page 2** (옵션): 차트 PNG (연 손익·COCA·Net COCA·에너지 분해)
+   - 기술별 결과 표 (TRL·SRD·We·LCOC·Net LCOC·연 손익·NPV·Payback·CRCF)
+2. **Page 2** (옵션): 차트 PNG (연 손익·LCOC·Net LCOC·에너지 분해)
 3. **Page 3**: LCA / Net CO₂ 분해 표 + 방법론 요약 + 면책 조항
 
 **기술 스택**
@@ -6131,6 +6463,61 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
 - 학술 논문 supplementary
         """)
 
+    # ── 19. 사업성 현금흐름 ──
+    with st.expander("💹 **19. 사업성 현금흐름 — EBITDA · IFRS 감가상각 · 법인세 · 보조금 기간**"):
+        st.markdown(r"""
+**두 가지 기준을 같이 씀**
+- **LCOC·Net LCOC·연 손익** = 균등화(levelized) 기준. 비용은 CRF로, 매출은 보조금 지급 기간을 반영해 같은 할인율로 균등화 → 기술 비교용
+- **NPV·IRR·회수 기간·손익계산서** = 연도별 현금흐름 기준 → 사업 판단용
+
+**연도별 현금흐름** (실질 USD, 무차입)
+1. 건설 C년(기본 3년) 동안 CAPEX 균등 지출, 운영은 C+1년차부터 수명 L년
+2. 운영 1년차 가동률(기본 80%), 2년차부터 100% — 매출·현금 OPEX가 가동률에 비례
+3. 매출 = 배출권 + 보조금(지급 기간 동안만) + 추가 매출 + CCU 판매 (탄소가격 시나리오 성장률 적용)
+4. **EBITDA** = 매출 − 현금 영업비용(용매·기타·전력·재생 열·T&S)
+5. **감가상각** = IFRS IAS 16 정액법 — 자산이 사용 가능한 시점(운영 개시)부터 내용연수(기본 25년, 수명 이하), 잔존가치 0. 건설 중에는 상각하지 않음
+6. **영업이익(EBIT)** = EBITDA − 감가상각 → 이자 비용 없음(무차입)이라 세전이익 = EBIT
+7. **법인세** = max(0, EBIT − 이월결손금) × 세율 (지역 기본값: 한국 27.5%, 미국 25.6%, NL 25.8%). 세무상 감가상각도 회계와 같다고 가정
+8. **FCF** = EBITDA − 법인세 (운전자본·유지보수 CAPEX 제외)
+9. NPV는 착공 시점(t=0) 기준 연말 할인, IRR은 같은 현금흐름의 할인율 해, 회수 기간은 운영 개시부터
+
+**한계**: 45Q 같은 세액공제를 매출로 처리(실제는 세액공제·양도), 차입·이자·운전자본 없음, 세무 감가상각(MACRS 등) 미반영
+        """)
+
+    # ── 20. 열 비용·지역·다계열 ──
+    with st.expander("🔥 **20. 재생 열 비용 · 지역 기본값 · 다계열 · 포집률 상한 · 선박 저장**"):
+        st.markdown(r"""
+**재생 열(증기) 비용** — 2026-10 이전에는 비용에서 빠져 있었음
+- 열 비용 = SRD × 열 단가 [USD/GJ] → OPEX에 포함 (VPSA처럼 SRD가 0이면 0)
+- 열 단가 = 연료 단가 ÷ 보일러 효율 0.85 + O&M $0.5 · 히트펌프 = 전기 단가 ÷ COP 3 · 폐열 $1 · 재생 열 $10
+- 열원은 LCA 배출계수와 같은 선택을 씀 (⚙️ 상세 가정 › 재생 열)
+
+**지역 기본값** — 사이드바 '사업 지역'(미국·한국·서유럽)이 전기·연료 단가, 건설비 계수, 법인세율, 전력 배출계수 기본값을 바꿈 (§6 표)
+
+**다계열** — 비용 자료가 있는 최대 규모(NETL 기준 3.7 Mt, VPSA는 Port Arthur 1 Mt)를 넘으면 그 크기 계열을 나란히 둠
+$$	ext{CAPEX/t} = 	ext{CAPEX/t}(	ext{계열당 규모}) 	imes n^{-0.1}$$
+(n계열 총비용 = 1계열 × n^0.9, 공용 설비 일부 공유). 0.65승을 무한히 적용하면 10 Mt급이 3.7 Mt보다 30% 싸지는 문제를 막음
+
+**포집률 상한** — 실증·설계 근거가 있는 최대값으로 제한: 아민 99% (TCM CESAR-1 97~99%, Cansolv 보증 99%), KIERSOL·DMX·TSA·CaL 95%, VPSA 90% (공정가스 기준)
+
+**선박 수출 저장** (국내 저장소가 없는 한국형) — 액화·선적 $15 + 선박 $6/1,000 km + 해상 주입·저장 $15 (1차 근사, GCMD·BCG 2024의 동북아 → 호주 운송 $25~50/t 범위에 맞춤). 기본 거리 5,500 km
+        """)
+
+    # ── 21. 실측 검증·불확실성 ──
+    with st.expander("✅ **21. 실측 검증 · Monte Carlo 분포**"):
+        st.markdown(r"""
+**실측 검증** (⑤ 근거 › ✅ 실측 검증 탭)
+- 포집 플랜트 4곳(Boundary Dam 3, Petra Nova, Quest, Norcem Brevik)의 공개 CAPEX를, 같은 기술·업종·프로젝트 유형·규모·운영 연도(CPI)·지역 계수로 모델이 다시 계산한 값과 비교
+- 가스 처리 내재 분리(Sleipner·Gorgon·Century), 수송 전용(Northern Lights), 데모(Tomakomai), 압축만(ADM)은 범위가 달라 제외
+- 2026-10 결과: 아민 발전·수소 3곳은 모델이 실측의 약 1.4~1.7배, 시멘트 Brevik(0.4 Mt)은 약 5.7배 → **소규모·산업 retrofit에서 CAPEX가 과대평가됨** (규모 지수 0.65를 작은 규모까지 외삽 + retrofit 산업 1.65 × 시멘트 1.20 중복 가능성). 보정은 다음 과제
+
+**Monte Carlo 분포** (③ 사업성 › 민감도·불확실성)
+- CAPEX 배수 = 견적 정확도(AACE 18R-97, 모든 기술 공통) × 기술 성숙도(기술별)
+- AACE 등급별 범위 중간값을 P10/P90로: Class 5 −35%/+65%, Class 4 −22%/+35%, Class 3 −15%/+20%
+- 성숙도(데이터 Tier) P10/P90: A −5%/+10%, B −10%/+25%, C −15%/+40% (OPEX·SRD에도 적용)
+- 모두 로그정규 — 비용 초과 쪽으로 치우친 분포. 전기 ±10%·열 ±15%는 모든 기술에 같은 난수
+        """)
+
     st.markdown("---")
     st.info(
         f"📖 **References**: 모든 출처는 ⑤ 근거 › 참고문헌 (총 {len(REFS)}개) 참조. "
@@ -6138,6 +6525,81 @@ $$\text{추가 인센티브 (격리/출하량 기준)} = \frac{\max(0, \text{Net
         f"PDF 리포트 동봉용. 시나리오 A vs B 비교는 ③ 사업성 › 시나리오 비교 참조. "
         f"데이터 동기화 상태는 페이지 하단 `data/ccus_metrics.json v{_schema}` 확인."
     )
+
+# ---------- ⑤ 근거 › 실측 검증 ----------
+# 실제 포집 플랜트의 공개 CAPEX를 같은 기술·업종·규모·연도로 모델이 다시 계산한 값과 비교.
+# (가스 처리 내재 분리·수송 전용·데모 설비는 범위가 달라 제외)
+VALIDATION_PLANTS = [
+    # (COMMERCIAL_PLANTS 이름, 모델 기술, 업종, 프로젝트 유형, 지역, 비교 CAPEX [M$] (None = 표 값), 범위 메모)
+    ("Boundary Dam Unit 3", "Cansolv_DC103", "power_subc", "retrofit_power", "US", 800,
+     "포집 설비만 약 $8억 (발전 설비 개보수 제외), 캐나다 → 미국 계수 1.0 근사"),
+    ("Petra Nova", "MHI_KS21", "power_subc", "retrofit_power", "US", None,
+     "포집·압축 + 열공급용 가스터빈·보일러 포함"),
+    ("Quest", "MEA_baseline", "h2_smr", "greenfield_industrial", "US", None,
+     "Shell ADIP-X 아민을 일반 아민(MEA)으로 근사, 파이프라인·저장 포함, 캐나다 → 미국 계수 1.0 근사"),
+    ("Norcem Brevik", "Aker_S26", "cement", "retrofit_industrial", "EU", None,
+     "Aker Just Catch, 액화·항만 설비 포함 가능, 노르웨이 → 서유럽 계수"),
+]
+
+with sub_valid:
+    st.markdown("### ✅ 실측 검증 — 모델 CAPEX vs 실제 플랜트")
+    st.caption(
+        "각 플랜트와 같은 기술·업종·프로젝트 유형·규모·운영 연도(CPI)·지역 계수로 모델 CAPEX를 다시 계산. "
+        "포집률 90%, 다른 입력은 사이드바와 무관. 공개 사업비는 범위(포함 설비)가 제각각이라 "
+        "±30% 안이면 1차 근사로 맞는 수준."
+    )
+    _plants = {pl["name"]: pl for pl in COMMERCIAL_PLANTS}
+    _val_rows, _vx, _vy, _vlab = [], [], [], []
+    for _pname, _tk, _sec, _proj, _reg, _capex_m, _memo in VALIDATION_PLANTS:
+        _pl = _plants.get(_pname)
+        if not _pl or _tk not in LIT:
+            continue
+        _cap = _pl["capacity_mt_yr"]
+        _actual = (_capex_m if _capex_m is not None else _pl["capex_usd_m"]) / _cap   # $/(t/yr)
+        _yr = min(max(_pl["year_op"], min(US_CPI)), max(US_CPI))
+        _rr = evaluate_tech(_tk, {
+            **BASE_P, "capture_t_yr": _cap * 1e6, "capture_eff": 0.90,
+            "sector": SOURCE_SECTORS[_sec], "project_multiplier": PROJECT_SCENARIOS[_proj]["multiplier"],
+            "cpi_factor": US_CPI[_yr] / US_CPI[LIT_BASE_YEAR],
+            "location_factor": REGIONS[_reg]["location_factor"],
+            "facility_mode": "CCS", "ccs_share": 1.0, "ccu_share": 0.0,
+            "capex_scale": 1.0, "opex_scale": 1.0, "srd_scale": 1.0,
+        })
+        _model = _rr["eff_capex_per_t"]
+        _val_rows.append({
+            "플랜트": _pname, "모델 기술": LIT[_tk]["name"], "업종": SOURCE_SECTORS[_sec]["label"],
+            "규모 [Mt/yr]": f"{_cap:g}", "운영 연도": _pl["year_op"],
+            "실측 [$/(t/yr)]": f"{_actual:,.0f}", "모델 [$/(t/yr)]": f"{_model:,.0f}",
+            "모델 ÷ 실측": f"{_model / _actual:.2f}", "범위 메모": _memo,
+        })
+        _vx.append(_actual)
+        _vy.append(_model)
+        _vlab.append(_pname)
+    if _val_rows:
+        st.dataframe(pd.DataFrame(_val_rows), width="stretch", hide_index=True)
+        _lo, _hi = min(_vx + _vy) * 0.7, max(_vx + _vy) * 1.3
+        f_val = go.Figure()
+        f_val.add_trace(go.Scatter(x=[_lo, _hi], y=[_lo, _hi], mode="lines", name="모델 = 실측",
+                                   line=dict(color="white", dash="dash")))
+        f_val.add_trace(go.Scatter(x=[_lo, _hi], y=[_lo * 1.3, _hi * 1.3], mode="lines", name="±30%",
+                                   line=dict(color="#5e6878", dash="dot")))
+        f_val.add_trace(go.Scatter(x=[_lo, _hi], y=[_lo * 0.7, _hi * 0.7], mode="lines", showlegend=False,
+                                   line=dict(color="#5e6878", dash="dot")))
+        f_val.add_trace(go.Scatter(x=_vx, y=_vy, mode="markers+text", text=_vlab, name="플랜트",
+                                   textposition="top center", marker=dict(size=12, color="#4FC3F7")))
+        f_val.update_layout(
+            title="CAPEX 단가 — 모델 vs 실측 [USD/(t/yr), 운영 연도 달러]",
+            template="plotly_dark", height=460,
+            xaxis=dict(title="실측", type="log"), yaxis=dict(title="모델", type="log"),
+            margin=dict(l=10, r=10, t=60, b=40), legend=dict(orientation="h", y=-0.15),
+        )
+        st.plotly_chart(f_val, width="stretch", config=PLOTLY_CONFIG)
+        _ratios = sorted(y / x for x, y in zip(_vx, _vy))
+        _med = _ratios[len(_ratios) // 2] if len(_ratios) % 2 else (
+            (_ratios[len(_ratios) // 2 - 1] + _ratios[len(_ratios) // 2]) / 2)
+        _within = sum(1 for q in _ratios if 0.7 <= q <= 1.3)
+        st.info(f"📏 모델 ÷ 실측 중앙값 **{_med:.2f}** · ±30% 안 **{_within}/{len(_ratios)}**곳. "
+                "벗어나는 플랜트는 범위 메모(포함 설비·환율·FOAK 여부)를 함께 볼 것.")
 
 # ---------- ④ Net CO₂ (LCA) ----------
 with tab_lca:

@@ -1,6 +1,6 @@
 """민감도(Tornado)·Monte Carlo 회귀 테스트 (Streamlit AppTest).
 
-- Tornado: 기본 분석 기술 = 선택 기술 중 COCA 최저, 다른 기술로 바꿔도 예외 없음
+- Tornado: 기본 분석 기술 = 선택 기술 중 LCOC 최저, 다른 기술로 바꿔도예외 없음
 - Monte Carlo: 선택 기술 전부가 표에 나오고, 같은 입력이면 같은 결과 (seed 고정)
 
 실행 (CCUS_benchmark 폴더에서):
@@ -32,15 +32,25 @@ def _new_app():
 
 def _mc_table(at):
     for d in at.dataframe:
-        if "Net COCA 최저일 확률" in d.value.columns:
+        if "Net LCOC 최저일 확률" in d.value.columns:
             return d.value
+    return None
+
+
+def _lowest_lcoc_name(at):
+    """① 데이터 테이블에서 LCOC가 가장 낮은 기술 이름."""
+    for d in at.dataframe:
+        if "LCOC" in d.value.columns and "기술" in d.value.columns:
+            t = d.value
+            return t.loc[t["LCOC"].str.replace(",", "").astype(float).idxmin(), "기술"]
     return None
 
 
 def test_tornado_default_and_switch():
     at = _new_app()
-    # 기본 선택 5종 중 COCA 최저는 TSA (2026-10 데이터 기준)
-    assert at.selectbox(key="sens_tech").value == "TSA_Solid"
+    # 기본 분석 기술 = 선택 기술 중 LCOC 최저
+    sel = at.selectbox(key="sens_tech")
+    assert sel.format_func(sel.value) == _lowest_lcoc_name(at), (sel.value, _lowest_lcoc_name(at))
     assert any("가장 크게 흔듦" in str(c.value) for c in at.caption)
     at.selectbox(key="sens_tech").select("MEA_baseline").run()
     assert not at.exception, [e.message[:200] for e in at.exception]

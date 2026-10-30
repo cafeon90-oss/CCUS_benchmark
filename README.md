@@ -23,7 +23,7 @@ NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER 등 공식 자료 기반의 10종 C
 
 ---
 
-## 🧪 비교 기술 (10종)
+## 🧪 비교 기술 (9종)
 
 ### Advanced Amine (4종, Tier A)
 | 기술 | 흡수제 | SRD [GJ/tCO₂] | 대표 사례 |
@@ -51,12 +51,13 @@ NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER 등 공식 자료 기반의 10종 C
 
 ## ✨ 주요 기능
 
-- **5개 탭**: ① 결과 요약 / ② 비용·에너지 (비용·에너지·소재 손실·직접 입력) / ③ 사업성 (손익·NPV·민감도·**🆚 시나리오 비교**) / ④ Net CO₂ (LCA) / ⑤ 근거·사용법 (사용법·방법론·참고문헌·문헌 트렌드)
-- **사이드바 3단계**: 배출원·프로젝트 → 비교할 기술 → 규모·처분 경로 (인센티브·상세 가정·LCA 가정은 접어 둠)
+- **5개 탭**: ① 결과 요약 / ② 비용·에너지 (비용·에너지·소재 손실·직접 입력) / ③ 사업성 (손익·NPV·EBITDA·민감도·**🆚 시나리오 비교**) / ④ Net CO₂ (LCA) / ⑤ 근거·사용법 (사용법·방법론·참고문헌·문헌 트렌드·실측 검증)
+- **사이드바 3단계**: 사업 지역·배출원·프로젝트 → 비교할 기술 → 규모·처분 경로 (인센티브·상세 가정·LCA 가정은 접어 둠)
+- **사업 지역 기본값** (미국·한국·서유럽): 전기·연료 단가, 건설비 계수, 법인세율, 전력 배출계수
 - **시나리오 프리셋 6종**: 미국 발전소·한국 시멘트·EU 블루수소·DAC+LCFS·식품급 LCO₂·반도체 LCO₂
 - **자동 인사이트 박스** + 추천 메시지
-- **5대 KPI**: 연 손익 (메인) + SRD · We · SPECCA · COCA
-- **CCS 특화 스케일링** (Lang n=0.65, IEAGHG 기반)
+- **5대 KPI**: 연 손익 (메인) + SRD · We · SPECCA · LCOC (균등화 포집 비용) + Net CO₂ 톤당 비용
+- **CCS 특화 스케일링** (n=0.65, IEAGHG 기반) + 비용 자료 최대 규모를 넘으면 다계열(n^0.9)
 - **포집율 효과** (90% baseline, 99%→+18% SRD)
 - **프로젝트 시나리오** (Retrofit/Greenfield/산업 5종)
 - **CCU 정제 등급별** 수율·CAPEX adder (식품/고순도/초고순도)
@@ -64,11 +65,16 @@ NETL Rev4a/2022 · IEAGHG · IRS 45Q · KIER 등 공식 자료 기반의 10종 C
 - **지역 색상 코딩** (🟦🟨🟪🟧 — stack 호환성 즉각 식별)
 - **호버 툴팁** (계산식 + 출처 포함)
 - **통화 toggle** (USD ↔ KRW ↔ Both)
-- **51개 출처 audit trail** (NETL/IEAGHG/45Q/SDE++/UK CfD/K-CCUS/MHI/Shell/Aker)
+- **80여 개 출처 audit trail** (NETL/IEAGHG/45Q/SDE++/UK CfD/EIA/Eurostat/KEPCO/AACE/IFRS 등)
+- **사업성 현금흐름**: 건설 기간·첫해 가동률·보조금 지급 기간(45Q 12년 등)·법인세 → NPV·IRR·회수 기간, 손익계산서(EBITDA·IFRS IAS 16 정액 감가상각·EBIT·순이익)
+- **재생 열(증기) 비용**: SRD × 열 단가 (가스 보일러·히트펌프·폐열 등)
+- **민감도·Monte Carlo**: 모델 재계산 토네이도, AACE 견적 등급 × 기술 성숙도 로그정규 분포
+- **실측 검증**: 포집 플랜트 4곳의 공개 CAPEX와 모델 비교
+- **선박 수출 저장** (국내 저장소 없는 한국형 T&S)
 
 ### 🆕 신규 기능 (Phase 2)
 
-- **🆚 시나리오 A vs B 비교 모드** — 두 입력 세트를 슬롯에 저장하고 핵심 KPI 10개(연 손익·COCA·Net COCA·SRD·We·NPV·IRR·Payback·CRCF·LCA)를 1:1 그룹 막대로 비교. Δ 표(B−A) + 자동 인사이트 + CSV 다운로드.
+- **🆚 시나리오 A vs B 비교 모드** — 두 입력 세트를 슬롯에 저장하고 핵심 KPI 10개(연 손익·LCOC·Net LCOC·SRD·We·NPV·IRR·Payback·CRCF·LCA)를 1:1 그룹 막대로 비교. Δ 표(B−A) + 자동 인사이트 + CSV 다운로드.
 - **📥 PDF 리포트 내보내기** — KPI 배너 / 시나리오 메타 / 결과 표 / 차트 / LCA 분해 / 방법론 요약을 1~3페이지 PDF로 한 번에 생성 (ReportLab + Plotly Kaleido). 이사회·EPC 견적·정부 협상 input용.
 - **📦 Single Source of Truth (SSOT)** — `data/ccus_metrics.json` (schema v1.0) 한 파일이 본 도구 + 자매 도구 [🛡️ CBAM 계산기]의 LIT 데이터 마스터. 한 곳 수정 → 양쪽 자동 동기화 (1h / 24h 캐시).
 - **🌱 ④ Net CO₂ (LCA) 탭** — Scope 1+2+3 lifecycle 배출 차감 후 net removed CO₂ + CRCF/ICVCM 등급(A/B/C/D). EU CRCF 2024 의무 대응.
@@ -101,10 +107,13 @@ streamlit run app.py
 ```
 We     [GJe/tCO₂] = We_thermal(Carnot×0.55) + 펌프 + 압축 + 냉동기 + 보조
 SPECCA [MJ/tCO₂]  = (SRD × 500 + We_elec × 2,500) / capture_rate
-COCA   [USD/tCO₂] = (연환산 CAPEX + OPEX) / 연 포집량
+LCOC   [USD/tCO₂] = (연환산 CAPEX + OPEX) / 연 포집량      ← 포집 기준 (업계 COCA = 회피 기준과 다름)
+OPEX              = 용매 + 기타 + 전력 + 재생 열(SRD × 열 단가) + T&S
+Net LCOC          = LCOC − 균등화 매출/t (보조금 지급 기간 반영)
+Net CO₂ 톤당 비용  = LCOC ÷ (포집 1 t당 실제 감축량, LCA 차감 후)
 
 CAPEX 적용 순서:
-  LIT base × project type × 포집율 × 규모(0.65) × CCU adder
+  LIT base × CPI × 업종 × 지역 건설비 계수 × project type × 포집율 × 규모(0.65, 계열당) × CCU adder
 
 Carnot η = (T_regen − T_cool) / T_regen × 0.55  (second-law factor, Bejan/Kotas)
 CRF      = i(1+i)ⁿ / [(1+i)ⁿ − 1]                (NETL QGESS)
@@ -114,17 +123,18 @@ CRF      = i(1+i)ⁿ / [(1+i)ⁿ − 1]                (NETL QGESS)
 
 ## 📚 데이터 출처 (요약)
 
-- **NETL** Rev4a Case B12C, 2022 Baseline B11B/B12B/B31B, QGESS Methodology
+- **NETL** Rev4a, 2022 Baseline B11B/B12B/B31B, QGESS Methodology
 - **IEAGHG** 2007 Post-Comb, 2011 Retrofit, 2013 Solvent R&D, 2013 Cement, 2014 Solvents, 2019 Beyond 90%
-- **IRS** Section 45Q (IRA 2022): $85/t CCS, $60/t EOR, $180/t DAC
+- **IRS** Section 45Q (IRA 2022 · OBBBA 2025): $85/t 포인트소스(저장·EOR·활용 동일), $180/t DAC, 12년
+- **EIA** STEO · **Eurostat** · **KEPCO** · **KOGAS** (지역별 전기·가스 단가) · **AACE** 18R-97 · **IFRS** IAS 16
 - **KRX** K-ETS 거래 데이터 / **ICE** EU ETS Futures
 - **NL RVO** SDE++ / **UK BEIS** CCUS CfD
 - **KIER** KIERSOL Pilot / **TotalEnergies** 3D Project DMX
 - **MHI** KS-21 / **Shell** Cansolv DC-103 / **Aker CC** S26
 - **POSCO/한국** 산업 CCS / **Norcem Brevik** 시멘트 CCS
 - **IPCC** SR CCS 2005, AR6 WG3 / **Global CCS Institute** Status 2023
-- 학술 논문 (Rochelle, Bui, Darde, Raynal, Cullinane, Yoo, Abanades, Grasa, Romeo, Lepaumier, Manzolini, Cousins, Sjostrom & Krutka, Hanak, Rubin/CMU)
-- 방법론 (Bejan, Kotas, ASHRAE, GPSA, Peters & Timmerhaus, EIA AEO, CGA G-6.2, SEMI C3)
+- 학술 논문 (Rochelle, Bui, Raynal, Cullinane, Yoo, Abanades, Grasa, Romeo, Lepaumier, Manzolini, Cousins, Sjostrom & Krutka, Hanak, Rubin/CMU)
+- 방법론 (Bejan, Kotas, GPSA, Peters & Timmerhaus, EIA AEO, CGA G-6.2, SEMI C3)
 
 전체 70여 개 출처는 앱 내 **⑤ 근거·사용법 › 참고문헌**에서 카테고리별로 확인 가능.
 
@@ -156,6 +166,7 @@ ccus_benchmark repo (master)
 
 - 본 툴의 수치는 공개 보고서 기반 *representative values*. 실제 프로젝트는 EPC 견적·실증 데이터로 보정 필요.
 - Tier C(†) 데이터는 상용 스케일에서 ±25% 이상 변동 가능.
+- 실측 검증상 모델 CAPEX는 실제 아민 플랜트의 약 1.4~1.7배, 소규모 시멘트 retrofit은 수 배 높게 나옴 — 소규모·산업 retrofit 결과는 특히 보수적으로 해석.
 - 정책/시장 단가는 변동성 高. 의사결정 시 최신 데이터로 갱신 필수.
 
 ---
